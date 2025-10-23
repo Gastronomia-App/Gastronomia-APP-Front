@@ -1,1 +1,174 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #82f1c7;
+  --color-primary-dark: #8fe0c0;
+  --color-secondary: #5b746a;
+  --color-secondary-light: #6a887c;
+  --color-bg: #F7FAF8;
+  --color-surface: #FFFFFF;
+  --color-panel: #2B3330;
+
+  --color-text: #22332D;
+  --color-text-muted: #4B5954;
+  --color-border: #DCE5E0;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5 {
+  color: var(--color-text);
+  margin: 0;
+  font-weight: 600;
+}
+
+p, label, span {
+  color: var(--color-text-muted);
+}
+
+button {
+  background-color: var(--color-primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease-in-out;
+}
+
+button:hover {
+  background-color: var(--color-primary);
+}
+
+button.secondary {
+  background-color: var(--color-secondary-light);
+}
+
+button.secondary:hover {
+  background-color: var(--color-secondary);
+}
+
+button.danger {
+  background-color: #C44536;
+}
+
+button.danger:hover {
+  background-color: #e04f3f;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(100, 217, 172, 0.2);
+}
+
+input::placeholder, select::placeholder, textarea::placeholder{
+    color: rgb(175, 173, 173);
+}
+
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.panel-header {
+  background-color: var(--color-panel);
+  color: #fff;
+  padding: 1rem;
+  border-radius: 10px 10px 0 0;
+  font-weight: 600;
+}
+
+.panel-content {
+  padding: 1rem;
+}
+
+.search-input {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  width: 100%;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+}
+
+.navbar {
+  background-color: var(--color-panel);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th, td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+th {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+tbody tr:hover {
+  background-color: rgba(100, 217, 172, 0.1);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+
