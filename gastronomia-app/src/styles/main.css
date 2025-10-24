@@ -1,0 +1,21 @@
+/* ============================================
+   MAIN CSS
+   Orchestrates all modular CSS imports
+   Load order: Variables → Base → Utilities → Components
+   ============================================ */
+
+/* 1. Variables - Must load first */
+@import './variables.css';
+
+/* 2. Base styles - HTML elements */
+@import './base.css';
+
+/* 3. Utilities - Helper classes */
+@import './utilities.css';
+
+/* 4. Components - Specific UI components */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/tables.css';
+@import './components/panels.css';
+@import './components/aside-form.css';

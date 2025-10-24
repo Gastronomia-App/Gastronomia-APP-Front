@@ -1,0 +1,25 @@
+/* ============================================
+   BASE STYLES
+   Basic HTML element styling
+   ============================================ */
+
+/* Body */
+body {
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5 {
+  color: var(--color-text);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Text elements */
+p, label, span {
+  color: var(--color-text-muted);
+}
