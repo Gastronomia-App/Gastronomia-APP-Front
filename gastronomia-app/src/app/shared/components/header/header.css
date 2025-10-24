@@ -1,0 +1,119 @@
+/* Header Container */
+.header {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xs) var(--spacing-lg) 0 var(--spacing-lg);
+    border-bottom: 8px solid var(--color-primary-lighter);
+}
+
+/* Navigation Sections */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+/* Logo */
+.logo {
+    height: 70px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Navigation Buttons */
+.nav-btn {
+    background: none;
+    color: var(--color-white);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 15px 20px;
+    position: relative;
+}
+
+.nav-btn svg {
+    fill: currentColor;
+    color: inherit;
+    width: 32px;
+    height: 32px;
+}
+
+.nav-btn:hover {
+    color: var(--color-primary-lighter);
+    background: none;
+}
+
+/* Active state */
+.nav-btn.active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-lighter);
+    padding: 15px 20px 25px 20px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* DateTime Container */
+.datetime-container {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.date-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.day {
+    font-weight: 600;
+    font-size: var(--font-md);
+    color: var(--color-text-muted);
+}
+
+.date {
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+}
+
+.time-block {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* User Info Button */
+.user-info-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.user-info-btn svg {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.user-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+
+.business-name {
+    font-size: var(--font-base);
+    font-weight: 600;
+}
+
+.employee-name {
+    font-size: var(--font-sm);
+    font-weight: 400;
+    opacity: 0.9;
+}
