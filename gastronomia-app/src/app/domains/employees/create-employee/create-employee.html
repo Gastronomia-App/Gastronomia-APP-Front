@@ -1,0 +1,75 @@
+<div class="container">
+  <h1>Crear empleado</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="grid">
+      <label>
+        <span class="label-text" data-tooltip="Nombre del empleado (máximo 50 caracteres)">Nombre *</span>
+        <input type="text" formControlName="name" placeholder="Juan" />
+      </label>
+      <div class="error" *ngIf="f.name.touched && f.name.invalid">Nombre requerido.</div>
+
+      <label>
+        <span class="label-text" data-tooltip="Apellido del empleado (máximo 50 caracteres)">Apellido *</span>
+        <input type="text" formControlName="lastName" placeholder="Pérez" />
+      </label>
+      <div class="error" *ngIf="f.lastName.touched && f.lastName.invalid">Apellido requerido.</div>
+
+      <label>
+        <span class="label-text" data-tooltip="DNI: 7 u 8 dígitos sin puntos">DNI *</span>
+        <input type="text" formControlName="dni" placeholder="12345678" />
+      </label>
+      <div class="error" *ngIf="f.dni.touched && f.dni.invalid">
+        DNI inválido (debe tener entre 7 y 8 dígitos).
+      </div>
+
+      <label>
+        <span class="label-text" data-tooltip="Correo electrónico válido">Email *</span>
+        <input type="email" formControlName="email" placeholder="ejemplo@mail.com" />
+      </label>
+      <div class="error" *ngIf="f.email.touched && f.email.invalid">
+        Email inválido (debe tener formato válido).
+      </div>
+
+      <label>
+        <span class="label-text" data-tooltip="Celular: 10 dígitos (ej: 2236327856 o 1134567890)">Teléfono *</span>
+        <input type="text" formControlName="phoneNumber" placeholder="1134567890" />
+      </label>
+      <div class="error" *ngIf="f.phoneNumber.touched && f.phoneNumber.invalid">
+        Teléfono inválido (10 dígitos con código de área).
+      </div>
+
+      <label>
+        <span class="label-text" data-tooltip="Entre 5 y 20 caracteres">Usuario *</span>
+        <input type="text" formControlName="username" placeholder="usuario123" />
+      </label>
+      <div class="error" *ngIf="f.username.touched && f.username.invalid">
+        Usuario entre 5 y 20 caracteres.
+      </div>
+
+      <label>
+        <span class="label-text" data-tooltip="Min. 8 caracteres: mayúscula, minúscula, número y símbolo">Contraseña *</span>
+        <input type="password" formControlName="password" placeholder="Abc123!@#" />
+      </label>
+      <div class="error" *ngIf="getPasswordError()">
+        {{ getPasswordError() }}
+      </div>
+
+      <label>
+        <span class="label-text" data-tooltip="Rol del empleado en el sistema">Rol *</span>
+        <select formControlName="role">
+          <option value="" disabled selected>Seleccioná un rol</option>
+          <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+        </select>
+      </label>
+      <div class="error" *ngIf="f.role.touched && f.role.invalid">Seleccioná un rol.</div>
+    </div>
+
+    <div class="actions">
+      <a routerLink="/" class="btn-outline">Cancelar</a>
+      <button class="btn" type="submit" [disabled]="loading || form.invalid">
+        {{ loading ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
