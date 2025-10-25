@@ -1,0 +1,30 @@
+<div class="item-card">
+    <span class="item-name">{{ item.name }}</span>
+    
+    <div class="item-actions">
+        @if(showQuantity && $any(item).quantity != null) {
+            <input 
+                type="number" 
+                min="1" 
+                [(ngModel)]="$any(item).quantity"
+                (ngModelChange)="onQuantityChange()"
+                [disabled]="!editableQuantity"
+                class="quantity-input"
+                placeholder="Cant." />
+        }
+        
+        @if(showPrice && $any(item).price != null) {
+            <span class="item-price">${{ $any(item).price | number:'1.2-2' }}</span>
+        }
+        
+        @if(showSubtotal && $any(item).price != null && $any(item).quantity != null) {
+            <span class="item-subtotal">${{ getSubtotal() | number:'1.2-2' }}</span>
+        }
+        
+        @if(showRemoveButton) {
+            <button type="button" class="btn-reset" (click)="onRemove()">
+                ✕
+            </button>
+        }
+    </div>
+</div>
