@@ -18,7 +18,7 @@
 
             <fieldset>
                 <label>Categoría <span class="error">*</span></label>
-                <select formControlName="category">
+                <select formControlName="categoryId">
                     <option value="" disabled selected>Seleccionar</option>
                     @for (cat of categories; track $index) {
                     <option>{{ cat }}</option>
@@ -65,7 +65,6 @@
         <section class="flex-column gap-md">
             <h3 class="mt-2">Composición</h3>
 
-            <!-- Componentes con cantidad -->
             <app-searchable-list
                 label="Componentes"
                 placeholder="Buscar componente..."
@@ -78,7 +77,6 @@
                 (itemUpdated)="onComponentUpdated($event)">
             </app-searchable-list>
 
-            <!-- Grupos de opciones (sin cantidad) -->
             <app-searchable-list
                 label="Grupos de opciones"
                 placeholder="Buscar grupo..."
