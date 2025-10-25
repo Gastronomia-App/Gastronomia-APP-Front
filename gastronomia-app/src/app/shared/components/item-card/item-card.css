@@ -1,0 +1,72 @@
+/* ============================================
+   ITEM CARD - Reusable card component
+   ============================================ */
+
+.item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-lg);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+}
+
+.item-name {
+    flex: 1;
+    font-size: var(--font-sm);
+    color: var(--color-text-muted) !important;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.quantity-input {
+    height: 20px;
+    width: 60px;
+    text-align: center;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+}
+
+.quantity-input:disabled {
+    background-color: var(--color-bg-secondary);
+    cursor: not-allowed;
+}
+
+/* Remove number input spinners */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+.quantity-input {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+.item-price {
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.item-subtotal {
+    font-weight: 600;
+    min-width: 70px;
+    text-align: right;
+    font-size: var(--font-sm);
+}
+
+.btn-reset {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}

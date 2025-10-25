@@ -34,6 +34,7 @@ select {
   background-position: right 1rem center;
   background-size: 12px;
   cursor: pointer;
+  color: var(--color-secondary-light);
 }
 
 select option {
@@ -42,8 +43,8 @@ select option {
   padding: var(--spacing-sm);
 }
 
-select option:hover {
-  background-color: var(--color-primary-lightest);
+select option:disabled {
+  color: var(--color-secondary-light);
 }
 
 /* Labels */
