@@ -1,61 +1,99 @@
 <!-- Aside form container -->
 <aside class="aside-form">
-  <!-- Header -->
-  <header class="aside-header flex justify-between align-center">
-    <h2>Nuevo producto</h2>
-    <button class="btn-reset" (click)="onClose()">✕</button>
-  </header>
+    <!-- Header -->
+    <header class="aside-header flex justify-between align-center">
+        <h2>Nuevo producto</h2>
+        <button class="btn-reset" (click)="onClose()">✕</button>
+    </header>
 
-  <!-- Form content -->
-  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="aside-content flex-column gap-md">
-    
-    <!-- Main information section -->
-    <section class="flex-column gap-md">
-      <fieldset>
-        <label>Nombre <span class="error">*</span></label>
-        <input type="text" formControlName="name" placeholder="Ej: Café Americano" />
-      </fieldset>
+    <!-- Form content -->
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="aside-content flex-column gap-md">
 
-      <fieldset>
-        <label>Categoría <span class="error">*</span></label>
-        <select formControlName="category">
-          <option value="" disabled selected>Seleccionar</option>
-          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
-        </select>
-      </fieldset>
+        <!-- Main information section -->
+        <section class="flex-column gap-md">
+            <fieldset>
+                <label>Nombre <span class="error">*</span></label>
+                <input type="text" formControlName="name" placeholder="Ej: Café Americano" />
+            </fieldset>
 
-      <fieldset>
-        <label>Precio <span class="error">*</span></label>
-        <input type="number" formControlName="price" placeholder="0.00" />
-      </fieldset>
+            <fieldset>
+                <label>Categoría <span class="error">*</span></label>
+                <select formControlName="category">
+                    <option value="" disabled selected>Seleccionar</option>
+                    @for (cat of categories; track $index) {
+                    <option>{{ cat }}</option>
+                    }
+                </select>
+            </fieldset>
 
-      <fieldset>
-        <label>Descripción</label>
-        <textarea formControlName="description" placeholder="Descripción breve del producto"></textarea>
-      </fieldset>
-    </section>
+            <fieldset>
+                <label>Precio <span class="error">*</span></label>
+                <input type="number" formControlName="price" placeholder="0.00" />
+            </fieldset>
 
-    <!-- Configuration section -->
-    <section class="flex-column gap-md">
-      <h3 class="mt-2">Configuración</h3>
-      <div class="flex justify-between align-center">
-        <span>Activo</span>
-        <input type="checkbox" formControlName="active" />
-      </div>
-      <div class="flex justify-between align-center">
-        <span>Mostrar en menú</span>
-        <input type="checkbox" formControlName="visible" />
-      </div>
-      <fieldset>
-        <label>Stock inicial</label>
-        <input type="number" formControlName="stock" placeholder="0" />
-      </fieldset>
-    </section>
-  </form>
+            <fieldset>
+                <label>Costo </label>
+                <input type="number" formControlName="cost" placeholder="0.00" />
+            </fieldset>
 
-  <!-- Footer actions -->
-  <footer class="aside-footer">
-    <button type="button" class="secondary" (click)="onCancel()">Cancelar</button>
-    <button type="submit" [disabled]="productForm.invalid" (click)="onSubmit()">Crear</button>
-  </footer>
+            <fieldset>
+                <label>Descripción</label>
+                <textarea formControlName="description" placeholder="Descripción breve del producto"></textarea>
+            </fieldset>
+        </section>
+
+        <!-- Configuration section -->
+        <section class="flex-column gap-md">
+            <h3 class="mt-2">Configuración </h3>
+            <div class="flex justify-between align-center">
+                <span>Activo </span>
+                <input type="checkbox" formControlName="active" />
+            </div>
+            <div class="flex justify-between align-center">
+                <span>Controlar stock </span>
+                <input type="checkbox" formControlName="controlStock" />
+            </div>
+
+            @if(productForm.get('controlStock')?.value) {
+                <fieldset>
+                    <label>Stock </label>
+                    <input type="number" formControlName="stock" placeholder="0" />
+                </fieldset>
+            }
+        </section>
+
+        <section class="flex-column gap-md">
+            <h3 class="mt-2">Composición</h3>
+
+            <!-- Componentes con cantidad -->
+            <app-searchable-list
+                label="Componentes"
+                placeholder="Buscar componente..."
+                [availableItems]="availableComponents"
+                [selectedItems]="selectedComponents"
+                [isLoading]="isLoadingComponents"
+                [showQuantity]="true"
+                (itemAdded)="onComponentAdded($event)"
+                (itemRemoved)="onComponentRemoved($event)"
+                (itemUpdated)="onComponentUpdated($event)">
+            </app-searchable-list>
+
+            <!-- Grupos de opciones (sin cantidad) -->
+            <app-searchable-list
+                label="Grupos de opciones"
+                placeholder="Buscar grupo..."
+                [availableItems]="availableProductGroups"
+                [selectedItems]="selectedProductGroups"
+                [isLoading]="isLoadingGroups"
+                (itemAdded)="onProductGroupAdded($event)"
+                (itemRemoved)="onProductGroupRemoved($event)">
+            </app-searchable-list>
+        </section>
+    </form>
+
+    <!-- Footer actions -->
+    <footer class="aside-footer">
+        <button type="button" class="secondary" (click)="onCancel()">Cancelar</button>
+        <button type="submit" [disabled]="productForm.invalid" (click)="onSubmit()">Crear</button>
+    </footer>
 </aside>
