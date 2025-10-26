@@ -1,8 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { Customer, CustomerFilter } from '../../models/Customer';
 import { CustomersService } from '../../services/customers-service';
 import { CustomersTable } from '../../components/customers-table/customers-table';
 import { CustomersForm } from "../../components/customers-form/customers-form";
+import { Customer, CustomerFilter } from '../../../../shared/models';
 
 @Component({
   selector: 'app-customer-page',

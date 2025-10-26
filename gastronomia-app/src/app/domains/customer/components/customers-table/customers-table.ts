@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, Input, input, Output, signal } from '@angular/core';
-import { Customer } from '../../models/Customer';
+import { Customer } from '../../../../shared/models';
 
 @Component({
   selector: 'app-customers-table',

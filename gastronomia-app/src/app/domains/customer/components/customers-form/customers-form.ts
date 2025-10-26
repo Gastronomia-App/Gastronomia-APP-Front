@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Customer } from '../../models/Customer';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CustomersService } from '../../services/customers-service';
+import { Customer } from '../../../../shared/models';
 
 @Component({
   selector: 'app-customers-form',
