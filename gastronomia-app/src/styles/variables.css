@@ -9,6 +9,7 @@
   --color-primary-lighter: #87b9b7;
   --color-primary-light: #639795;
   --color-primary: #306462;
+  --color-primary-secondary: #49aaa7;
   --color-primary-dark: #30504f;
   --color-primary-darker: #2a3f3e;
   --color-secondary-light: #a4b2b1;
@@ -25,6 +26,16 @@
   --color-text: #22332D;
   --color-text-muted: #b2cecd;
   --color-border: #DCE5E0;
+
+  /*   Shadows  */
+
+  --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+  --shadow-strong: 0 4px 18px rgba(0, 0, 0, 0.12);
+
+  --shadow-focus: 0 0 0 2px rgba(48, 100, 98, 0.2);
 
   /* Spacing */
   --spacing-xs: 0.5rem;
