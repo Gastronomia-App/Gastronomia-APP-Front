@@ -1,0 +1,16 @@
+/* ============================================
+   LOGIN PAGE
+   Specific styles for login page
+   Global styles imported from auth-form.css via main.css
+   ============================================ */
+
+/* Los estilos base vienen de auth-form.css que se importa globalmente en main.css:
+   - .auth-wrap (contenedor centrado)
+   - .card (tarjeta de login)
+   - .form (estilos de formulario)
+   - .actions (botones y acciones)
+   - .error (mensajes de error)
+   - .btn, .helper (botón y link de ayuda)
+*/
+
+/* Agregar estilos específicos del login aquí si son necesarios */
