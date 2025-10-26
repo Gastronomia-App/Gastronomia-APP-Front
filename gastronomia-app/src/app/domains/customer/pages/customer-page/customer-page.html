@@ -1,0 +1,59 @@
+<section class="customers-page">
+  <section class="customers-left">
+    <div class="top-bar">
+      <div class="search-box">
+        <!-- 🔹 Ícono de búsqueda -->
+        <img src="assets/images/search-icon.png" alt="Buscar" class="search-icon" />
+
+        <input
+          type="text"
+          placeholder="Buscar cliente..."
+          (keyup.enter)="onSearch($event)"
+          #searchInput
+        />
+
+        <button type="button" class="clear-btn" (click)="clearSearch(searchInput)">
+          Limpiar
+        </button>
+        </div>
+      </div>
+
+    <div class="table-section">
+      @if (loading()) {
+        <p class="loading-text">Cargando clientes...</p>
+      } @else {
+        @if (customers().length > 0) {
+          <app-customers-table
+            [customers]="customers()"
+            (edit)="onEditCustomer($event)"
+            (delete)="onDeleteCustomer($event)"
+          />
+        } @else {
+          <div class="no-results">
+            <p>No se encontraron clientes.</p>
+            <button type="button" (click)="reloadTable()">Mostrar todos</button>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <aside class="customers-right">
+    @if (!showForm()) {
+      <section class="empty-panel">
+     <div class="empty-content">
+    <img src="assets/images/customers.png" alt="Sin clientes" class="empty-illustration" />
+    <h2>Gestión de clientes</h2>
+    <p>Aquí podrás registrar, editar o eliminar clientes del sistema.</p>
+    <button class="add-btn" (click)="toggleForm()">+ Añadir cliente</button>
+        </div>
+     </section>
+    } @else {
+      <app-customers-form
+        [customer]="selectedCustomer()"
+        (cancel)="onCancel()"
+        (saved)="reloadTable()"
+      />
+    }
+  </aside>
+</section>
