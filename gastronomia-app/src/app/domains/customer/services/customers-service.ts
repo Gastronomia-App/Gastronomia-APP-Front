@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Customer, CustomerFilter } from '../models/Customer';
+import { Customer, CustomerFilter } from '../../../shared/models/customer.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Injectable({
