@@ -1,0 +1,58 @@
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Contacto</th>
+        <th>DNI</th>
+        <th>Descuento</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (c of paginatedCustomers(); track c.id) {
+        <tr>
+          <td>
+            <div class="client-info">
+              <div class="avatar">{{ c.name[0] | uppercase }}</div>
+              <div>
+                <div class="client-name">{{ c.name }} {{ c.lastName }}</div>
+                <div class="client-note">Cliente frecuente</div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <div class="contact-info">
+              <div class="email">{{ c.email }}</div>
+              <div class="phone">{{ c.phoneNumber }}</div>
+            </div>
+          </td>
+
+          <td>{{ c.dni }}</td>
+          <td>{{ c.discount }}%</td>
+
+          <td class="actions">
+            <button class="icon-btn edit-btn" (click)="onEdit(c)" title="Editar cliente">
+              <img src="assets/images/modify-icon.png" alt="Editar" />
+            </button>
+            <button class="icon-btn delete-btn" (click)="onDelete(c)" title="Eliminar cliente">
+              <img src="assets/images/delete-icon.png" alt="Eliminar" />
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="no-data">No hay clientes disponibles</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination-controls" *ngIf="customers.length > pageSize">
+  <button (click)="prevPage()" [disabled]="currentPage() === 0">Anterior</button>
+  <span>Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
+  <button (click)="nextPage()" [disabled]="currentPage() === totalPages() - 1">Siguiente</button>
+</div>
