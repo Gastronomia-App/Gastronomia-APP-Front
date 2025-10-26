@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SearchableList } from '../../../shared/components/searchable-list';
@@ -15,16 +15,15 @@ export class ProductForm implements OnInit {
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
   
-  // Data from backend - USA LOS MODELOS DIRECTAMENTE
+  onFormClosed = output<void>();
+  
   categories: Category[] = [];
-  availableComponents: Product[] = []; // Product ya tiene id, name, price, etc.
+  availableComponents: Product[] = [];
   availableProductGroups: ProductGroup[] = [];
   
-  // Selected items - USA LOS MODELOS DIRECTAMENTE
-  selectedComponents: ProductComponent[] = []; // Tiene id, name, quantity
+  selectedComponents: ProductComponent[] = [];
   selectedProductGroups: ProductGroup[] = [];
 
-  // Loading states
   isLoadingCategories = false;
   isLoadingComponents = false;
   isLoadingGroups = false;
@@ -46,7 +45,6 @@ export class ProductForm implements OnInit {
     this.loadProductGroups();
   }
 
-  // Load categories from backend
   private loadCategories(): void {
     this.isLoadingCategories = true;
     this.productService.getCategories().subscribe({
@@ -62,13 +60,11 @@ export class ProductForm implements OnInit {
     });
   }
 
-  // Load available components from backend
   private loadAvailableComponents(): void {
     this.isLoadingComponents = true;
     this.productService.getProducts().subscribe({
       next: (products) => {
-        // Simplemente usa los productos del backend
-        this.availableComponents = products;
+        this.availableComponents = Array.isArray(products) ? products : [];
         this.isLoadingComponents = false;
       },
       error: (error) => {
@@ -79,13 +75,11 @@ export class ProductForm implements OnInit {
     });
   }
 
-  // Load product groups from backend
   private loadProductGroups(): void {
     this.isLoadingGroups = true;
     this.productService.getProductGroups().subscribe({
       next: (groups) => {
-        // Simplemente usa los grupos del backend
-        this.availableProductGroups = groups;
+        this.availableProductGroups = Array.isArray(groups) ? groups : [];
         this.isLoadingGroups = false;
       },
       error: (error) => {
@@ -96,9 +90,7 @@ export class ProductForm implements OnInit {
     });
   }
 
-  // Handle component added
   onComponentAdded(item: Product): void {
-    // Convierte Product a ProductComponent
     const component: ProductComponent = {
       id: item.id,
       name: item.name,
@@ -107,12 +99,10 @@ export class ProductForm implements OnInit {
     this.selectedComponents = [...this.selectedComponents, component];
   }
 
-  // Handle component removed
   onComponentRemoved(itemId: number): void {
     this.selectedComponents = this.selectedComponents.filter(c => c.id !== itemId);
   }
 
-  // Handle component updated (for quantity changes)
   onComponentUpdated(item: ProductComponent): void {
     const index = this.selectedComponents.findIndex(c => c.id === item.id);
     if (index !== -1) {
@@ -120,17 +110,14 @@ export class ProductForm implements OnInit {
     }
   }
 
-  // Handle product group added
   onProductGroupAdded(item: ProductGroup): void {
     this.selectedProductGroups = [...this.selectedProductGroups, { ...item }];
   }
 
-  // Handle product group removed
   onProductGroupRemoved(itemId: number): void {
     this.selectedProductGroups = this.selectedProductGroups.filter(g => g.id !== itemId);
   }
 
-  // Submit form
   onSubmit(): void {
     if (this.productForm.valid) {
       const formValue = this.productForm.value;
@@ -156,37 +143,41 @@ export class ProductForm implements OnInit {
 
       this.productService.createProduct(formData).subscribe({
         next: (product) => {
-          console.log('Product created successfully:', product);
-          // TODO: Show success message, emit event to parent, etc.
+          console.log('✅ Product created successfully:', product);
+          this.resetForm();
           this.onClose();
         },
         error: (error) => {
-          console.error('Error creating product:', error);
-          // TODO: Show error message to user
+          console.error('❌ Error creating product:', error);
         }
       });
     }
   }
 
-  // Cancel form
-  onCancel(): void {
+  private resetForm(): void {
     this.productForm.reset({
+      name: '',
+      categoryId: '',
+      description: '',
+      price: '',
+      cost: '',
       active: true,
       controlStock: false,
       stock: 0
     });
     this.selectedComponents = [];
     this.selectedProductGroups = [];
+  }
+
+  onCancel(): void {
+    this.resetForm();
     this.onClose();
   }
 
-  // Close form
   onClose(): void {
-    // TODO: Emit event to parent component or navigate away
-    console.log('Closing form...');
+    this.onFormClosed.emit();
   }
 
-  // Getter for showing stock field
   get shouldShowStock(): boolean {
     return this.productForm.get('controlStock')?.value === true;
   }

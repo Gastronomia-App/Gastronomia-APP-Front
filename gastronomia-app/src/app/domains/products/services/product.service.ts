@@ -1,7 +1,36 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Category, Product, ProductGroup } from '../../../shared/models';
+
+export interface PageResponse<T> {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      sorted: boolean;
+      unsorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    sorted: boolean;
+    unsorted: boolean;
+    empty: boolean;
+  };
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -20,9 +49,11 @@ export class ProductService {
     return this.http.get<ProductGroup[]>(`${this.apiUrl}/groups`);
   }
 
-  // Get all products
+  // Get all products (extrae el array del objeto Page)
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products`);
+    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products`).pipe(
+      map(response => response.content)
+    );
   }
 
   // Get product by ID
