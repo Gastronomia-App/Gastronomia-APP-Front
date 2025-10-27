@@ -1,11 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemCard } from '../item-card';
 
 /**
  * Base constraint for items that can be used in the searchable list
- * Only requires id and name properties - all other properties are optional
  */
 export interface BaseSearchableItem {
   id: number;
@@ -13,8 +12,7 @@ export interface BaseSearchableItem {
 }
 
 /**
- * Generic searchable list component with selection
- * Manages search, filter, add, remove and update operations internally
+ * Generic searchable list component with selection management
  */
 @Component({
   selector: 'app-searchable-list',
@@ -42,15 +40,16 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   searchQuery = '';
   filteredItems: TAvailable[] = [];
 
-  /**
-   * Search items by name and exclude already selected ones
-   * Filters availableItems to show only matching non-selected items
-   */
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchQuery = input.value;
     
     if (this.searchQuery.trim() === '') {
+      this.filteredItems = [];
+      return;
+    }
+
+    if (!Array.isArray(this.availableItems)) {
       this.filteredItems = [];
       return;
     }
@@ -62,9 +61,6 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     );
   }
 
-  /**
-   * Handle Enter key to add first match from filtered results
-   */
   onEnter(event: Event): void {
     event.preventDefault();
     const firstMatch = this.getFirstMatch(this.filteredItems);
@@ -73,32 +69,20 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     }
   }
 
-  /**
-   * Get first item from filtered results (for Enter key functionality)
-   */
   private getFirstMatch<T>(filteredItems: T[]): T | null {
     return filteredItems.length > 0 ? filteredItems[0] : null;
   }
 
-  /**
-   * Add item to selection and clear search
-   */
   addItem(item: TAvailable): void {
     this.itemAdded.emit(item);
     this.searchQuery = '';
     this.filteredItems = [];
   }
 
-  /**
-   * Remove item from selection by ID
-   */
   removeItem(itemId: number): void {
     this.itemRemoved.emit(itemId);
   }
 
-  /**
-   * Handle quantity change and emit update event
-   */
   onQuantityChange(item: TSelected): void {
     this.itemUpdated.emit(item);
   }
