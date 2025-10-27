@@ -1,5 +1,6 @@
 <div class="page-container">
   <div class="page-content">
+    <!-- Top bar: Search + New Product Button -->
     <div class="top-bar">
       <div class="search-box">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
@@ -22,7 +23,21 @@
         Nuevo Producto
       </button>
     </div>
+
+    <!-- Sub-header: Uncomment to add filters, categories, etc.
+    <div class="sub-header">
+      <button class="filter-btn">Todos</button>
+      <button class="filter-btn">Activos</button>
+      <button class="filter-btn">Inactivos</button>
+      <select class="category-filter">
+        <option>Todas las categorías</option>
+        <option>Bebidas</option>
+        <option>Comidas</option>
+      </select>
+    </div>
+    -->
     
+    <!-- Table section: Will shrink automatically when sub-header is added -->
     <div class="table-section">
       <app-product-list [searchTerm]="searchTerm"></app-product-list>
     </div>

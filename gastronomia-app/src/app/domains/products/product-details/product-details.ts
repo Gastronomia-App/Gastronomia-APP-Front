@@ -1,4 +1,4 @@
-import { Component, inject, output, OnInit } from '@angular/core';
+import { Component, inject, output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ItemCard } from '../../../shared/components/item-card';
 import { ProductService } from '../services/product.service';
@@ -14,11 +14,13 @@ import { Category, Product } from '../../../shared/models';
 export class ProductDetails implements OnInit {
   private productService = inject(ProductService);
   private productFormService = inject(ProductFormService);
+  private cdr = inject(ChangeDetectorRef);
   
   onDetailsClosed = output<void>();
   
   product: Product | null = null;
   categories: Category[] = [];
+  categoryName: string = '-';
 
   ngOnInit(): void {
     this.loadCategories();
@@ -28,6 +30,10 @@ export class ProductDetails implements OnInit {
     this.productService.getCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
+        // Update category name if product is already loaded
+        if (this.product) {
+          this.updateCategoryName();
+        }
       },
       error: (error) => {
         console.error('❌ GET /api/categories - Error:', error);
@@ -38,12 +44,17 @@ export class ProductDetails implements OnInit {
 
   loadProduct(product: Product): void {
     this.product = product;
+    this.updateCategoryName();
   }
 
-  getCategoryName(): string {
-    if (!this.product?.categoryId) return '-';
+  private updateCategoryName(): void {
+    if (!this.product?.categoryId) {
+      this.categoryName = '-';
+      return;
+    }
     const category = this.categories.find(c => c.id === this.product?.categoryId);
-    return category?.name || '-';
+    this.categoryName = category?.name || '-';
+    this.cdr.detectChanges();
   }
 
   onEdit(): void {

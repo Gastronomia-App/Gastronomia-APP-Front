@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, HostListener, input, effect } from '@angular/core';
+import { Component, inject, OnInit, input, effect, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
@@ -11,7 +11,9 @@ import { Product } from '../../../shared/models';
   templateUrl: './product-list.html',
   styleUrl: './product-list.css'
 })
-export class ProductList implements OnInit {
+export class ProductList implements OnInit, AfterViewInit {
+  @ViewChild('tableBody') tableBody?: ElementRef<HTMLElement>;
+  
   private productService = inject(ProductService);
   private productFormService = inject(ProductFormService);
 
@@ -50,10 +52,38 @@ export class ProductList implements OnInit {
     });
   }
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const threshold = document.documentElement.scrollHeight - 100;
+  ngAfterViewInit(): void {
+    // Agregar listener de scroll al tbody
+    if (this.tableBody) {
+      const element = this.tableBody.nativeElement;
+      console.log('🔍 Table Body Element:', {
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+        offsetHeight: element.offsetHeight,
+        computedHeight: window.getComputedStyle(element).height,
+        overflow: window.getComputedStyle(element).overflowY,
+        productos: this.filteredProducts.length,
+        filas: element.querySelectorAll('tr').length
+      });
+      
+      console.log('📊 Parent Elements:', {
+        tableWrapper: element.closest('.table-wrapper')?.clientHeight,
+        table: element.closest('.table')?.clientHeight,
+        container: element.closest('.product-list-container')?.clientHeight
+      });
+      
+      this.tableBody.nativeElement.addEventListener('scroll', () => {
+        this.onTableScroll();
+      });
+    }
+  }
+
+  onTableScroll(): void {
+    if (!this.tableBody) return;
+    
+    const element = this.tableBody.nativeElement;
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const threshold = element.scrollHeight - 100;
 
     if (scrollPosition >= threshold && !this.isLoading && this.hasMore) {
       this.loadMore();
@@ -71,6 +101,19 @@ export class ProductList implements OnInit {
         this.hasMore = !response.last;
         this.isLoading = false;
         this.filterProducts(this.searchTerm());
+        
+        // Log after products are loaded
+        setTimeout(() => {
+          if (this.tableBody) {
+            const element = this.tableBody.nativeElement;
+            console.log('📦 After Products Loaded:', {
+              productos: this.filteredProducts.length,
+              scrollHeight: element.scrollHeight,
+              clientHeight: element.clientHeight,
+              canScroll: element.scrollHeight > element.clientHeight
+            });
+          }
+        }, 100);
       },
       error: (error) => {
         console.error('❌ GET /api/products - Error:', error);
