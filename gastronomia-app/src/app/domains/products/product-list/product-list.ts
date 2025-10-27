@@ -25,6 +25,7 @@ export class ProductList implements OnInit {
   totalPages = 0;
   totalElements = 0;
   hasMore = true;
+  activeProductId: number | null = null;
 
   constructor() {
     effect(() => {
@@ -42,6 +43,10 @@ export class ProductList implements OnInit {
     
     this.productFormService.productUpdated$.subscribe(() => {
       this.refreshProducts();
+    });
+
+    this.productFormService.activeProductId$.subscribe((id) => {
+      this.activeProductId = id;
     });
   }
 
@@ -104,6 +109,21 @@ export class ProductList implements OnInit {
         }
       });
     }
+  }
+
+  onView(product: Product): void {
+    this.productService.getProductById(product.id).subscribe({
+      next: (fullProduct) => {
+        if (!fullProduct.components) fullProduct.components = [];
+        if (!fullProduct.productGroups) fullProduct.productGroups = [];
+        
+        this.productFormService.viewProductDetails(fullProduct);
+      },
+      error: (error) => {
+        console.error(`❌ GET /api/products/${product.id} - Error:`, error);
+        this.productFormService.viewProductDetails(product);
+      }
+    });
   }
 
   onEdit(product: Product): void {
