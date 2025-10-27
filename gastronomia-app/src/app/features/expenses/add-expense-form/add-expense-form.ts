@@ -1,37 +1,67 @@
-import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Expense } from '../../../shared/models';
+import { Supplier } from '../../../shared/models/supplier.model';
 import { ExpenseService } from '../../../services/expense.service';
+import { SupplierService } from '../../../services/supplier.service';
+import { SelectDropdownComponent, SelectOption } from '../../../shared/components/select-dropdown';
 
 @Component({
   selector: 'app-add-expense-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SelectDropdownComponent],
   templateUrl: './add-expense-form.html',
   styleUrl: './add-expense-form.css',
 })
-export class AddExpenseForm {
+export class AddExpenseForm implements OnInit {
   private readonly expenseService = inject(ExpenseService);
+  private readonly supplierService = inject(SupplierService);
 
   @Output() close = new EventEmitter<void>();
   @Output() expenseCreated = new EventEmitter<void>();
 
   protected isLoading = signal(false);
   protected errorMessage = signal<string | null>(null);
+  protected suppliers = signal<SelectOption[]>([]);
 
   protected expense: Partial<Expense> = {
-    supplierName: '',
+    supplierId: 0,
     amount: 0,
     comment: '',
-    dateTime: this.getCurrentDateTime()
+    dateTime: ''
   };
 
   protected touched = {
-    supplierName: false,
+    supplierId: false,
     amount: false,
     dateTime: false
   };
+
+  ngOnInit(): void {
+    this.expense.dateTime = this.getCurrentDateTime();
+    this.loadSuppliers();
+  }
+
+  private loadSuppliers(): void {
+    this.supplierService.getAll().subscribe({
+      next: (response: any) => {
+        const suppliersArray = Array.isArray(response) ? response : (response.content || response.data || []);
+        
+        const options: SelectOption[] = suppliersArray
+          .filter((s: Supplier) => !s.deleted)
+          .map((s: Supplier) => ({
+            id: s.id,
+            name: s.tradeName || s.legalName
+          }));
+        
+        this.suppliers.set(options);
+      },
+      error: () => {
+        this.errorMessage.set('Error loading suppliers');
+      }
+    });
+  }
 
   private getCurrentDateTime(): string {
     const now = new Date();
@@ -47,10 +77,15 @@ export class AddExpenseForm {
     this.touched[field] = true;
   }
 
-  protected getSupplierNameError(): string | null {
-    if (!this.touched.supplierName) return null;
-    if (!this.expense.supplierName || this.expense.supplierName.trim() === '') {
-      return 'El proveedor es requerido';
+  protected onSupplierChange(supplierId: number | null): void {
+    this.expense.supplierId = supplierId ?? 0;
+    this.touched.supplierId = true;
+  }
+
+  protected getSupplierIdError(): string | null {
+    if (!this.touched.supplierId) return null;
+    if (!this.expense.supplierId || this.expense.supplierId <= 0) {
+      return 'Supplier is required';
     }
     return null;
   }
@@ -58,7 +93,7 @@ export class AddExpenseForm {
   protected getAmountError(): string | null {
     if (!this.touched.amount) return null;
     if (!this.expense.amount || this.expense.amount <= 0) {
-      return 'El monto debe ser mayor a 0';
+      return 'Amount must be greater than 0';
     }
     return null;
   }
@@ -66,17 +101,17 @@ export class AddExpenseForm {
   protected getDateTimeError(): string | null {
     if (!this.touched.dateTime) return null;
     if (!this.expense.dateTime) {
-      return 'La fecha y hora es requerida';
+      return 'Date and time are required';
     }
     return null;
   }
 
   private isFormValid(): boolean {
-    this.touched.supplierName = true;
+    this.touched.supplierId = true;
     this.touched.amount = true;
     this.touched.dateTime = true;
 
-    return !this.getSupplierNameError() && !this.getAmountError() && !this.getDateTimeError();
+    return !this.getSupplierIdError() && !this.getAmountError() && !this.getDateTimeError();
   }
 
   protected onSubmit(): void {
@@ -88,20 +123,19 @@ export class AddExpenseForm {
 
     this.isLoading.set(true);
 
-    const expenseData: Partial<Expense> = {
+    const expenseToSubmit: Partial<Expense> = {
       ...this.expense,
-      dateTime: this.expense.dateTime ? new Date(this.expense.dateTime).toISOString() : new Date().toISOString()
+      dateTime: this.expense.dateTime ? new Date(this.expense.dateTime).toISOString() : undefined
     };
 
-    this.expenseService.createExpense(expenseData).subscribe({
+    this.expenseService.createExpense(expenseToSubmit).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.resetForm();
         this.expenseCreated.emit();
       },
-      error: (error) => {
-        console.error('Error creating expense:', error);
-        this.errorMessage.set('Error al crear el gasto. Por favor, intente nuevamente.');
+      error: () => {
+        this.errorMessage.set('Error creating expense. Please try again.');
         this.isLoading.set(false);
       }
     });
@@ -109,13 +143,13 @@ export class AddExpenseForm {
 
   private resetForm(): void {
     this.expense = {
-      supplierName: '',
+      supplierId: 0,
       amount: 0,
       comment: '',
       dateTime: this.getCurrentDateTime()
     };
     this.touched = {
-      supplierName: false,
+      supplierId: false,
       amount: false,
       dateTime: false
     };
