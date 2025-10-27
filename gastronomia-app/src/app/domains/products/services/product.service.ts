@@ -27,6 +27,10 @@ export class ProductService {
     );
   }
 
+  getProductsPage(page: number = 0, size: number = 20): Observable<PageResponse<Product>> {
+    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products?page=${page}&size=${size}`);
+  }
+
   // Get product by ID
   getProductById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/products/${id}`);

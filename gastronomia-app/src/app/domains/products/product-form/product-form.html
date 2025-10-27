@@ -2,7 +2,7 @@
 <aside class="aside-form">
     <!-- Header -->
     <header class="aside-header flex justify-between align-center">
-        <h2>Nuevo producto</h2>
+        <h2>{{ isEditMode ? 'Editar producto' : 'Nuevo producto' }}</h2>
         <button class="btn-reset" (click)="onClose()">✕</button>
     </header>
 
@@ -92,6 +92,8 @@
     <!-- Footer actions -->
     <footer class="aside-footer">
         <button type="button" class="secondary" (click)="onCancel()">Cancelar</button>
-        <button type="submit" [disabled]="productForm.invalid" (click)="onSubmit()">Crear</button>
+        <button type="submit" [disabled]="productForm.invalid" (click)="onSubmit()">
+            {{ isEditMode ? 'Guardar' : 'Crear' }}
+        </button>
     </footer>
 </aside>

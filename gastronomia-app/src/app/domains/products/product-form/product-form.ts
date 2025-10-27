@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, output } from '@angular/core';
+import { Component, inject, OnInit, output, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SearchableList } from '../../../shared/components/searchable-list';
 import { ProductService } from '../services/product.service';
+import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, ProductComponent, ProductGroup } from '../../../shared/models';
 
 @Component({
@@ -14,6 +15,8 @@ import { Category, Product, ProductComponent, ProductGroup } from '../../../shar
 export class ProductForm implements OnInit {
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
+  private productFormService = inject(ProductFormService);
+  private cdr = inject(ChangeDetectorRef);
   
   onFormClosed = output<void>();
   
@@ -27,6 +30,9 @@ export class ProductForm implements OnInit {
   isLoadingCategories = false;
   isLoadingComponents = false;
   isLoadingGroups = false;
+  
+  editingProductId: number | null = null;
+  isEditMode = false;
 
   productForm = this.fb.group({
     name: ['', Validators.required],
@@ -53,7 +59,7 @@ export class ProductForm implements OnInit {
         this.isLoadingCategories = false;
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
+        console.error('❌ GET /api/categories - Error:', error);
         this.isLoadingCategories = false;
         this.categories = [];
       }
@@ -68,7 +74,7 @@ export class ProductForm implements OnInit {
         this.isLoadingComponents = false;
       },
       error: (error) => {
-        console.error('Error loading components:', error);
+        console.error('❌ GET /api/products (components) - Error:', error);
         this.isLoadingComponents = false;
         this.availableComponents = [];
       }
@@ -83,7 +89,7 @@ export class ProductForm implements OnInit {
         this.isLoadingGroups = false;
       },
       error: (error) => {
-        console.error('Error loading product groups:', error);
+        console.error('❌ GET /api/groups - Error:', error);
         this.isLoadingGroups = false;
         this.availableProductGroups = [];
       }
@@ -103,10 +109,14 @@ export class ProductForm implements OnInit {
     this.selectedComponents = this.selectedComponents.filter(c => c.id !== itemId);
   }
 
-  onComponentUpdated(item: ProductComponent): void {
+  onComponentUpdated(item: any): void {
     const index = this.selectedComponents.findIndex(c => c.id === item.id);
     if (index !== -1) {
-      this.selectedComponents[index] = { ...item };
+      this.selectedComponents[index] = { 
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity || 1
+      };
     }
   }
 
@@ -121,7 +131,7 @@ export class ProductForm implements OnInit {
   onSubmit(): void {
     if (this.productForm.valid) {
       const formValue = this.productForm.value;
-      const formData = {
+      const formData: any = {
         name: formValue.name || '',
         categoryId: Number(formValue.categoryId) || 0,
         description: formValue.description || undefined,
@@ -131,30 +141,81 @@ export class ProductForm implements OnInit {
         controlStock: formValue.controlStock ?? false,
         stock: Number(formValue.stock) || 0,
         components: this.selectedComponents.map(c => ({
-          id: c.id,
-          name: c.name,
+          productId: c.id,
           quantity: c.quantity || 1
         })),
-        productGroups: this.selectedProductGroups.map(g => ({
-          id: g.id,
-          name: g.name
-        }))
+        productGroupIds: this.selectedProductGroups.map(g => g.id)
       };
 
-      this.productService.createProduct(formData).subscribe({
-        next: (product) => {
-          console.log('✅ Product created successfully:', product);
-          this.resetForm();
-          this.onClose();
-        },
-        error: (error) => {
-          console.error('❌ Error creating product:', error);
-        }
-      });
+      if (this.isEditMode && this.editingProductId) {
+        console.log(`📤 PUT /api/products/${this.editingProductId} - Request:`, formData);
+        this.productService.updateProduct(this.editingProductId, formData).subscribe({
+          next: (product) => {
+            console.log(`📥 PUT /api/products/${this.editingProductId} - Response:`, product);
+            this.productFormService.notifyProductUpdated(product);
+            this.resetForm();
+            this.onClose();
+          },
+          error: (error) => {
+            console.error(`❌ PUT /api/products/${this.editingProductId} - Error:`, error);
+          }
+        });
+      } else {
+        console.log('📤 POST /api/products - Request:', formData);
+        this.productService.createProduct(formData).subscribe({
+          next: (product) => {
+            console.log('📥 POST /api/products - Response:', product);
+            this.productFormService.notifyProductCreated(product);
+            this.resetForm();
+            this.onClose();
+          },
+          error: (error) => {
+            console.error('❌ POST /api/products - Error:', error);
+          }
+        });
+      }
     }
   }
 
+  loadProduct(product: Product): void {
+    this.isEditMode = true;
+    this.editingProductId = product.id;
+    
+    this.productForm.patchValue({
+      name: product.name,
+      categoryId: product.categoryId?.toString() || '',
+      description: product.description || '',
+      price: product.price?.toString() || '',
+      cost: product.cost?.toString() || '',
+      active: product.active ?? true,
+      controlStock: product.controlStock ?? false,
+      stock: product.stock || 0
+    });
+
+    this.selectedComponents = [];
+    this.selectedProductGroups = [];
+
+    if (product.components && product.components.length > 0) {
+      this.selectedComponents = product.components.map(c => ({
+        id: c.id,
+        name: c.name,
+        quantity: c.quantity || 1
+      }));
+    }
+
+    if (product.productGroups && product.productGroups.length > 0) {
+      this.selectedProductGroups = product.productGroups.map(g => ({
+        id: g.id,
+        name: g.name
+      }));
+    }
+
+    this.cdr.detectChanges();
+  }
+
   private resetForm(): void {
+    this.isEditMode = false;
+    this.editingProductId = null;
     this.productForm.reset({
       name: '',
       categoryId: '',
