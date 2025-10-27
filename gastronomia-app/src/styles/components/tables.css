@@ -3,23 +3,246 @@
    Table styles for data display
    ============================================ */
 
-table {
+/* Container for lists with tables */
+.product-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-base);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  table-layout: fixed;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-th, td {
-  padding: var(--spacing-sm) var(--spacing-md);
+.table thead {
+  background: var(--color-primary-lightest);
+  color: var(--color-text);
+  flex-shrink: 0;
+  display: block;
+}
+
+.table thead tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table tbody {
+  flex: 1;
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  background: var(--color-surface);
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: var(--color-primary-lightest);
+}
+
+.table th {
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  height: 50px;
+  vertical-align: middle;
+  box-sizing: border-box;
+  line-height: 1;
 }
 
-th {
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.edit-btn,
+.delete-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.pagination-controls {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pagination-controls button {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.pagination-controls span {
   color: var(--color-text);
   font-weight: 600;
 }
 
-tbody tr:hover {
-  background-color: rgba(100, 217, 172, 0.1);
+.pagination-controls button:not(:disabled) {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+}
+
+.pagination-controls button:disabled {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-primary-light);
+  cursor: not-allowed;
+}
+
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.3rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.icon-btn img {
+  width: 44px;
+  height: 44px;
+  display: block;
+  filter: grayscale(0.2);
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.icon-btn:hover img {
+  transform: scale(1.15);
+  filter: brightness(1.1);
+}
+
+.edit-btn:hover img {
+  filter: drop-shadow(0 0 4px var(--color-primary));
+}
+
+.delete-btn:hover img {
+  filter: drop-shadow(0 0 4px var(--color-red));
+}
+
+.icon-btn:focus,
+.icon-btn:active {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+.icon-btn svg {
+  color: var(--color-text);
+  transition: color var(--transition-fast);
+}
+
+.edit-btn:hover svg {
+  color: var(--color-white);
+}
+
+.delete-btn:hover svg {
+  color: var(--color-white);
+}
+
+.edit-btn:hover {
+  background-color: var(--color-primary);
+  border-radius: 4px;
+}
+
+.delete-btn:hover {
+  background-color: var(--color-red);
+  border-radius: 4px;
+}
+
+/* Badge styles for table status cells */
+.badge-active {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--color-primary-lightest);
+  color: var(--color-primary-dark);
+}
+
+.badge-inactive {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+/* Loading and info states */
+.loading-spinner {
+  color: var(--color-primary);
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.results-info {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  background: var(--color-surface);
 }
