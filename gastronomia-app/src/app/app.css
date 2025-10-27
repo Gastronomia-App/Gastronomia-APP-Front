@@ -1,7 +1,8 @@
 :host {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 main {
@@ -13,10 +14,21 @@ main {
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+    min-height: 0;
 }
 
 main .content-area {
     flex: 1;
     min-width: 0;
-    overflow: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Ensure router-outlet children get full height */
+main .content-area > * {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
 }
