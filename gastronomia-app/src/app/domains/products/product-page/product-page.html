@@ -31,4 +31,8 @@
   @if (showProductForm()) {
     <app-product-form (onFormClosed)="closeProductForm()"></app-product-form>
   }
+
+  @if (showProductDetails()) {
+    <app-product-details (onDetailsClosed)="closeProductDetails()"></app-product-details>
+  }
 </div>

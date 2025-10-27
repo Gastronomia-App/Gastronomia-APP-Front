@@ -213,7 +213,7 @@ export class ProductForm implements OnInit {
     this.cdr.detectChanges();
   }
 
-  private resetForm(): void {
+  resetForm(): void {
     this.isEditMode = false;
     this.editingProductId = null;
     this.productForm.reset({
