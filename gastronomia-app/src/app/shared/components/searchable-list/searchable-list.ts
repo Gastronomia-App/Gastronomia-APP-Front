@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemCard } from '../item-card';
@@ -50,7 +50,6 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     }
 
     if (!Array.isArray(this.availableItems)) {
-      console.warn('availableItems is not an array:', this.availableItems);
       this.filteredItems = [];
       return;
     }
