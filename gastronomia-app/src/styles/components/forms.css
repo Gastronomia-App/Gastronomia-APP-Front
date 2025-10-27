@@ -103,6 +103,15 @@ input[type="checkbox"] {
   font-weight: 500;
 }
 
+/* Field hint - helper text */
+.field-hint {
+  display: block;
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 /* Input error state */
 input.error, 
 select.error, 
