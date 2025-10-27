@@ -17,20 +17,20 @@ export class ProductForm implements OnInit {
   private productService = inject(ProductService);
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
-  
+
   onFormClosed = output<void>();
-  
+
   categories: Category[] = [];
   availableComponents: Product[] = [];
   availableProductGroups: ProductGroup[] = [];
-  
+
   selectedComponents: ProductComponent[] = [];
   selectedProductGroups: ProductGroup[] = [];
 
   isLoadingCategories = false;
   isLoadingComponents = false;
   isLoadingGroups = false;
-  
+
   editingProductId: number | null = null;
   isEditMode = false;
 
@@ -112,7 +112,7 @@ export class ProductForm implements OnInit {
   onComponentUpdated(item: any): void {
     const index = this.selectedComponents.findIndex(c => c.id === item.id);
     if (index !== -1) {
-      this.selectedComponents[index] = { 
+      this.selectedComponents[index] = {
         id: item.id,
         name: item.name,
         quantity: item.quantity || 1
@@ -155,6 +155,7 @@ export class ProductForm implements OnInit {
             this.productFormService.notifyProductUpdated(product);
             this.resetForm();
             this.onClose();
+            this.productFormService.viewProductDetails(product);
           },
           error: (error) => {
             console.error(`❌ PUT /api/products/${this.editingProductId} - Error:`, error);
@@ -180,7 +181,7 @@ export class ProductForm implements OnInit {
   loadProduct(product: Product): void {
     this.isEditMode = true;
     this.editingProductId = product.id;
-    
+
     this.productForm.patchValue({
       name: product.name,
       categoryId: product.categoryId?.toString() || '',

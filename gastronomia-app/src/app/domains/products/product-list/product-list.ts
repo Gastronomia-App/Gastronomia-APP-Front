@@ -1,203 +1,186 @@
-import { Component, inject, OnInit, input, effect, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, inject, ViewChild, output, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
-import { Product } from '../../../shared/models';
+import { PaginationConfig, Product, TableColumn, TableFilter } from '../../../shared/models';
+import { Table, BaseTable } from '../../../shared/components/table';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-list',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Table],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css'
 })
-export class ProductList implements OnInit, AfterViewInit {
-  @ViewChild('tableBody') tableBody?: ElementRef<HTMLElement>;
-  
+export class ProductList extends BaseTable<Product> {
   private productService = inject(ProductService);
   private productFormService = inject(ProductFormService);
 
-  searchTerm = input<string>('');
+  // Output events para comunicación con el padre
+  onProductSelected = output<Product>();
+  onNewProductClick = output<void>();
+
+  // Filters configuration
+  filters: TableFilter<Product>[] = [
+    {
+      label: 'Precio Mínimo',
+      field: 'minPrice',
+      type: 'number',
+      placeholder: '0.00',
+      filterFn: (product, value) => {
+        if (!value || value === '') return true;
+        const minPrice = parseFloat(value);
+        return product.price >= minPrice;
+      }
+    },
+    {
+      label: 'Precio Máximo',
+      field: 'maxPrice',
+      type: 'number',
+      placeholder: '0.00',
+      filterFn: (product, value) => {
+        if (!value || value === '') return true;
+        const maxPrice = parseFloat(value);
+        return product.price <= maxPrice;
+      }
+    }
+  ];
   
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  isLoading = false;
-  currentPage = 0;
-  pageSize = 10;
-  totalPages = 0;
-  totalElements = 0;
-  hasMore = true;
-  activeProductId: number | null = null;
-
   constructor() {
-    effect(() => {
-      const term = this.searchTerm();
-      this.filterProducts(term);
-    });
-  }
-
-  ngOnInit(): void {
-    this.loadProducts();
+    super();
+    // Configure page size
+    this.tableService.setPageSize(20);
     
-    this.productFormService.productCreated$.subscribe(() => {
-      this.refreshProducts();
-    });
-    
-    this.productFormService.productUpdated$.subscribe(() => {
-      this.refreshProducts();
-    });
-
-    this.productFormService.activeProductId$.subscribe((id) => {
-      this.activeProductId = id;
-    });
-  }
-
-  ngAfterViewInit(): void {
-    // Agregar listener de scroll al tbody
-    if (this.tableBody) {
-      const element = this.tableBody.nativeElement;
-      console.log('🔍 Table Body Element:', {
-        scrollHeight: element.scrollHeight,
-        clientHeight: element.clientHeight,
-        offsetHeight: element.offsetHeight,
-        computedHeight: window.getComputedStyle(element).height,
-        overflow: window.getComputedStyle(element).overflowY,
-        productos: this.filteredProducts.length,
-        filas: element.querySelectorAll('tr').length
-      });
-      
-      console.log('📊 Parent Elements:', {
-        tableWrapper: element.closest('.table-wrapper')?.clientHeight,
-        table: element.closest('.table')?.clientHeight,
-        container: element.closest('.product-list-container')?.clientHeight
-      });
-      
-      this.tableBody.nativeElement.addEventListener('scroll', () => {
-        this.onTableScroll();
-      });
-    }
-  }
-
-  onTableScroll(): void {
-    if (!this.tableBody) return;
-    
-    const element = this.tableBody.nativeElement;
-    const scrollPosition = element.scrollTop + element.clientHeight;
-    const threshold = element.scrollHeight - 100;
-
-    if (scrollPosition >= threshold && !this.isLoading && this.hasMore) {
-      this.loadMore();
-    }
-  }
-
-  private loadProducts(): void {
-    this.isLoading = true;
-    this.productService.getProductsPage(this.currentPage, this.pageSize).subscribe({
-      next: (response) => {
-        this.products = response.content;
-        this.filteredProducts = [...this.products];
-        this.totalPages = response.totalPages;
-        this.totalElements = response.totalElements;
-        this.hasMore = !response.last;
-        this.isLoading = false;
-        this.filterProducts(this.searchTerm());
-        
-        // Log after products are loaded
-        setTimeout(() => {
-          if (this.tableBody) {
-            const element = this.tableBody.nativeElement;
-            console.log('📦 After Products Loaded:', {
-              productos: this.filteredProducts.length,
-              scrollHeight: element.scrollHeight,
-              clientHeight: element.clientHeight,
-              canScroll: element.scrollHeight > element.clientHeight
-            });
-          }
-        }, 100);
-      },
-      error: (error) => {
-        console.error('❌ GET /api/products - Error:', error);
-        this.isLoading = false;
-      }
-    });
-  }
-
-  private filterProducts(term: string): void {
-    if (!term || term.trim() === '') {
-      this.filteredProducts = [...this.products];
-    } else {
+    // Set custom filter function for products
+    this.tableService.setFilterFunction((product, term) => {
       const searchTerm = term.toLowerCase();
-      this.filteredProducts = this.products.filter(product =>
+      return (
         product.name.toLowerCase().includes(searchTerm) ||
-        product.description?.toLowerCase().includes(searchTerm)
+        (product.description?.toLowerCase().includes(searchTerm) ?? false)
       );
-    }
+    });
   }
 
-  loadMore(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.isLoading = true;
-      
-      this.productService.getProductsPage(this.currentPage, this.pageSize).subscribe({
-        next: (response) => {
-          this.products = [...this.products, ...response.content];
-          this.hasMore = !response.last;
-          this.isLoading = false;
-          this.filterProducts(this.searchTerm());
-        },
-        error: (error) => {
-          console.error('❌ GET /api/products (load more) - Error:', error);
-          this.isLoading = false;
+  // ==================== Required Abstract Method Implementations ====================
+
+  protected getColumns(): TableColumn<Product>[] {
+    return [
+      {
+        header: 'Nombre',
+        field: 'name',
+        sortable: true,
+        align: 'left'
+      },
+      {
+        header: 'Precio',
+        field: 'price',
+        sortable: true,
+        align: 'left',
+        formatter: (value: number) => `$${value.toFixed(2)}`
+      },
+      {
+        header: 'Estado',
+        field: 'active',
+        align: 'left',
+        template: 'badge',
+        badgeConfig: {
+          field: 'active',
+          truthyClass: 'badge-active',
+          falsyClass: 'badge-inactive',
+          truthyLabel: 'Activo',
+          falsyLabel: 'Inactivo'
         }
+      }
+    ];
+  }
+
+  protected fetchData(page: number, size: number) {
+    return this.productService.getProductsPage(page, size);
+  }
+
+  protected fetchItemById(id: number) {
+    return this.productService.getProductById(id);
+  }
+
+  protected deleteItem(id: number) {
+    return this.productService.deleteProduct(id);
+  }
+
+  protected getItemName(product: Product): string {
+    return product.name;
+  }
+
+  protected getItemId(product: Product): number {
+    return product.id;
+  }
+
+  protected onEditItem(product: Product): void {
+    // Ensure required arrays exist
+    if (!product.components) product.components = [];
+    if (!product.productGroups) product.productGroups = [];
+    
+    this.productFormService.editProduct(product);
+  }
+
+  protected onViewDetails(product: Product): void {
+    // Ensure required arrays exist
+    if (!product.components) product.components = [];
+    if (!product.productGroups) product.productGroups = [];
+    
+    this.productFormService.viewProductDetails(product);
+  }
+
+  // ==================== Custom Subscriptions ====================
+
+  protected override setupCustomSubscriptions(): void {
+    this.productFormService.activeProductId$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((id) => {
+        this.highlightedRowId = id;
       });
-    }
+
+    this.productFormService.productCreated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.onItemCreated();
+      });
+
+    this.productFormService.productUpdated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.onItemUpdated();
+      });
   }
 
-  onView(product: Product): void {
-    this.productService.getProductById(product.id).subscribe({
-      next: (fullProduct) => {
-        if (!fullProduct.components) fullProduct.components = [];
-        if (!fullProduct.productGroups) fullProduct.productGroups = [];
-        
-        this.productFormService.viewProductDetails(fullProduct);
-      },
-      error: (error) => {
-        console.error(`❌ GET /api/products/${product.id} - Error:`, error);
-        this.productFormService.viewProductDetails(product);
-      }
-    });
+  // ==================== Public API for Parent Component ====================
+
+  /**
+   * Handler for the action button click (New Product)
+   * Emits an event to the parent component
+   */
+  public onNewProduct(): void {
+    this.onNewProductClick.emit();
   }
 
-  onEdit(product: Product): void {
-    this.productService.getProductById(product.id).subscribe({
-      next: (fullProduct) => {
-        if (!fullProduct.components) fullProduct.components = [];
-        if (!fullProduct.productGroups) fullProduct.productGroups = [];
-        
-        this.productFormService.editProduct(fullProduct);
-      },
-      error: (error) => {
-        console.error(`❌ GET /api/products/${product.id} - Error:`, error);
-        this.productFormService.editProduct(product);
-      }
-    });
+  /**
+   * Permite al componente padre forzar un refresh de los datos
+   */
+  public refreshList(): void {
+    this.refreshData();
   }
 
-  onDelete(product: Product): void {
-    this.productService.deleteProduct(product.id).subscribe({
-      next: () => {
-        this.refreshProducts();
-      },
-      error: (error) => {
-        console.error(`❌ DELETE /api/products/${product.id} - Error:`, error);
-      }
-    });
+  /**
+   * Permite al componente padre establecer el término de búsqueda
+   */
+  public setSearchTerm(term: string): void {
+    this.searchTerm.set(term);
+    this.onSearch();
   }
 
-  private refreshProducts(): void {
-    this.currentPage = 0;
-    this.products = [];
-    this.loadProducts();
+  /**
+   * Permite al componente padre limpiar la búsqueda
+   */
+  public clearSearchTerm(): void {
+    this.clearSearch();
   }
 }

@@ -1,45 +1,8 @@
 <div class="page-container">
   <div class="page-content">
-    <!-- Top bar: Search + New Product Button -->
-    <div class="top-bar">
-      <div class="search-box">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-        </svg>
-        <input 
-          type="text" 
-          placeholder="Buscar productos..." 
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearch()"
-        />
-        @if (searchTerm) {
-          <button class="clear-btn" (click)="clearSearch()">✕</button>
-        }
-      </div>
-      <button class="btn btn-primary" (click)="openProductForm()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-        </svg>
-        Nuevo Producto
-      </button>
-    </div>
-
-    <!-- Sub-header: Uncomment to add filters, categories, etc.
-    <div class="sub-header">
-      <button class="filter-btn">Todos</button>
-      <button class="filter-btn">Activos</button>
-      <button class="filter-btn">Inactivos</button>
-      <select class="category-filter">
-        <option>Todas las categorías</option>
-        <option>Bebidas</option>
-        <option>Comidas</option>
-      </select>
-    </div>
-    -->
-    
-    <!-- Table section: Will shrink automatically when sub-header is added -->
+    <!-- Product list component with integrated search, filters, and action button -->
     <div class="table-section">
-      <app-product-list [searchTerm]="searchTerm"></app-product-list>
+      <app-product-list (onNewProductClick)="openProductForm()"></app-product-list>
     </div>
   </div>
 

@@ -1,5 +1,4 @@
 import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ProductList } from '../product-list/product-list';
 import { ProductForm } from '../product-form/product-form';
@@ -9,11 +8,12 @@ import { Product } from '../../../shared/models';
 
 @Component({
   selector: 'app-product-page',
-  imports: [ProductList, ProductForm, ProductDetails, FormsModule],
+  imports: [ProductList, ProductForm, ProductDetails],
   templateUrl: './product-page.html',
   styleUrl: './product-page.css',
 })
 export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
+  @ViewChild(ProductList) productList?: ProductList;
   @ViewChild(ProductForm) productFormComponent?: ProductForm;
   @ViewChild(ProductDetails) productDetailsComponent?: ProductDetails;
   
@@ -22,12 +22,13 @@ export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
   private pendingProduct?: Product;
   private pendingDetailsProduct?: Product;
   
-  searchTerm: string = '';
+  // UI state
   showProductForm = signal(false);
   showProductDetails = signal(false);
   currentProductId: number | null = null;
 
   ngOnInit(): void {
+    // Subscribe to product form service events
     this.subscriptions.add(
       this.productFormService.editProduct$.subscribe((product) => {
         this.showProductDetails.set(false);
@@ -39,10 +40,9 @@ export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
 
     this.subscriptions.add(
       this.productFormService.viewProductDetails$.subscribe((product) => {
+        // Toggle details if same product
         if (this.currentProductId === product.id && this.showProductDetails()) {
-          this.showProductDetails.set(false);
-          this.currentProductId = null;
-          this.productFormService.setActiveProductId(null);
+          this.closeProductDetails();
         } else {
           this.showProductForm.set(false);
           this.currentProductId = product.id;
@@ -58,6 +58,7 @@ export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
         this.showProductDetails.set(false);
         this.showProductForm.set(false);
         this.currentProductId = null;
+        this.productFormService.setActiveProductId(null);
       })
     );
   }
@@ -78,11 +79,14 @@ export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
     this.subscriptions.unsubscribe();
   }
 
+  // ==================== Form and Panel Management ====================
+
   openProductForm(): void {
     this.showProductDetails.set(false);
     this.showProductForm.set(true);
     this.currentProductId = null;
     this.productFormService.setActiveProductId(null);
+    
     setTimeout(() => {
       if (this.productFormComponent) {
         this.productFormComponent.resetForm();
@@ -101,11 +105,6 @@ export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
     this.currentProductId = null;
     this.productFormService.setActiveProductId(null);
   }
-
-  onSearch(): void {
-  }
-
-  clearSearch(): void {
-    this.searchTerm = '';
-  }
 }
+
+
