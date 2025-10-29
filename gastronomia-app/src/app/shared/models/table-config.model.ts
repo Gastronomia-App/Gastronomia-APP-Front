@@ -82,9 +82,9 @@ export interface PaginationConfig {
 /**
  * Sort configuration
  */
-export interface SortConfig {
+export interface SortConfig<T = any> {
   /** Field to sort by */
-  field: string;
+  field: keyof T | string;
   
   /** Sort direction */
   direction: 'asc' | 'desc';

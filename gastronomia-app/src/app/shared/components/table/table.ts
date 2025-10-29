@@ -70,13 +70,13 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   delete = output<T>();
   details = output<T>();
   loadMore = output<LoadMoreEvent>();
-  sort = output<SortConfig>();
+  sort = output<SortConfig<T>>();
   searchChange = output<string>();
   filtersChange = output<ActiveFilter[]>();
   actionButtonClick = output<void>();
 
   // Internal state
-  private sortState = signal<SortConfig | null>(null);
+  private sortState = signal<SortConfig<T> | null>(null);
   private scrollListener?: () => void;
   private isAutoLoading = false; // Prevent concurrent auto-loads
 
@@ -168,8 +168,8 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     const currentSort = this.sortState();
     if (currentSort && this.enableSort()) {
       result.sort((a, b) => {
-        const aValue = this.getNestedValue(a, currentSort.field);
-        const bValue = this.getNestedValue(b, currentSort.field);
+        const aValue = this.getNestedValue(a, String(currentSort.field));
+        const bValue = this.getNestedValue(b, String(currentSort.field));
 
         // Handle null/undefined values
         if (aValue == null && bValue == null) return 0;
@@ -335,7 +335,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     if (!column.sortable) return;
 
     const currentSort = this.sortState();
-    const field = String(column.field);
+    const field = column.field as keyof T;
 
     if (currentSort?.field === field) {
       // Same column: cycle through directions
@@ -343,17 +343,18 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
         // asc -> desc
         this.sortState.set({ field, direction: 'desc' });
       } else {
-        // desc -> null (clear sort)
-        this.sortState.set(null);
+        // desc -> asc
+        this.sortState.set({ field, direction: 'asc' });
       }
     } else {
       // New column: start with asc
       this.sortState.set({ field, direction: 'asc' });
     }
 
-    // Emit sort event (optional, for parent components that need it)
-    if (this.sortState()) {
-      this.sort.emit(this.sortState()!);
+    // Emit sort event for parent components that need it
+    const currentState = this.sortState();
+    if (currentState) {
+      this.sort.emit(currentState);
     }
   }
 
@@ -364,7 +365,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     if (!column.sortable) return '';
 
     const currentSort = this.sortState();
-    if (currentSort?.field !== String(column.field)) {
+    if (currentSort?.field !== column.field) {
       return '⇅'; // No sort
     }
 
