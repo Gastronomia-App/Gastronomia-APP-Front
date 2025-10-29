@@ -1,109 +1,11 @@
-<!-- Aside details container -->
+<!-- Aside detail container -->
 <aside class="aside-form">
-    <!-- Header -->
-    <header class="aside-header flex justify-between align-center">
-        <h2>Detalles del producto</h2>
-        <button class="btn-reset" (click)="onClose()">✕</button>
-    </header>
-
-    <!-- Details content -->
-    <div class="aside-content flex-column gap-md">
-
-        <!-- Main information section -->
-        <section class="flex-column gap-md">
-            <div class="detail-field">
-                <label>Nombre</label>
-                <p class="detail-value">{{ product?.name || '-' }}</p>
-            </div>
-
-            <div class="detail-field">
-                <label>Categoría</label>
-                <p class="detail-value">{{ categoryName }}</p>
-            </div>
-
-            <div class="detail-field">
-                <label>Precio</label>
-                <p class="detail-value">{{ product && product.price ? '$' + product.price : '-' }}</p>
-            </div>
-
-            <div class="detail-field">
-                <label>Costo</label>
-                <p class="detail-value">{{ product && product.cost ? '$' + product.cost : '-' }}</p>
-            </div>
-
-            <div class="detail-field">
-                <label>Descripción</label>
-                <p class="detail-value">{{ product?.description || '-' }}</p>
-            </div>
-        </section>
-
-        <!-- Configuration section -->
-        <section class="flex-column gap-md">
-            <h3 class="mt-2">Configuración</h3>
-            <div class="flex justify-between align-center">
-                <span>Activo</span>
-                <span class="status-badge" [class.active]="product?.active" [class.inactive]="!product?.active">
-                    {{ product?.active ? 'Sí' : 'No' }}
-                </span>
-            </div>
-            <div class="flex justify-between align-center">
-                <span>Controlar stock</span>
-                <span class="status-badge" [class.active]="product?.controlStock" [class.inactive]="!product?.controlStock">
-                    {{ product?.controlStock ? 'Sí' : 'No' }}
-                </span>
-            </div>
-
-            @if(product?.controlStock) {
-                <div class="detail-field">
-                    <label>Stock</label>
-                    <p class="detail-value">{{ product?.stock || 0 }}</p>
-                </div>
-            }
-        </section>
-
-        <!-- Composition section -->
-        <section class="flex-column gap-md">
-            <h3 class="mt-2">Composición</h3>
-
-            <div class="detail-field">
-                <label>Componentes</label>
-                @if (product && product.components && product.components.length > 0) {
-                    <div class="selected-items">
-                        @for (component of product.components; track component.id) {
-                            <app-item-card 
-                                [item]="component"
-                                [showQuantity]="true"
-                                [editableQuantity]="false"
-                                [showRemoveButton]="false">
-                            </app-item-card>
-                        }
-                    </div>
-                } @else {
-                    <p class="detail-value">Sin componentes</p>
-                }
-            </div>
-
-            <div class="detail-field">
-                <label>Grupos de opciones</label>
-                @if (product && product.productGroups && product.productGroups.length > 0) {
-                    <div class="selected-items">
-                        @for (group of product.productGroups; track group.id) {
-                            <app-item-card 
-                                [item]="group"
-                                [showRemoveButton]="false">
-                            </app-item-card>
-                        }
-                    </div>
-                } @else {
-                    <p class="detail-value">Sin grupos</p>
-                }
-            </div>
-        </section>
-    </div>
-
-    <!-- Footer actions -->
-    <footer class="aside-footer">
-        <button type="button" class="secondary" (click)="onClose()">Cerrar</button>
-        <button type="button" (click)="onEdit()">Editar</button>
-    </footer>
+  <!-- Generic Detail Component with integrated header and footer -->
+  <app-detail
+    [config]="detailConfig"
+    [data]="product()"
+    [showHeader]="true"
+    [showFooter]="true"
+    (detailClosed)="onClose()"
+  />
 </aside>

@@ -60,6 +60,7 @@ export class ProductForm implements OnInit {
   formConfig: FormConfig<Product> = {
     sections: [
       {
+        title: 'Información principal',
         fields: [
           {
             name: 'name',
@@ -249,11 +250,6 @@ export class ProductForm implements OnInit {
     });
   }
 
-  private updateComponentsConfig(): void {
-    // Components are now managed via dynamic components with signals
-    // No need for separate update method
-  }
-
   private loadProductGroups(): void {
     this.isLoadingGroups.set(true);
     this.productService.getProductGroups().subscribe({
@@ -271,11 +267,6 @@ export class ProductForm implements OnInit {
     });
   }
 
-  private updateProductGroupsConfig(): void {
-    // Product groups are now managed via dynamic components with signals
-    // No need for separate update method
-  }
-  
   private updateDynamicFieldsAndRerender(): void {
     const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
     if (compositionSection) {
@@ -414,9 +405,6 @@ export class ProductForm implements OnInit {
       })));
     }
 
-    this.updateComponentsConfig();
-    this.updateProductGroupsConfig();
-
     // Load data into form component
     const formComp = this.formComponent();
     if (formComp) {
@@ -431,9 +419,6 @@ export class ProductForm implements OnInit {
     this.editingProductId = null;
     this.selectedComponents.set([]);
     this.selectedProductGroups.set([]);
-    
-    this.updateComponentsConfig();
-    this.updateProductGroupsConfig();
 
     const formComp = this.formComponent();
     if (formComp) {
