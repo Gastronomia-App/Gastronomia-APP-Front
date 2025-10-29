@@ -22,3 +22,16 @@
 .panel-content {
   padding: var(--spacing-md);
 }
+
+.empty-state {
+  padding: var(--spacing-xl);
+  text-align: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.empty-state .text-muted {
+  font-style: italic;
+  margin: 0;
+}

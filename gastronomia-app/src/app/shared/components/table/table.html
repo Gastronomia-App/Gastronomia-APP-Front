@@ -1,0 +1,213 @@
+<div class="table-container">
+  <!-- Header con Search y Action Button -->
+  @if (enableSearch() || enableActionButton()) {
+    <div class="table-header">
+      <div class="header-top" [class.has-filters]="enableFilters() && filters().length > 0">
+        <!-- Search Box -->
+        @if (enableSearch()) {
+          <div class="search-box">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+            <input 
+              type="text" 
+              [placeholder]="searchPlaceholder()"
+              [value]="searchTerm()"
+              (input)="onSearchChange($any($event.target).value)"
+              class="search-input"
+            />
+            @if (searchTerm()) {
+              <button class="clear-search-btn" (click)="clearSearch()" title="Limpiar búsqueda">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+              </button>
+            }
+          </div>
+        }
+
+        <!-- Action Button -->
+        @if (enableActionButton()) {
+          <button class="action-button" (click)="onActionButtonClick()">
+            @if (actionButtonIcon()) {
+              <span [innerHTML]="actionButtonIcon()"></span>
+            }
+            {{ actionButtonLabel() }}
+          </button>
+        }
+      </div>
+
+      <!-- Filters Row -->
+      @if (enableFilters() && filters().length > 0) {
+        <div class="header-filters">
+          <div class="filters-container">
+            @for (filter of filters(); track filter.field) {
+              <div class="filter-item">
+                @if (filter.type === 'select') {
+                  <select 
+                    [value]="getFilterValue(fieldToString(filter.field)) || ''"
+                    (change)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
+                    class="filter-select">
+                    <option value="">{{ filter.label }}</option>
+                    @for (option of filter.options; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                }
+                
+                @if (filter.type === 'number' || filter.type === 'text') {
+                  <div class="filter-input-wrapper">
+                    <label class="filter-label">{{ filter.label }}</label>
+                    <input 
+                      [type]="filter.type"
+                      [placeholder]="filter.placeholder || ''"
+                      [value]="getFilterValue(fieldToString(filter.field)) || ''"
+                      (input)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
+                      class="filter-input"
+                    />
+                  </div>
+                }
+                
+                @if (filter.type === 'checkbox') {
+                  <label class="filter-checkbox">
+                    <input 
+                      type="checkbox"
+                      [checked]="getFilterValue(fieldToString(filter.field))"
+                      (change)="onFilterChange(fieldToString(filter.field), $any($event.target).checked)"
+                    />
+                    <span>{{ filter.label }}</span>
+                  </label>
+                }
+              </div>
+            }
+            
+            @if (hasActiveFilters()) {
+              <button class="clear-filters-btn" (click)="clearAllFilters()" title="Limpiar filtros">
+                Limpiar filtros
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="table-wrapper">
+    <table class="table">
+      <!-- Table Header -->
+      <thead>
+        <tr>
+          @for (column of columns(); track column.field) {
+            <th 
+              [style.width]="column.width"
+              [style.text-align]="column.align || 'left'"
+              [class.sortable]="enableSort() && column.sortable"
+              (click)="onSort(column)">
+              {{ column.header }}
+              @if (enableSort() && column.sortable) {
+                <span class="sort-icon">{{ getSortIcon(column) }}</span>
+              }
+            </th>
+          }
+          @if (hasActions()) {
+            <th class="actions-header">Opciones</th>
+          }
+          @if (hasDefaultActions()) {
+            <th class="actions-header">Opciones</th>
+          }
+        </tr>
+      </thead>
+
+      <!-- Table Body -->
+      <tbody #tableBody>
+        <!-- Empty State -->
+        @if (displayedData().length === 0 && !loading()) {
+          <tr>
+            <td [attr.colspan]="totalColumns()" class="empty-state">
+              {{ emptyMessage() }}
+            </td>
+          </tr>
+        }
+
+        <!-- Data Rows -->
+        @for (row of displayedData(); track trackByIdentifier($index, row); let idx = $index) {
+          <tr 
+            (click)="onRowClick(row, idx)"
+            [class.active-row]="isRowHighlighted(row)"
+            class="data-row">
+            
+            @for (column of columns(); track column.field) {
+              <td [style.text-align]="column.align || 'left'">
+                <!-- Badge Template -->
+                @if (column.template === 'badge' && column.badgeConfig) {
+                  @let badge = getBadgeValue(row, column);
+                  @if (badge) {
+                    <span [class]="badge.class">{{ badge.label }}</span>
+                  }
+                } @else {
+                  <!-- Default Value -->
+                  {{ getCellValue(row, column) }}
+                }
+              </td>
+            }
+
+            <!-- Actions Column -->
+            @if (hasActions()) {
+              <td>
+                <div class="actions" (click)="$event.stopPropagation()">
+                  @for (action of allActions(); track action.label) {
+                    @if (shouldShowAction(action, row)) {
+                      <button 
+                        class="icon-btn"
+                        [class]="action.class"
+                        [title]="action.label"
+                        (click)="onAction(action, row, $event)"
+                        [innerHTML]="action.icon">
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
+            }
+            @if (hasDefaultActions()) {
+              <td>
+                <div class="actions" (click)="$event.stopPropagation()">
+                  @for (action of defaultActions(); track action.label) {
+                    @if (shouldShowAction(action, row)) {
+                      <button 
+                        class="icon-btn"
+                        [class]="action.class"
+                        [title]="action.label"
+                        (click)="onAction(action, row, $event)"
+                        [innerHTML]="action.icon">
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
+            }
+          </tr>
+        }
+
+        <!-- Loading State -->
+        @if (loading()) {
+          <tr>
+            <td [attr.colspan]="totalColumns()" class="loading-state">
+              <div class="loading-spinner">Cargando más datos...</div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Info -->
+  @if (pagination()) {
+    <div class="pagination-info">
+      Mostrando {{ displayedData().length }} de {{ pagination()!.totalElements }} registros
+      @if (searchTerm() || hasActiveFilters()) {
+        <span class="filtered-info">(filtrados)</span>
+      }
+    </div>
+  }
+</div>
