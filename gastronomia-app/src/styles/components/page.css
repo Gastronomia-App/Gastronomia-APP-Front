@@ -99,7 +99,7 @@
   font-weight: 500;
 }
 
-/* Aside form wrapper */
+/* Aside panel wrapper - uses common styles from aside-panel.css */
 .aside-form {
   position: static;
   top: 0;
@@ -117,8 +117,9 @@
   overflow: hidden;
 }
 
-/* Ensure app-form takes full height */
-.aside-form app-form {
+/* Ensure app-form and app-detail take full height */
+.aside-form app-form,
+.aside-form app-detail {
   flex: 1;
   min-height: 0;
   display: flex;

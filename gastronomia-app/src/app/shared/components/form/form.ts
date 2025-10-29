@@ -81,6 +81,9 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
     isLoading: false
   });
 
+  // Section collapse state - Map of section index to collapsed state
+  collapsedSections = signal<Set<number>>(new Set());
+
   // Computed
   visibleSections = computed(() => {
     const formValue = this.form?.value || {};
@@ -122,6 +125,17 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
         editingId: this.editingId() || undefined
       }));
     });
+
+    // Effect to re-render dynamic components when initial data or config changes
+    effect(() => {
+      const data = this.initialData();
+      const cfg = this.config();
+      
+      // Track dependencies - re-render when data or config changes
+      if (this.dynamicContainers && (data || cfg)) {
+        this.renderDynamicComponents();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -130,11 +144,8 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
   }
   
   ngAfterViewInit(): void {
-    // Render dynamic components after view is initialized
-    setTimeout(() => {
-      this.renderDynamicComponents();
-      this.cdr.detectChanges();
-    }, 0);
+    // Initial render of dynamic components (no setTimeout needed)
+    this.renderDynamicComponents();
     
     // Register cleanup with DestroyRef
     this.destroyRef.onDestroy(() => {
@@ -285,6 +296,28 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
    */
   onClose(): void {
     this.formClose.emit();
+  }
+
+  /**
+   * Toggle section collapse state
+   */
+  toggleSection(index: number): void {
+    this.collapsedSections.update(collapsed => {
+      const newSet = new Set(collapsed);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Check if section is collapsed
+   */
+  isSectionCollapsed(index: number): boolean {
+    return this.collapsedSections().has(index);
   }
 
   /**
