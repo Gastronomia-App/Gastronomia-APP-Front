@@ -1,0 +1,112 @@
+.select-dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.select-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #1f2937);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required-indicator {
+  color: var(--error, #ef4444);
+  font-weight: 600;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-input {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary, #1f2937);
+  background-color: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.select-input:hover:not(:disabled) {
+  border-color: var(--primary, #3b82f6);
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: var(--primary, #3b82f6);
+  box-shadow: 0 0 0 3px var(--primary-light, rgba(59, 130, 246, 0.1));
+}
+
+.select-input:disabled {
+  background-color: var(--bg-disabled, #f3f4f6);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.select-wrapper.disabled {
+  opacity: 0.6;
+}
+
+.select-wrapper.has-error .select-input {
+  border-color: var(--error, #ef4444);
+}
+
+.select-wrapper.has-error .select-input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--text-secondary, #6b7280);
+  pointer-events: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.select-wrapper:hover:not(.disabled) .select-arrow {
+  color: var(--primary, #3b82f6);
+}
+
+.select-wrapper.disabled .select-arrow {
+  opacity: 0.5;
+}
+
+.error-message {
+  font-size: 0.75rem;
+  color: var(--error, #ef4444);
+  margin-top: -0.25rem;
+}
+
+/* Select option styles */
+.select-input option {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.select-input option:first-child {
+  color: var(--text-secondary, #9ca3af);
+}
+
+/* Responsive - prevents iOS zoom */
+@media (max-width: 640px) {
+  .select-input {
+    font-size: 1rem;
+  }
+}

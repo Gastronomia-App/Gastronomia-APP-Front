@@ -25,6 +25,23 @@ button:disabled {
   opacity: 0.6;
 }
 
+/* Primary button with enhanced styles */
+.btn-primary {
+  background-color: var(--color-primary-dark);
+  color: var(--color-white);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-base);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 /* Secondary button */
 button.secondary {
   background-color: var(--color-surface);
@@ -57,4 +74,10 @@ button.danger:hover {
 
 .btn-reset:hover {
   background: none;
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: var(--font-sm);
 }

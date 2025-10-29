@@ -1,0 +1,44 @@
+<fieldset>
+    <label>{{ label }}</label>
+
+    <input 
+        type="text" 
+        class="search-input" 
+        [placeholder]="placeholder"
+        [value]="searchQuery" 
+        (input)="onSearch($event)"
+        (keydown.enter)="onEnter($event)" 
+        [disabled]="isLoading" />
+
+    @if(isLoading) {
+        <div class="loading-message">Cargando...</div>
+    }
+
+    @if(filteredItems.length > 0) {
+        <div class="item-dropdown panel">
+            @for(item of filteredItems; track item.id) {
+                <div class="item" (click)="addItem(item)">
+                    <span>{{ item.name }}</span>
+                    @if(showPrice && $any(item).price != null) {
+                        <span class="item-price">${{ $any(item).price | number:'1.2-2' }}</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if(selectedItems.length > 0) {
+        <div class="selected-items">
+            @for(item of selectedItems; track item.id) {
+                <app-item-card
+                    [item]="item"
+                    [showQuantity]="showQuantity"
+                    [showPrice]="showPrice"
+                    [showSubtotal]="showSubtotal"
+                    (itemUpdated)="onQuantityChange($event)"
+                    (itemRemoved)="removeItem($event)">
+                </app-item-card>
+            }
+        </div>
+    }
+</fieldset>
