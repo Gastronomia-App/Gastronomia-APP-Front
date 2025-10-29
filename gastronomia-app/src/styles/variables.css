@@ -25,6 +25,8 @@
 
   --color-text: #22332D;
   --color-text-muted: #b2cecd;
+  --color-text-light: #718484;
+  --color-danger: var(--color-red);
   --color-border: #DCE5E0;
 
   /*   Shadows  */

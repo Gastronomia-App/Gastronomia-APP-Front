@@ -1,95 +1,11 @@
 /* ============================================
    GENERIC FORM COMPONENT
    Reusable form with dynamic field rendering
-   Matches aside-form.css and forms.css styling
+   Common panel styles are in aside-panel.css
    ============================================ */
 
-/* Host element - must take full height */
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Form wrapper - contains header, form, and footer */
-.form-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--color-surface);
-  overflow: hidden;
-}
-
-/* Form header */
-.form-header {
-  background-color: var(--color-primary-lightest);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border);
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.form-header h2 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-  line-height: 1;
-}
-
-.form-header .btn-close {
-  font-size: 1.5rem;
-  color: var(--color-text);
-  padding: var(--spacing-xs);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-.form-header .btn-close:hover {
-  color: var(--color-primary-light);
-}
-
-/* Form element wrapper - handles overflow */
-form.form-container {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-lg);
-  gap: var(--spacing-lg);
-  min-height: 0;
-}
-
-/* Sections */
-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.section-title {
-  font-size: var(--font-base);
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* Fields container - single column layout like original */
-.fields-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
+/* Import common panel styles */
+@import './aside-panel.css';
 
 /* Fieldsets */
 fieldset {
@@ -142,7 +58,7 @@ textarea:focus {
 input::placeholder,
 select::placeholder,
 textarea::placeholder {
-  color: rgb(175, 173, 173);
+  color: var(--color-secondary-light)
 }
 
 input:read-only,
@@ -271,7 +187,7 @@ input[type='radio']:disabled {
 /* Field error styling */
 .field-error {
   color: var(--color-danger);
-  font-size: var(--font-sm);
+  font-size: var(--font-xs);
   margin-top: 0.25rem;
   display: block;
   font-weight: 500;
@@ -284,33 +200,6 @@ input[type='radio']:disabled {
   margin-top: 0.25rem;
   font-style: italic;
   display: block;
-}
-
-/* Form footer */
-.form-footer {
-  border-top: 1px solid var(--color-border);
-  background-color: var(--color-bg);
-  padding: var(--spacing-md) var(--spacing-lg);
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.form-footer button {
-  flex: 1;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-sm);
-  font-weight: 600;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.form-footer button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 /* Custom field container */
@@ -374,19 +263,4 @@ input[type='radio']:disabled {
   background-color: var(--color-bg-secondary);
   cursor: not-allowed;
   opacity: 0.6;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .fields-container {
-    gap: var(--spacing-sm);
-  }
-
-  .form-footer {
-    flex-direction: column;
-  }
-
-  .form-footer button {
-    width: 100%;
-  }
 }
