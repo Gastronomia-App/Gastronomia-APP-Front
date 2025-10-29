@@ -1,32 +1,41 @@
+import { Component } from '@angular/core';
+import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-login-page-component',
-  imports: [CommonModule, FormsModule],
+  selector: 'app-login',
+  standalone: true,
   templateUrl: './login.html',
   styleUrl: './login.css',
+  imports: [ReactiveFormsModule, CommonModule]
 })
-export class LoginPageComponent {
-  private auth = inject(AuthService);
-  private router = inject(Router);
+export class LoginComponent {
+  form: FormGroup;
+  loading = false;
+  error?: string;
 
-  username = '';
-  password = '';
-  loading = signal(false);
-  error = signal<string | null>(null);
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+    this.form = this.fb.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required]
+    });
+  }
 
-  submit(e: Event) {
-    e.preventDefault();
-    this.loading.set(true);
-    this.error.set(null);
+  submit() {
+    if (this.form.invalid) return;
 
-    this.auth.login({ username: this.username, password: this.password }).subscribe({
-      next: () => this.router.navigateByUrl('/'),
-      error: () => { this.error.set('Usuario o contraseña inválidos'); this.loading.set(false); }
+    this.loading = true;
+    this.error = undefined;
+
+    this.auth.login(this.form.value as any).subscribe({
+      next: () => this.router.navigateByUrl('/employees/list'),
+      error: (e) => {
+        this.error = e?.error?.message ?? 'Credenciales inválidas';
+        this.loading = false;
+      }
     });
   }
 }
+

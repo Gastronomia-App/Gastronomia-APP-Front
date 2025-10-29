@@ -2,4 +2,4 @@
 // Export all components, services, and utilities from the auth domain
 
 // Components
-export { LoginPageComponent } from './login/login';
+export { LoginComponent as LoginPageComponent } from './login/login';

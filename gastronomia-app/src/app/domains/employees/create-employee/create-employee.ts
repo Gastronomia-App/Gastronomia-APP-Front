@@ -1,88 +1,80 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
+import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { EmployeeApi } from '../services/employee-api';
-import { Employee, Role } from '../../../core/models/employee.model';
+import { Role } from '../../../shared/models/role.enum';
 
 @Component({
   selector: 'app-create-employee',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './create-employee.html',
-  styleUrls: ['./create-employee.css']
+  styleUrl: './create-employee.css',
+  imports: [ReactiveFormsModule, CommonModule]
 })
-export class CreateEmployeePageComponent {
-  private fb = inject(FormBuilder);
-  private employeeApi = inject(EmployeeApi);
-  private router = inject(Router);
-
+export class CreateEmployeeComponent {
+  form: FormGroup;
   loading = false;
-  
-  // Roles disponibles en español (sin ADMIN)
+  error?: string;
   roles = [
-    { value: 'WAITER', label: 'Mozo' },
-    { value: 'CASHIER', label: 'Cajero' }
+    { value: 'OWNER', label: 'Propietario' },
+    { value: 'ADMIN', label: 'Administrador' },
+    { value: 'CASHIER', label: 'Cajero' },
+    { value: 'WAITER', label: 'Mozo' }
   ];
 
-  form: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.maxLength(50)]],
-    lastName: ['', [Validators.required, Validators.maxLength(50)]],
-    dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
-    email: ['', [Validators.required, Validators.email]],
-    phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+?54)?[\s\-]?9?[\s\-]?(11|[2368]\d{1,2})[\s\-]?\d{3,4}[\s\-]?\d{4}$/)]],
-    username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
-    password: ['', [
-      Validators.required, 
-      Validators.minLength(8),
-      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-])[A-Za-z\d@$!%*?&#._-]{8,}$/)
-    ]],
-    role: ['', Validators.required] // Vacío por defecto
-  });
-
-  get f() {
-    return this.form.controls as any;
+  constructor(
+    private fb: FormBuilder,
+    private api: EmployeeApi,
+    private router: Router
+  ) {
+    this.form = this.fb.group({
+      name: ['', Validators.required],
+      lastName: ['', Validators.required],
+      dni: ['', [Validators.required]],
+      email: ['', [Validators.email]],
+      phoneNumber: [''],
+      username: ['', Validators.required],
+      password: ['', Validators.required],
+      role: ['WAITER', Validators.required]
+    });
   }
 
-  // Validación específica para mostrar mensajes detallados de contraseña
-  getPasswordError(): string {
-    const password = this.f.password;
-    if (!password.touched) return '';
-    if (password.hasError('required')) return 'La contraseña es requerida.';
-    if (password.hasError('minlength')) return 'Mínimo 8 caracteres.';
-    if (password.hasError('pattern')) {
-      const value = password.value || '';
-      if (!/(?=.*[a-z])/.test(value)) return 'Debe contener al menos una minúscula.';
-      if (!/(?=.*[A-Z])/.test(value)) return 'Debe contener al menos una mayúscula.';
-      if (!/(?=.*\d)/.test(value)) return 'Debe contener al menos un número.';
-      if (!/(?=.*[@$!%*?&#._-])/.test(value)) return 'Debe contener al menos un símbolo (@$!%*?&#._-).';
-    }
-    return '';
+  get f() {
+    return {
+      name: this.form.get('name')!,
+      lastName: this.form.get('lastName')!,
+      dni: this.form.get('dni')!,
+      email: this.form.get('email')!,
+      phoneNumber: this.form.get('phoneNumber')!,
+      username: this.form.get('username')!,
+      password: this.form.get('password')!,
+      role: this.form.get('role')!
+    };
   }
 
   submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const newEmployee: Employee = {
-      ...this.form.value,
-      deleted: false
-    };
+    if (this.form.invalid) return;
 
     this.loading = true;
-    this.employeeApi.create(newEmployee).subscribe({
-      next: () => {
+    this.error = undefined;
+
+    const dto = this.form.value;
+
+    this.api.create(dto).subscribe({
+      next: () => this.router.navigateByUrl('/employees/list'),
+      error: (e) => {
+        this.error = e?.error?.message ?? 'No se pudo crear el empleado';
         this.loading = false;
-        alert('Empleado creado correctamente');
-        this.router.navigateByUrl('/employees'); 
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error('Error al crear empleado:', err);
-        alert('Hubo un error al crear el empleado');
       }
     });
+  }
+
+  getPasswordError(): string | null {
+    const ctrl = this.f.password;
+    if (ctrl.touched && ctrl.invalid) {
+      return 'Contraseña requerida';
+    }
+    return null;
   }
 }

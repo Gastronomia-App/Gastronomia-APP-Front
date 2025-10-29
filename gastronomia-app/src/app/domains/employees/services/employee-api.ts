@@ -1,36 +1,41 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../enviroments/environment.development';
-import { Employee } from '../../../core/models/employee.model';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../enviroments/environment';
 import { Observable } from 'rxjs';
+import { Employee } from '../../../shared/models/employee.model';
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // page index
+  size: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeApi {
-  private http = inject(HttpClient);
-  private readonly base = environment.apiBase;
+  private base = `${environment.apiBaseUrl}/employees`;
 
-  // GET /employees
-  findAll(): Observable<Employee[]> {
-    return this.http.get<Employee[]>(`${this.base}/employees`);
+  constructor(private http: HttpClient) {}
+
+  list(page=0, size=10, sort='id,asc'): Observable<Page<Employee>> {
+    const params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
+    return this.http.get<Page<Employee>>(this.base, { params });
   }
 
-  // GET /employees/:id
-  findById(id: number): Observable<Employee> {
-    return this.http.get<Employee>(`${this.base}/employees/${id}`);
+  create(dto: Employee): Observable<Employee> {
+    return this.http.post<Employee>(this.base, dto);
   }
 
-  // POST /employees
-  create(employee: Employee): Observable<Employee> {
-    return this.http.post<Employee>(`${this.base}/employees`, employee);
+  getById(id: number): Observable<Employee> {
+    return this.http.get<Employee>(`${this.base}/${id}`);
   }
 
-  // PUT /employees/:id
-  update(id: number, employee: Employee): Observable<Employee> {
-    return this.http.put<Employee>(`${this.base}/employees/${id}`, employee);
+  update(id: number, dto: Employee): Observable<Employee> {
+    return this.http.put<Employee>(`${this.base}/${id}`, dto);
   }
 
-  // DELETE /employees/:id
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/employees/${id}`);
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

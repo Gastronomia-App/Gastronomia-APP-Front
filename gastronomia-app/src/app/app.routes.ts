@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './domains/auth/login/login';
+import { LoginPageComponent } from './domains/auth';
 import { CreateEmployeePageComponent } from './domains/employees';
 import { authGuard } from './core/guards/auth.guard';
 

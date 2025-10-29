@@ -1,58 +1,71 @@
-import { inject, Injectable } from "@angular/core";
-import { Employee } from "../models/employee.model";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { environment } from "../../../enviroments/environment.development";
-import { map, tap } from "rxjs/operators";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { environment } from '../../../enviroments/environment';
+import { LoginRequestDTO, LoginResponseDTO, AuthSession, mapLoginResponseToSession } from '../../shared/models/auth.model';
 
-
-interface LoginResult{
-    token: string;
-    employee: Employee;
-}
+const TOKEN_KEY = 'access_token';
+const SESSION_KEY = 'auth_session';
 
 @Injectable({ providedIn: 'root' })
-export class AuthService{
-    private http = inject(HttpClient);
-    private TOKEN = 'token';
-    private EMP = 'employee'; 
+export class AuthService {
+  private base = `${environment.apiBaseUrl}/employees`;
 
-    login(credentials: {username:string; password:string}){
-        const params = new HttpParams()
-        .set('username', credentials.username)
-        .set('password', credentials.password);
-    
+  // Sesión reactiva para que el resto de la app pueda escuchar cambios
+  private sessionSubject = new BehaviorSubject<AuthSession | null>(this.restoreSession());
+  session$ = this.sessionSubject.asObservable();
 
-        return this.http.get<Employee[]>(`${environment.apiBase}/employees`, { params }).pipe(
-            map(list => {
-            if (list.length !==1) throw new Error('invalid');
-            const employee = list[0];
-            const token = btoa(`${employee.username}:${Date.now()}`);
-            const{password, ...safeEmployee}=employee as any;
-            return {token, employee: safeEmployee} as LoginResult
-        }), 
-        tap(res => this.setSession(res))
-        );
-    }
-    
-    setSession(res: LoginResult) {
-        sessionStorage.setItem(this.TOKEN, res.token);
-        sessionStorage.setItem(this.EMP, JSON.stringify(res.employee));
-    }
+  constructor(private http: HttpClient) {}
 
-    getToken() { 
-        return sessionStorage.getItem(this.TOKEN); 
-    }
+  // --------- Login / Logout ---------
+  login(body: LoginRequestDTO): Observable<AuthSession> {
+    return this.http.post<LoginResponseDTO>(`${this.base}/login`, body).pipe(
+      tap(res => {
+        // Guardar token crudo por compatibilidad con el interceptor
+        localStorage.setItem(TOKEN_KEY, res.token);
 
-    getEmployee(): Employee | null {
-        const raw = sessionStorage.getItem(this.EMP);
-        return raw ? JSON.parse(raw) as Employee : null;
-    }
+        // Construir y guardar sesión (username / role, etc.)
+        const session = mapLoginResponseToSession(res);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
-    isLoggedIn() { 
-        return !!this.getToken(); 
-    }
+        // Emitir nueva sesión
+        this.sessionSubject.next(session);
+      }),
+      map(res => mapLoginResponseToSession(res))
+    );
+  }
 
-    logout() { 
-        sessionStorage.removeItem(this.TOKEN); sessionStorage.removeItem(this.EMP);
+  logout(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    this.sessionSubject.next(null);
+  }
+
+  // --------- Helpers de autenticación ---------
+  get token(): string | null {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.token;
+  }
+
+  get session(): AuthSession | null {
+    return this.sessionSubject.value;
+  }
+
+  // Útil para headers manuales (si alguna vez no pasa por el interceptor)
+  getAuthorizationHeader(): { [k: string]: string } | {} {
+    return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+  }
+
+  // --------- Restaurar sesión al iniciar la app ---------
+  private restoreSession(): AuthSession | null {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      return raw ? (JSON.parse(raw) as AuthSession) : null;
+    } catch {
+      return null;
     }
+  }
 }

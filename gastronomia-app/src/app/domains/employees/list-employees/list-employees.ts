@@ -1,73 +1,59 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { catchError, finalize, of } from 'rxjs';
-import { Employee } from '../../../core/models/employee.model';
-import { EmployeeApi } from '../services/employee-api';
+import { EmployeeApi, Page } from '../services/employee-api';
+import { Employee } from '../../../shared/models/employee.model';
 
 @Component({
   selector: 'app-list-employees',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './list-employees.html',
-  styleUrl: './list-employees.css'
+  styleUrl: './list-employees.css',
+  imports: [CommonModule, FormsModule]
 })
 export class ListEmployeesComponent implements OnInit {
-  private api = inject(EmployeeApi);
-
-  employees: Employee[] = [];
-  filtered: Employee[] = [];
-
+  page?: Page<Employee>;
   loading = false;
   errorMsg = '';
   q = '';
+  filtered: Employee[] = [];
 
-  ngOnInit(): void {
-    this.load();
-  }
+  constructor(private api: EmployeeApi) {}
 
-  load(): void {
+  ngOnInit() { this.load(); }
+
+  load(page=0) {
     this.loading = true;
     this.errorMsg = '';
-
-    this.api.findAll()
-      .pipe(
-        catchError(() => {
-          this.errorMsg = 'No se pudo cargar la lista de empleados.';
-          return of([] as Employee[]);
-        }),
-        finalize(() => this.loading = false)
-      )
-      .subscribe((data) => {
-        this.employees = data ?? [];
-        this.applyFilter();
-      });
-  }
-
-  applyFilter(): void {
-    const term = this.q.trim().toLowerCase();
-    if (!term) {
-      this.filtered = [...this.employees];
-      return;
-    }
-
-    this.filtered = this.employees.filter(e => {
-      const check = (v?: string | number | boolean) =>
-        (v ?? '').toString().toLowerCase().includes(term);
-
-      return (
-        check(e.name) ||
-        check(e.lastname) ||
-        check(e.username) ||
-        check(e.dni)
-      );
+    this.api.list(page, 10, 'id,asc').subscribe({
+      next: (p) => { 
+        this.page = p; 
+        this.filtered = p.content;
+        this.loading = false; 
+      },
+      error: (e) => { 
+        this.errorMsg = 'Error al cargar empleados';
+        this.loading = false; 
+      }
     });
   }
 
-  resetFilter(): void {
+  applyFilter() {
+    if (!this.page) return;
+    const query = this.q.toLowerCase().trim();
+    this.filtered = this.page.content.filter(e => 
+      e.name.toLowerCase().includes(query) ||
+      e.lastName.toLowerCase().includes(query) ||
+      e.username.toLowerCase().includes(query) ||
+      e.email?.toLowerCase().includes(query)
+    );
+  }
+
+  resetFilter() {
     this.q = '';
-    this.applyFilter();
+    if (this.page) {
+      this.filtered = this.page.content;
+    }
   }
 
   isActive(e: Employee): boolean {
