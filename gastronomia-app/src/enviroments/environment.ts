@@ -1,4 +1,5 @@
 export const environment = {
-  production: true,
-  apiBase: 'http://localhost:3000'
+  production: false,
+  apiBaseUrl: 'http://localhost:8080/api',
+  tokenStorageKey: 'access_token'
 };
