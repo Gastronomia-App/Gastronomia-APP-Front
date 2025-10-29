@@ -1,0 +1,610 @@
+/* ============================================
+   TABLE COMPONENT - Complete Styles
+   Modern, self-contained table with search & filters
+   ============================================ */
+
+/* ============================================
+   LAYOUT - Container & Structure
+   ============================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.table-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+/* ============================================
+   HEADER - Search, Filters & Action Button
+   ============================================ */
+.table-header {
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-light);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-top.has-filters {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Search Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+  transition: border-color 0.2s ease;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-lightest);
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.clear-search-btn {
+  border: none;
+  background: transparent;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clear-search-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+/* Action Button */
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 38px;
+  box-shadow: var(--shadow-light);
+}
+
+.action-button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.action-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Filters Row */
+.header-filters {
+  padding-top: 0;
+  border-top: none;
+}
+
+.filters-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.filter-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  min-width: 110px;
+  width: 130px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.filter-input:hover {
+  border-color: var(--color-primary-light);
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-lightest);
+}
+
+.filter-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.filter-select:hover {
+  border-color: var(--color-primary-light);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-lightest);
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  user-select: none;
+  height: 38px; /* Match input height */
+  box-sizing: border-box;
+}
+
+.filter-checkbox:hover {
+  background: var(--color-bg);
+}
+
+.filter-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.filter-checkbox span {
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.clear-filters-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.clear-filters-btn:hover {
+  background: var(--color-primary-lightest);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ============================================
+   TABLE - Grid Layout
+   ============================================ */
+.table-wrapper {
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  position: relative;
+  box-shadow: var(--shadow-light);
+}
+
+.table {
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Table Header */
+.table thead {
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: contents;
+}
+
+.table thead tr {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 120px;
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table th {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+.table th:last-child {
+  border-right: none;
+}
+
+/* Table Body */
+.table tbody {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.table tbody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table tbody::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 4px;
+}
+
+.table tbody::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.table tbody::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-light);
+}
+
+.table tbody tr {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 120px;
+  gap: 0;
+  background: var(--color-surface);
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:hover {
+  background: var(--color-bg);
+}
+
+.table td {
+  padding: 0.85rem 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+/* ============================================
+   STATE - Active, Loading, Empty
+   ============================================ */
+
+/* Active/Highlighted row */
+.table tbody tr.active-row {
+  background: var(--color-primary-lightest) !important;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+  border-left: 3px solid var(--color-primary);
+}
+
+.table tbody tr.active-row:hover {
+  background: var(--color-primary-lightest) !important;
+}
+
+/* Data row cursor */
+.data-row {
+  cursor: pointer;
+}
+
+/* Empty and loading states */
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted);
+}
+
+.loading-spinner {
+  color: var(--color-primary);
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   ACTIONS - Buttons & Icons
+   ============================================ */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  display: block;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+}
+
+.edit-btn {
+  color: var(--color-primary);
+}
+
+.delete-btn {
+  color: var(--color-red);
+}
+
+.edit-btn:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.delete-btn:hover {
+  background-color: var(--color-red);
+  color: var(--color-white);
+}
+
+/* ============================================
+   COMPONENTS - Badges, Sorting
+   ============================================ */
+
+/* Badge styles for table status cells */
+.badge-active {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--color-primary-lightest);
+  color: var(--color-primary-dark);
+}
+
+.badge-inactive {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+/* Sortable column */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  gap: 0.5rem;
+}
+
+.sortable:hover {
+  background: var(--color-primary-light) !important;
+  color: var(--color-primary-dark);
+}
+
+.sort-icon {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: bold;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sortable:hover .sort-icon {
+  opacity: 1;
+}
+
+/* ============================================
+   PAGINATION & INFO
+   ============================================ */
+.pagination-info {
+  flex-shrink: 0;
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  background: var(--color-surface);
+}
+
+.filtered-info {
+  color: var(--color-primary);
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+/* ============================================
+   RESPONSIVE - Mobile & Tablet
+   ============================================ */
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .action-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .table thead tr,
+  .table tbody tr {
+    grid-template-columns: 1.5fr 1fr 1fr 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-header {
+    padding: 0.75rem;
+  }
+
+  .table thead tr,
+  .table tbody tr {
+    grid-template-columns: 2fr 1fr 80px;
+  }
+
+  /* Hide estado column on mobile */
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* Actions header */
+.actions-header {
+  text-align: left;
+  width: 120px;
+}

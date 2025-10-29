@@ -32,38 +32,96 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
 }
 
 .page-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  padding-right: 0;
-  gap: 1rem;
+  gap: 0.5rem;
   overflow: hidden;
-  transition: margin-right 0.3s ease;
+  min-width: 0;
+  min-height: 0;
 }
 
+/* Top bar - Fixed height, won't grow */
 .top-bar {
   display: flex;
   gap: 1rem;
   align-items: center;
-  height: 50px;
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
   background: var(--color-primary-lightest);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 0.75rem var(--spacing-lg);
   border-radius: 10px;
-  margin-right: 2rem;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
+/* Sub-header - Fixed height when present, won't grow */
+.sub-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  min-height: 40px;
+  max-height: 40px;
+  background: var(--color-surface);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.sub-header .filter-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sub-header .filter-btn:hover {
+  background: var(--color-primary-lightest);
+  border-color: var(--color-primary);
+}
+
+.sub-header .filter-btn.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.sub-header .category-filter {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+
+/* Table section - Takes all remaining space */
 .table-section {
   flex: 1;
   overflow: hidden;
   background: var(--color-surface);
   border-radius: 10px;
   box-shadow: var(--shadow-light);
-  margin-right: 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .search-box {
