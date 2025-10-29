@@ -1,4 +1,3 @@
-/* Page container styles */
 .page {
   padding: 2rem;
   max-width: 1400px;
@@ -28,7 +27,6 @@
   gap: 1rem;
 }
 
-/* Page container with flexible layout */
 .page-container {
   display: flex;
   height: 100%;
@@ -122,7 +120,6 @@
   color: var(--color-text);
 }
 
-/* Botón primario dentro del top-bar */
 .top-bar .btn {
   display: flex;
   align-items: center;
@@ -153,7 +150,6 @@
   height: 16px;
 }
 
-/* Legacy two-column layout (for backwards compatibility) */
 .page.page-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -260,21 +256,6 @@
   animation: breathe 3s ease-in-out infinite;
 }
 
-
-@keyframes breathe {
-  0% {
-    transform: scale(1);
-    box-shadow: var(--shadow-strong);
-  }
-  50% {
-    transform: scale(1.15);
-    box-shadow: var(--shadow-strong);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: var(--shadow-light);
-  }
-}
 
 @keyframes slideInRight {
   0% {

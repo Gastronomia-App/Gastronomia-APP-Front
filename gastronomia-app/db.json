@@ -1,0 +1,379 @@
+{
+  "customers": [
+    {
+      "name": "Lucía",
+      "lastName": "Martínez",
+      "dni": "23456789",
+      "phoneNumber": "541198765432",
+      "email": "lucia.martinez@example.com",
+      "discount": 0,
+      "id": "2"
+    },
+    {
+      "id": "3",
+      "name": "Pablo",
+      "lastName": "Gómez",
+      "dni": "34567890",
+      "phoneNumber": "541122334455",
+      "email": "pablo.gomez@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "name": "María",
+      "lastName": "Rodríguez",
+      "dni": "45678901",
+      "phoneNumber": "541133344455",
+      "email": "maria.rodriguez@example.com",
+      "discount": 15,
+      "id": "4"
+    },
+    {
+      "name": "Andrés",
+      "lastName": "López",
+      "dni": "56789012",
+      "phoneNumber": "54114455667",
+      "email": "andres.lopez@example.com",
+      "discount": 0,
+      "id": "5"
+    },
+    {
+      "name": "Sol",
+      "lastName": "Molina",
+      "dni": "67890123",
+      "phoneNumber": "541155667788",
+      "email": "flor.molina@example.com",
+      "discount": 20,
+      "id": "6"
+    },
+    {
+      "id": "7",
+      "name": "Tomás",
+      "lastName": "Sosa",
+      "dni": "78901234",
+      "phoneNumber": "541166778899",
+      "email": "tomas.sosa@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "name": "Carolina",
+      "lastName": "Luna",
+      "dni": "89012345",
+      "phoneNumber": "541177889900",
+      "email": "carolina.luna@example.com",
+      "discount": 10,
+      "id": "8"
+    },
+    {
+      "id": "9",
+      "name": "Ezequiel",
+      "lastName": "Ramírez",
+      "dni": "90123456",
+      "phoneNumber": "541188990011",
+      "email": "ezequiel.ramirez@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "10",
+      "name": "Sofía",
+      "lastName": "Torres",
+      "dni": "01234567",
+      "phoneNumber": "541199001122",
+      "email": "sofia.torres@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "11",
+      "name": "Fernando",
+      "lastName": "Ortiz",
+      "dni": "12345000",
+      "phoneNumber": "541188833322",
+      "email": "fernando.ortiz@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "12",
+      "name": "Camila",
+      "lastName": "Salas",
+      "dni": "23456000",
+      "phoneNumber": "541177788899",
+      "email": "camila.salas@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "13",
+      "name": "Lucas",
+      "lastName": "Ríos",
+      "dni": "34567000",
+      "phoneNumber": "541166677788",
+      "email": "lucas.rios@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "14",
+      "name": "Paula",
+      "lastName": "Vega",
+      "dni": "45678000",
+      "phoneNumber": "541155566677",
+      "email": "paula.vega@example.com",
+      "discount": 15,
+      "deleted": false
+    },
+    {
+      "id": "15",
+      "name": "Mateo",
+      "lastName": "Paz",
+      "dni": "56789000",
+      "phoneNumber": "541144455566",
+      "email": "mateo.paz@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "16",
+      "name": "Valentina",
+      "lastName": "Costa",
+      "dni": "67890000",
+      "phoneNumber": "541133344455",
+      "email": "valentina.costa@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "17",
+      "name": "Nicolás",
+      "lastName": "Blanco",
+      "dni": "78900000",
+      "phoneNumber": "541122233344",
+      "email": "nicolas.blanco@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "18",
+      "name": "Agustina",
+      "lastName": "Reyes",
+      "dni": "89000000",
+      "phoneNumber": "541111122233",
+      "email": "agustina.reyes@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "19",
+      "name": "Franco",
+      "lastName": "Medina",
+      "dni": "90000000",
+      "phoneNumber": "541100011122",
+      "email": "franco.medina@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "20",
+      "name": "Julieta",
+      "lastName": "Cruz",
+      "dni": "99999999",
+      "phoneNumber": "541199988877",
+      "email": "julieta.cruz@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "21",
+      "name": "Santiago",
+      "lastName": "Herrera",
+      "dni": "11223344",
+      "phoneNumber": "541100112233",
+      "email": "santiago.herrera@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "22",
+      "name": "Brenda",
+      "lastName": "Suárez",
+      "dni": "22334455",
+      "phoneNumber": "541133445566",
+      "email": "brenda.suarez@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "23",
+      "name": "Rodrigo",
+      "lastName": "Méndez",
+      "dni": "33445566",
+      "phoneNumber": "541166778899",
+      "email": "rodrigo.mendez@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "24",
+      "name": "Carla",
+      "lastName": "Pinto",
+      "dni": "44556677",
+      "phoneNumber": "541177889900",
+      "email": "carla.pinto@example.com",
+      "discount": 15,
+      "deleted": false
+    },
+    {
+      "id": "25",
+      "name": "Emiliano",
+      "lastName": "Gutiérrez",
+      "dni": "55667788",
+      "phoneNumber": "541188990011",
+      "email": "emiliano.gutierrez@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "26",
+      "name": "Malena",
+      "lastName": "Ramos",
+      "dni": "66778899",
+      "phoneNumber": "541199001122",
+      "email": "malena.ramos@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "27",
+      "name": "Brian",
+      "lastName": "Silva",
+      "dni": "77889900",
+      "phoneNumber": "541155667788",
+      "email": "brian.silva@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "28",
+      "name": "Micaela",
+      "lastName": "Arias",
+      "dni": "88990011",
+      "phoneNumber": "541144556677",
+      "email": "micaela.arias@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "29",
+      "name": "Gabriel",
+      "lastName": "Paz",
+      "dni": "99001122",
+      "phoneNumber": "541133344455",
+      "email": "gabriel.paz@example.com",
+      "discount": 20,
+      "deleted": false
+    },
+    {
+      "id": "30",
+      "name": "Carina",
+      "lastName": "Ibarra",
+      "dni": "10011223",
+      "phoneNumber": "541122334455",
+      "email": "carina.ibarra@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "31",
+      "name": "Julián",
+      "lastName": "Campos",
+      "dni": "20022334",
+      "phoneNumber": "541111223344",
+      "email": "julian.campos@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "32",
+      "name": "Rocío",
+      "lastName": "Villalba",
+      "dni": "30033445",
+      "phoneNumber": "541122233344",
+      "email": "rocio.villalba@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "33",
+      "name": "Martín",
+      "lastName": "Cáceres",
+      "dni": "40044556",
+      "phoneNumber": "541133344455",
+      "email": "martin.caceres@example.com",
+      "discount": 15,
+      "deleted": false
+    },
+    {
+      "id": "34",
+      "name": "Camila",
+      "lastName": "Bravo",
+      "dni": "50055667",
+      "phoneNumber": "541144455566",
+      "email": "camila.bravo@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "35",
+      "name": "Leandro",
+      "lastName": "Nieto",
+      "dni": "60066778",
+      "phoneNumber": "541155566677",
+      "email": "leandro.nieto@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "36",
+      "name": "Milagros",
+      "lastName": "Navarro",
+      "dni": "70077889",
+      "phoneNumber": "541166677788",
+      "email": "milagros.navarro@example.com",
+      "discount": 10,
+      "deleted": false
+    },
+    {
+      "id": "37",
+      "name": "Ignacio",
+      "lastName": "Peralta",
+      "dni": "80088990",
+      "phoneNumber": "541177788899",
+      "email": "ignacio.peralta@example.com",
+      "discount": 5,
+      "deleted": false
+    },
+    {
+      "id": "38",
+      "name": "Josefina",
+      "lastName": "López",
+      "dni": "90099001",
+      "phoneNumber": "541188899900",
+      "email": "josefina.lopez@example.com",
+      "discount": 0,
+      "deleted": false
+    },
+    {
+      "id": "40",
+      "name": "Sol",
+      "lastName": "Benítez",
+      "dni": "92211122",
+      "phoneNumber": "541100998877",
+      "email": "sol.benitez@example.com",
+      "discount": 10,
+      "deleted": false
+    }
+  ]
+}
