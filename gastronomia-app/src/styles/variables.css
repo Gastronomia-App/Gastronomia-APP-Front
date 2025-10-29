@@ -5,7 +5,7 @@
 
 :root {
   /* Colors */
-  --color-primary-lightest: #bcdcdb;
+  --color-primary-lightest: #e3ecec;
   --color-primary-lighter: #87b9b7;
   --color-primary-light: #639795;
   --color-primary: #306462;
@@ -25,6 +25,8 @@
 
   --color-text: #22332D;
   --color-text-muted: #b2cecd;
+  --color-text-light: #718484;
+  --color-danger: var(--color-red);
   --color-border: #DCE5E0;
 
   /*   Shadows  */

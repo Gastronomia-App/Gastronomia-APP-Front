@@ -22,7 +22,6 @@ export interface BaseSearchableItem {
   styleUrl: './searchable-list.css',
 })
 export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchableItem, TSelected extends BaseSearchableItem = TAvailable> {
-  @Input() label: string = '';
   @Input() placeholder: string = 'Buscar...';
   @Input() availableItems: TAvailable[] = [];
   @Input() selectedItems: TSelected[] = [];
