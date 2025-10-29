@@ -34,6 +34,7 @@ select {
   background-position: right 1rem center;
   background-size: 12px;
   cursor: pointer;
+  color: var(--color-secondary-light);
 }
 
 select option {
@@ -42,8 +43,8 @@ select option {
   padding: var(--spacing-sm);
 }
 
-select option:hover {
-  background-color: var(--color-primary-lightest);
+select option:disabled {
+  color: var(--color-secondary-light);
 }
 
 /* Labels */
@@ -79,4 +80,49 @@ input[type="checkbox"] {
 
 .search-input:focus {
   border-color: var(--color-primary);
+}
+
+/* Error message */
+.error-message {
+  background-color: rgba(211, 71, 64, 0.1);
+  border: 1px solid var(--color-red);
+  border-radius: 4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-red-dark);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Field error - individual field validation */
+.field-error {
+  display: block;
+  color: var(--color-red);
+  font-size: var(--font-sm);
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Field hint - helper text */
+.field-hint {
+  display: block;
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Input error state */
+input.error, 
+select.error, 
+textarea.error {
+  border-color: var(--color-red);
+  background-color: rgba(211, 71, 64, 0.05);
+}
+
+input.error:focus, 
+select.error:focus, 
+textarea.error:focus {
+  border-color: var(--color-red);
+  box-shadow: 0 0 0 2px rgba(211, 71, 64, 0.2);
 }
