@@ -15,3 +15,19 @@ export type {
   RowClickEvent, 
   LoadMoreEvent 
 } from './table-config.model';
+export type {
+  FormFieldType,
+  FormFieldOption,
+  FormFieldConfig,
+  FormSectionConfig,
+  FormConfig,
+  FormSubmitEvent,
+  FormState
+} from './form-config.model';
+export type {
+  DetailFieldType,
+  DetailFieldConfig,
+  DetailSectionConfig,
+  DetailConfig,
+  DetailActionConfig
+} from './detail-config.model';

@@ -1,19 +1,23 @@
-<div class="form-wrapper">
+<div class="aside-panel-wrapper">
   @if (showHeader()) {
-    <header class="form-header">
+    <header class="aside-panel-header">
       <h2>{{ formTitle() }}</h2>
       <button type="button" class="btn-close" (click)="onClose()">✕</button>
     </header>
   }
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="aside-panel-container">
     @for (section of visibleSections(); track $index) {
       <section [class]="section.cssClass || ''">
         @if (section.title) {
-          <h3 class="section-title">{{ section.title }}</h3>
+          <div class="section-header" (click)="toggleSection($index)">
+            <h3 class="section-title">{{ section.title }}</h3>
+            <span class="collapse-icon" [class.collapsed]="isSectionCollapsed($index)">▼</span>
+          </div>
         }
 
-        <div class="fields-container">
+        <div class="section-content" [class.collapsed]="isSectionCollapsed($index)">
+          <div class="fields-container">
           @for (field of getVisibleFields(section); track field.name) {
             @if (field.type === 'checkbox') {
               <!-- Checkbox has special layout -->
@@ -172,12 +176,13 @@
             }
           }
         </div>
+        </div>
       </section>
     }
   </form>
 
   @if (showFooter()) {
-    <footer class="form-footer">
+    <footer class="aside-panel-footer">
       <button type="button" class="btn secondary" (click)="onCancel()">
         {{ cancelButtonLabel() }}
       </button>

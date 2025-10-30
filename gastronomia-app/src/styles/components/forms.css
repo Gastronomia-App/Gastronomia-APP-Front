@@ -1,107 +1,13 @@
 /* ============================================
-   GENERIC FORM COMPONENT
-   Reusable form with dynamic field rendering
-   Matches aside-form.css and forms.css styling
+   GLOBAL FORM STYLES
+   Reusable base styles for inputs, labels, and form controls
+   Used across all form components in the application
    ============================================ */
 
-/* Host element - must take full height */
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
+/* ==========================================
+   BASE LABELS
+   ========================================== */
 
-/* Form wrapper - contains header, form, and footer */
-.form-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--color-surface);
-  overflow: hidden;
-}
-
-/* Form header */
-.form-header {
-  background-color: var(--color-primary-lightest);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border);
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.form-header h2 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-  line-height: 1;
-}
-
-.form-header .btn-close {
-  font-size: 1.5rem;
-  color: var(--color-text);
-  padding: var(--spacing-xs);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-.form-header .btn-close:hover {
-  color: var(--color-primary-light);
-}
-
-/* Form element wrapper - handles overflow */
-form.form-container {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-lg);
-  gap: var(--spacing-lg);
-  min-height: 0;
-}
-
-/* Sections */
-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.section-title {
-  font-size: var(--font-base);
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* Fields container - single column layout like original */
-.fields-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-/* Fieldsets */
-fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-/* Labels */
 label {
   font-size: var(--font-md);
   font-weight: 600;
@@ -116,8 +22,11 @@ label .error {
   font-weight: bold;
 }
 
-/* Base form inputs - matching forms.css */
-input:not([type="checkbox"]),
+/* ==========================================
+   BASE INPUT STYLES
+   ========================================== */
+
+input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
   width: 100%;
@@ -131,7 +40,7 @@ textarea {
   box-sizing: border-box;
 }
 
-input:not([type="checkbox"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus {
   outline: none;
@@ -142,7 +51,7 @@ textarea:focus {
 input::placeholder,
 select::placeholder,
 textarea::placeholder {
-  color: rgb(175, 173, 173);
+  color: var(--color-secondary-light);
 }
 
 input:read-only,
@@ -151,7 +60,18 @@ textarea:read-only {
   cursor: not-allowed;
 }
 
-/* Input error state */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: var(--color-bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ==========================================
+   INPUT VALIDATION STATES
+   ========================================== */
+
 input.ng-invalid.ng-touched,
 select.ng-invalid.ng-touched,
 textarea.ng-invalid.ng-touched {
@@ -166,14 +86,20 @@ textarea.ng-invalid.ng-touched:focus {
   box-shadow: 0 0 0 2px rgba(211, 71, 64, 0.2);
 }
 
-/* Textarea */
+/* ==========================================
+   TEXTAREA
+   ========================================== */
+
 textarea {
   min-height: 80px;
   resize: vertical;
   font-family: inherit;
 }
 
-/* Select dropdown */
+/* ==========================================
+   SELECT DROPDOWN
+   ========================================== */
+
 select {
   cursor: pointer;
   appearance: none;
@@ -182,7 +108,6 @@ select {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 12px;
-  color: var(--color-text);
 }
 
 select:has(option:disabled:checked) {
@@ -209,13 +134,10 @@ select option:disabled {
   color: var(--color-secondary-light);
 }
 
-select:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  background-color: var(--color-bg-secondary);
-}
+/* ==========================================
+   CHECKBOX STYLING
+   ========================================== */
 
-/* Checkbox styling - matching aside-form.css */
 .checkbox-wrapper {
   display: flex;
   justify-content: space-between;
@@ -241,7 +163,10 @@ input[type='checkbox']:disabled {
   opacity: 0.6;
 }
 
-/* Radio buttons styling */
+/* ==========================================
+   RADIO BUTTONS STYLING
+   ========================================== */
+
 .radio-group {
   display: flex;
   flex-direction: column;
@@ -268,16 +193,18 @@ input[type='radio']:disabled {
   opacity: 0.6;
 }
 
-/* Field error styling */
+/* ==========================================
+   FIELD MESSAGING
+   ========================================== */
+
 .field-error {
   color: var(--color-danger);
-  font-size: var(--font-sm);
+  font-size: var(--font-xs);
   margin-top: 0.25rem;
   display: block;
   font-weight: 500;
 }
 
-/* Help text styling */
 .help-text {
   color: var(--color-text-light);
   font-size: var(--font-sm);
@@ -286,107 +213,3 @@ input[type='radio']:disabled {
   display: block;
 }
 
-/* Form footer */
-.form-footer {
-  border-top: 1px solid var(--color-border);
-  background-color: var(--color-bg);
-  padding: var(--spacing-md) var(--spacing-lg);
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.form-footer button {
-  flex: 1;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-sm);
-  font-weight: 600;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.form-footer button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Custom field container */
-.custom-field-container {
-  margin-bottom: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.custom-field-container.full-width {
-  grid-column: 1 / -1;
-}
-
-.custom-field-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0;
-  color: var(--color-text);
-  font-size: var(--font-md);
-}
-
-.custom-field-label .error {
-  color: var(--color-red);
-  margin-left: var(--spacing-xs);
-  font-weight: bold;
-}
-
-/* Apply exact Form input styles to custom component internals */
-.custom-field-container :deep(input:not([type="checkbox"])),
-.custom-field-container :deep(select),
-.custom-field-container :deep(textarea) {
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--font-sm);
-  transition: border-color var(--transition-fast);
-  box-sizing: border-box;
-}
-
-.custom-field-container :deep(input:not([type="checkbox"]):focus),
-.custom-field-container :deep(select:focus),
-.custom-field-container :deep(textarea:focus) {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(100, 217, 172, 0.2);
-}
-
-.custom-field-container :deep(input::placeholder),
-.custom-field-container :deep(select::placeholder),
-.custom-field-container :deep(textarea::placeholder) {
-  color: rgb(175, 173, 173);
-}
-
-.custom-field-container :deep(input:disabled),
-.custom-field-container :deep(select:disabled),
-.custom-field-container :deep(textarea:disabled) {
-  background-color: var(--color-bg-secondary);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .fields-container {
-    gap: var(--spacing-sm);
-  }
-
-  .form-footer {
-    flex-direction: column;
-  }
-
-  .form-footer button {
-    width: 100%;
-  }
-}
