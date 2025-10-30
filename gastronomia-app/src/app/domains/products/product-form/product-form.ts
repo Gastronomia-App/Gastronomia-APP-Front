@@ -13,6 +13,9 @@ import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubm
   imports: [CommonModule, Form],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
+  host: {
+    class: 'entity-form'
+  }
 })
 export class ProductForm implements OnInit {
   private productService = inject(ProductService);

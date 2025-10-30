@@ -11,6 +11,9 @@ import { Category, Product, DetailConfig } from '../../../shared/models';
   imports: [CommonModule, Detail],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
+  host: {
+    class: 'entity-details'
+  }
 })
 export class ProductDetails implements OnInit {
   private productService = inject(ProductService);

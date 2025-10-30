@@ -10,7 +10,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   selector: 'app-product-list',
   imports: [CommonModule, Table],
   templateUrl: './product-list.html',
-  styleUrl: './product-list.css'
+  styleUrl: './product-list.css',
+  host: {
+    class: 'entity-list'
+  }
 })
 export class ProductList extends BaseTable<Product> {
   private productService = inject(ProductService);
