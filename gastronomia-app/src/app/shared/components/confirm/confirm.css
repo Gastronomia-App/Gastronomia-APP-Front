@@ -1,0 +1,214 @@
+/* ============================================
+   CONFIRM DIALOG COMPONENT
+   Reusable confirmation modal with backdrop
+   ============================================ */
+
+/* ==========================================
+   BACKDROP OVERLAY
+   ========================================== */
+
+.confirm-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--spacing-md);
+  animation: fadeIn var(--transition-fast);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================
+   MODAL DIALOG
+   ========================================== */
+
+.confirm-dialog {
+  background-color: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-strong);
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn var(--transition-normal);
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ==========================================
+   HEADER
+   ========================================== */
+
+.confirm-header {
+  background-color: var(--color-primary-lightest);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.confirm-title {
+  margin: 0;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+/* ==========================================
+   BODY
+   ========================================== */
+
+.confirm-body {
+  padding: var(--spacing-xl) var(--spacing-lg);
+  flex: 1;
+}
+
+.confirm-message {
+  margin: 0;
+  font-size: var(--font-base);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+.confirm-footer {
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  background-color: var(--color-bg);
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 6px;
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  outline: none;
+  min-width: 100px;
+}
+
+.btn:focus {
+  box-shadow: var(--shadow-focus);
+}
+
+/* Cancel button */
+.btn-cancel {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-cancel:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-secondary);
+}
+
+.btn-cancel:active {
+  transform: scale(0.98);
+}
+
+/* Confirm button */
+.btn-confirm {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: 1px solid var(--color-primary);
+}
+
+.btn-confirm:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+}
+
+.btn-confirm:active {
+  transform: scale(0.98);
+}
+
+/* Danger variant (optional - can be added via class) */
+.btn-confirm.danger {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn-confirm.danger:hover {
+  background-color: var(--color-red-light);
+  border-color: var(--color-red-light);
+}
+
+/* ==========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .confirm-backdrop {
+    padding: var(--spacing-sm);
+  }
+
+  .confirm-dialog {
+    max-width: 100%;
+  }
+
+  .confirm-header,
+  .confirm-body,
+  .confirm-footer {
+    padding: var(--spacing-md);
+  }
+
+  .confirm-title {
+    font-size: var(--font-base);
+  }
+
+  .confirm-message {
+    font-size: var(--font-sm);
+  }
+
+  .confirm-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-header,
+  .confirm-body,
+  .confirm-footer {
+    padding: var(--spacing-sm);
+  }
+}
