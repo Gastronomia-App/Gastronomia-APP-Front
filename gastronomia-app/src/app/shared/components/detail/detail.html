@@ -1,12 +1,12 @@
-<div class="detail-wrapper">
+<div class="aside-panel-wrapper">
   @if (showHeader()) {
-    <header class="detail-header">
+    <header class="aside-panel-header">
       <h2>{{ title() }}</h2>
       <button type="button" class="btn-close" (click)="onClose()">✕</button>
     </header>
   }
 
-  <div class="detail-container">
+  <div class="aside-panel-container">
     @for (section of visibleSections(); track $index) {
       <section [class]="section.cssClass || ''">
         @if (section.title) {
@@ -109,7 +109,7 @@
   </div>
 
   @if (showFooter()) {
-    <footer class="detail-footer">
+    <footer class="aside-panel-footer">
       @for (action of getVisibleActions(); track $index) {
         <button 
           type="button"
