@@ -141,6 +141,11 @@
 @media (max-width: 1200px) {
   .page-container {
     flex-direction: column;
+    position: relative;
+  }
+  
+  .page-content {
+    flex: 1;
   }
 }
 

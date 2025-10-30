@@ -1,0 +1,31 @@
+<!-- Backdrop overlay -->
+<div class="confirm-backdrop" (click)="onBackdropClick($event)">
+  <!-- Modal dialog -->
+  <div class="confirm-dialog">
+    <!-- Header -->
+    <div class="confirm-header">
+      <h2 class="confirm-title">{{ title() }}</h2>
+    </div>
+
+    <!-- Body -->
+    <div class="confirm-body">
+      <p class="confirm-message">{{ message() }}</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="confirm-footer">
+      <button 
+        type="button" 
+        class="btn btn-cancel" 
+        (click)="cancel()">
+        {{ cancelLabel() }}
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-confirm" 
+        (click)="confirm()">
+        {{ confirmLabel() }}
+      </button>
+    </div>
+  </div>
+</div>

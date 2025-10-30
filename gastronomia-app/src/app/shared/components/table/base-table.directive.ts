@@ -45,6 +45,12 @@ export abstract class BaseTable<
   // UI State
   showForm = signal(false);
   showDetails = signal(false);
+  showConfirmDialog = signal(false);
+  confirmDialogData = signal<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
   searchTerm = signal<string>('');
@@ -166,14 +172,58 @@ export abstract class BaseTable<
     const itemId = this.getItemId(item);
     const itemName = this.getItemName(item);
 
-    if (confirm(`¿Estás seguro de eliminar "${itemName}"?`)) {
-      this.deleteItem(itemId)
-        .pipe(takeUntilDestroyed(this.destroyRef)) // ⬅️ 6)
-        .subscribe({
-          next: () => this.refreshData(),
-          error: (e: any) => console.error(`❌ DELETE item ${itemId}`, e)
-        });
+    // Show confirmation dialog
+    this.confirmDialogData.set({
+      title: 'Confirmar eliminación',
+      message: `¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción no se puede deshacer.`,
+      onConfirm: () => {
+        this.executeDelete(itemId);
+      }
+    });
+    this.showConfirmDialog.set(true);
+  }
+
+  /**
+   * Execute delete operation
+   */
+  private executeDelete(itemId: number): void {
+    this.deleteItem(itemId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.refreshData();
+          this.closeConfirmDialog();
+        },
+        error: (e: any) => {
+          console.error(`❌ DELETE item ${itemId}`, e);
+          this.closeConfirmDialog();
+        }
+      });
+  }
+
+  /**
+   * Close confirmation dialog
+   */
+  closeConfirmDialog(): void {
+    this.showConfirmDialog.set(false);
+    this.confirmDialogData.set(null);
+  }
+
+  /**
+   * Handle confirmation dialog confirm
+   */
+  onConfirmDialogConfirm(): void {
+    const data = this.confirmDialogData();
+    if (data?.onConfirm) {
+      data.onConfirm();
     }
+  }
+
+  /**
+   * Handle confirmation dialog cancel
+   */
+  onConfirmDialogCancel(): void {
+    this.closeConfirmDialog();
   }
 
   /**
