@@ -1,0 +1,49 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.results-info {
+  flex-shrink: 0;
+}
+
+
+
+:host ::ng-deep .table thead tr,
+:host ::ng-deep .table tbody tr {
+  grid-template-columns:
+    1.5fr   /* Cliente */
+    1.8fr   /* Email */
+    1.4fr   /* DNI → más cerca del email */
+    1fr   /* Descuento (%) */
+    200px   /* Opciones → más compacto */
+  !important;
+
+  align-items: center !important;
+  min-height: 50px;
+}
+
+
+:host ::ng-deep td:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background-image: url("/assets/images/user-icon.png"); /* 🖼️ ruta de la imagen */
+  background-size: cover;
+  background-position: center;
+  vertical-align: middle;
+}
+
+
+
+:host ::ng-deep .table tbody tr:hover {
+  background-color: var(--color-primary-lightest);
+  transform: scale(1.01);
+}
+
+

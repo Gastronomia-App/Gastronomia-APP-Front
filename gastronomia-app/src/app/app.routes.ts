@@ -1,14 +1,27 @@
 import { Routes } from '@angular/router';
 import { LoginPageComponent } from './domains/auth';
-import { CreateEmployeePageComponent } from './domains/employees';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/home',
+    redirectTo: '/login',
     pathMatch: 'full'
   },
+    {
+    path: 'login',
+    component: LoginPageComponent
+    },
+    {
+    path: 'customers',
+  loadComponent: () =>
+    import('./domains/customer/customer-page/customer-page')
+      .then(m => m.CustomerPage),
+  canActivate: [authGuard]
+}
+ 
+  /*
+  ,
   {
     path: 'home',
     loadComponent: () => import('./domains/home/home-page').then(m => m.HomePage)
@@ -37,4 +50,5 @@ export const routes: Routes = [
     path: '**',
     redirectTo: '/home'
   }
+    */
 ];
