@@ -21,11 +21,22 @@ export class CategoryPage implements OnInit, AfterViewChecked {
   private destroyRef = inject(DestroyRef);
   private pendingCategory?: Category;
   private pendingDetailsCategory?: Category;
+  private resetFormPending = false;
   
   // UI state
   showCategoryForm = signal(false);
   showCategoryDetails = signal(false);
   currentCategoryId: number | null = null;
+
+  constructor() {
+    // afterNextRender debe estar en contexto de inyección
+    afterNextRender(() => {
+      if (this.resetFormPending && this.categoryFormComponent) {
+        this.categoryFormComponent.resetForm();
+        this.resetFormPending = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
     // Subscribe to category form service events with automatic cleanup
@@ -82,12 +93,7 @@ export class CategoryPage implements OnInit, AfterViewChecked {
     this.showCategoryForm.set(true);
     this.currentCategoryId = null;
     this.categoryFormService.setActiveCategoryId(null);
-    
-    afterNextRender(() => {
-      if (this.categoryFormComponent) {
-        this.categoryFormComponent.resetForm();
-      }
-    });
+    this.resetFormPending = true;
   }
 
   closeCategoryForm(): void {

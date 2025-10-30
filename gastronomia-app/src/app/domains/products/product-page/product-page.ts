@@ -1,6 +1,6 @@
 import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ProductList } from '../product-list/product-list';
+import { ProductTable } from '../product-list/product-table';
 import { ProductForm } from '../product-form/product-form';
 import { ProductDetails } from '../product-details/product-details';
 import { ProductFormService } from '../services/product-form.service';
@@ -8,12 +8,12 @@ import { Product } from '../../../shared/models';
 
 @Component({
   selector: 'app-product-page',
-  imports: [ProductList, ProductForm, ProductDetails],
+  imports: [ProductForm, ProductDetails, ProductTable],
   templateUrl: './product-page.html',
   styleUrl: './product-page.css',
 })
 export class ProductPage implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild(ProductList) productList?: ProductList;
+  @ViewChild(ProductTable) productTable?: ProductTable;
   @ViewChild(ProductForm) productFormComponent?: ProductForm;
   @ViewChild(ProductDetails) productDetailsComponent?: ProductDetails;
   

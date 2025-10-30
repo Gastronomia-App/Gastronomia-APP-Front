@@ -29,8 +29,6 @@ export class CategoryTable extends BaseTable<Category> {
   
   constructor() {
     super();
-    // Configure page size
-    this.tableService.setPageSize(20);
     
     // Set custom filter function for categories
     this.tableService.setFilterFunction((category, term) => {
@@ -59,7 +57,8 @@ export class CategoryTable extends BaseTable<Category> {
   }
 
   protected fetchData(page: number, size: number) {
-    return this.categoryService.getCategoriesPage(page, size);
+    // El endpoint no soporta paginación, ignoramos los parámetros
+    return this.categoryService.getCategories();
   }
 
   protected fetchItemById(id: number) {

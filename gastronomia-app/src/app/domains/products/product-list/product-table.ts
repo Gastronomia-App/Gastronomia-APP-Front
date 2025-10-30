@@ -8,15 +8,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
 
 @Component({
-  selector: 'app-product-list',
+  selector: 'app-product-table',
   imports: [CommonModule, Table, Confirm],
-  templateUrl: './product-list.html',
-  styleUrl: './product-list.css',
+  templateUrl: './product-table.html',
+  styleUrl: './product-table.css',
   host: {
-    class: 'entity-list'
+    class: 'entity-table'
   }
 })
-export class ProductList extends BaseTable<Product> {
+export class ProductTable extends BaseTable<Product> {
   private productService = inject(ProductService);
   private productFormService = inject(ProductFormService);
 

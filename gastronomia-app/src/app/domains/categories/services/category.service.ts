@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { Category, PageResponse } from '../../../shared/models';
+import { Observable } from 'rxjs';
+import { Category } from '../../../shared/models';
 
 @Injectable({
   providedIn: 'root'
@@ -12,13 +12,7 @@ export class CategoryService {
 
   // Get all categories (extrae el array del objeto Page)
   getCategories(): Observable<Category[]> {
-    return this.http.get<PageResponse<Category>>(`${this.apiUrl}/categories`).pipe(
-      map(response => response.content)
-    );
-  }
-
-  getCategoriesPage(page: number = 0, size: number = 20): Observable<PageResponse<Category>> {
-    return this.http.get<PageResponse<Category>>(`${this.apiUrl}/categories?page=${page}&size=${size}`);
+    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
 
   // Get category by ID
