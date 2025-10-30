@@ -347,24 +347,6 @@
   overflow-x: hidden;
 }
 
-.table tbody::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table tbody::-webkit-scrollbar-track {
-  background: var(--color-bg);
-  border-radius: 4px;
-}
-
-.table tbody::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
-}
-
-.table tbody::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-light);
-}
-
 .table tbody tr {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 120px;
