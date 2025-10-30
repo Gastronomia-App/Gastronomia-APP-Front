@@ -1,0 +1,173 @@
+/* ============================================
+   PAGE LAYOUT SYSTEM
+   Reusable layout patterns for entity pages
+   Used by: products, categories, orders, etc.
+   ============================================ */
+
+/* ============================================
+   ENTITY PAGE LAYOUT (main pattern)
+   Full-height flex layout for CRUD pages
+   ============================================ */
+
+/* Page container - Root flex layout */
+.page-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
+}
+
+/* Page content - Main area (table/list) */
+.page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ============================================
+   PAGE SECTIONS
+   ============================================ */
+
+/* Sub-header - Fixed height secondary bar (filters, tabs, etc.) */
+.sub-header {
+  flex-shrink: 0;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  min-height: 40px;
+  background: var(--color-surface);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+/* Sub-header common elements */
+.sub-header .filter-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sub-header .filter-btn:hover {
+  background: var(--color-primary-lightest);
+  border-color: var(--color-primary);
+}
+
+.sub-header .filter-btn.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.sub-header .category-filter,
+.sub-header .entity-filter {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Table section - Flexible area for tables/lists */
+.table-section {
+  flex: 1;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-light);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Generic child component in table section */
+.table-section > * {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   ENTITY COMPONENTS - Generic wrappers
+   Reusable classes for entity-list, entity-form, entity-details
+   ============================================ */
+
+/* Entity list component wrapper */
+.entity-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Entity form component wrapper */
+.entity-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Entity details component wrapper */
+.entity-details {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .page-container {
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .page-content {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .sub-header {
+    padding: var(--spacing-xs) var(--spacing-md);
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 0.25rem;
+  }
+
+  .sub-header,
+  .table-section {
+    border-radius: 6px;
+  }
+}
