@@ -20,3 +20,15 @@
   (loadMore)="onLoadMore($event)"
   (actionButtonClick)="onNewProduct()"
 />
+
+<!-- Confirmation Dialog -->
+@if (showConfirmDialog()) {
+  <app-confirm
+    [title]="confirmDialogData()?.title || 'Confirmar'"
+    [message]="confirmDialogData()?.message || ''"
+    [confirmLabel]="'Eliminar'"
+    [cancelLabel]="'Cancelar'"
+    (onConfirm)="onConfirmDialogConfirm()"
+    (onCancel)="onConfirmDialogCancel()"
+  />
+}

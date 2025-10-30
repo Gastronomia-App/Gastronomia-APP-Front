@@ -2,13 +2,14 @@ import { Component, inject, ViewChild, output, DestroyRef } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
-import { PaginationConfig, Product, TableColumn, TableFilter } from '../../../shared/models';
+import { Product, TableColumn, TableFilter } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Confirm } from "../../../shared/components/confirm";
 
 @Component({
   selector: 'app-product-list',
-  imports: [CommonModule, Table],
+  imports: [CommonModule, Table, Confirm],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
   host: {
