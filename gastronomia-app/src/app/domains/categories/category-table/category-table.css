@@ -1,0 +1,11 @@
+/* Category table specific styles - only component-specific overrides */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.results-info {
+  flex-shrink: 0;
+}
