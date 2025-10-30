@@ -1,6 +1,15 @@
 /* ============================================
    SEARCHABLE LIST - Reusable component
+   Designed to work inside Form component
+   Inherits styles from parent Form component
    ============================================ */
+
+/* Wrapper */
+.searchable-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
 
 /* Loading message */
 .loading-message {
@@ -12,7 +21,7 @@
 
 /* Dropdown item with price */
 .item {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-xs);
     cursor: pointer;
     transition: background-color var(--transition-fast);
     border-bottom: 1px solid var(--color-border);

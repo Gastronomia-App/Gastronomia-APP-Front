@@ -1,0 +1,203 @@
+<div class="aside-panel-wrapper">
+  @if (showHeader()) {
+    <header class="aside-panel-header">
+      <h2>{{ formTitle() }}</h2>
+      <button type="button" class="btn-close" (click)="onClose()">✕</button>
+    </header>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="aside-panel-container">
+    @for (section of visibleSections(); track $index) {
+      <section [class]="section.cssClass || ''">
+        @if (section.title) {
+          <div class="section-header" (click)="toggleSection($index)">
+            <h3 class="section-title">{{ section.title }}</h3>
+            <span class="collapse-icon" [class.collapsed]="isSectionCollapsed($index)">▼</span>
+          </div>
+        }
+
+        <div class="section-content" [class.collapsed]="isSectionCollapsed($index)">
+          <div class="fields-container">
+          @for (field of getVisibleFields(section); track field.name) {
+            @if (field.type === 'checkbox') {
+              <!-- Checkbox has special layout -->
+              <div class="checkbox-wrapper">
+                <span>{{ field.label }}</span>
+                <input
+                  [id]="fieldNameToString(field.name)"
+                  [formControlName]="fieldNameToString(field.name)"
+                  type="checkbox"
+                  [disabled]="field.disabled ?? false"
+                />
+              </div>
+              @if (getFieldError(fieldNameToString(field.name)); as error) {
+                <span class="field-error">{{ error }}</span>
+              }
+              @if (field.helpText) {
+                <span class="help-text">{{ field.helpText }}</span>
+              }
+            } @else if (field.type === 'custom') {
+              <!-- Custom component - dynamically rendered with label -->
+              <div class="custom-field-container" [class.full-width]="field.fullWidth">
+                @if (field.label) {
+                  <label [for]="fieldNameToString(field.name)" class="custom-field-label">
+                    {{ field.label }}
+                    @if (field.required) {
+                      <span class="error">*</span>
+                    }
+                  </label>
+                }
+                <!-- Dynamic component will be inserted here -->
+                <ng-container #dynamicComponentContainer></ng-container>
+              </div>
+            } @else {
+              <!-- Standard fieldset layout for other field types -->
+              <fieldset [class.full-width]="field.fullWidth" [class.half-width]="!field.fullWidth">
+                <label [for]="fieldNameToString(field.name)">
+                  {{ field.label }}
+                  @if (field.required) {
+                    <span class="error">*</span>
+                  }
+                </label>
+
+                @switch (field.type) {
+                  @case ('text') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="text"
+                      [placeholder]="field.placeholder || ''"
+                      [attr.maxlength]="field.maxLength ?? null"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('number') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="number"
+                      [placeholder]="field.placeholder || ''"
+                      [attr.min]="field.min ?? null"
+                      [attr.max]="field.max ?? null"
+                      [attr.step]="field.step ?? 'any'"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('email') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="email"
+                      [placeholder]="field.placeholder || ''"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('password') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="password"
+                      [placeholder]="field.placeholder || ''"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('date') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="date"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('datetime-local') {
+                    <input
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      type="datetime-local"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    />
+                  }
+
+                  @case ('textarea') {
+                    <textarea
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      [placeholder]="field.placeholder || ''"
+                      [attr.rows]="field.rows ?? 4"
+                      [attr.maxlength]="field.maxLength ?? null"
+                      [attr.readonly]="field.readonly ? '' : null"
+                    ></textarea>
+                  }
+
+                  @case ('select') {
+                    <select
+                      [id]="fieldNameToString(field.name)"
+                      [formControlName]="fieldNameToString(field.name)"
+                      [disabled]="field.disabled ?? false"
+                    >
+                      <option value="" disabled>Seleccione una opción</option>
+                      @for (option of field.options; track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  }
+
+                  @case ('radio') {
+                    <div class="radio-group">
+                      @for (option of field.options; track option.value) {
+                        <label class="radio-option">
+                          <input
+                            [name]="fieldNameToString(field.name)"
+                            [value]="option.value"
+                            type="radio"
+                            [formControlName]="fieldNameToString(field.name)"
+                            [disabled]="field.disabled ?? false"
+                          />
+                          <span>{{ option.label }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+                }
+
+                @if (getFieldError(fieldNameToString(field.name)); as error) {
+                  <span class="field-error">{{ error }}</span>
+                }
+
+                @if (field.helpText) {
+                  <span class="help-text">{{ field.helpText }}</span>
+                }
+              </fieldset>
+            }
+          }
+        </div>
+        </div>
+      </section>
+    }
+  </form>
+
+  @if (showFooter()) {
+    <footer class="aside-panel-footer">
+      <button type="button" class="btn secondary" (click)="onCancel()">
+        {{ cancelButtonLabel() }}
+      </button>
+      <button 
+        type="button" 
+        class="btn primary"
+        [disabled]="formState().isSubmitting"
+        (click)="onSubmit()"
+      >
+        @if (formState().isSubmitting) {
+          <span>Guardando...</span>
+        } @else {
+          <span>{{ submitLabel() }}</span>
+        }
+      </button>
+    </footer>
+  }
+</div>

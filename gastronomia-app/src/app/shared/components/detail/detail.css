@@ -1,0 +1,130 @@
+/* ==========================================
+   DETAIL FIELD COMPONENTS
+   ========================================== */
+
+/* Detail field container */
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.detail-field.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Detail labels - Unified with form labels */
+.detail-label {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--color-text);
+  display: block;
+}
+
+/* Detail values - Read-only styled containers (no borders) */
+.detail-value {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  min-height: 2rem;
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-sm);
+}
+
+.detail-value.empty {
+  color: var(--color-text-light);
+  font-style: italic;
+}
+
+/* ==========================================
+   BADGE STYLES
+   ========================================== */
+
+/* Badge styling for boolean/status fields */
+.detail-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.detail-badge.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.detail-badge.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* ==========================================
+   FIELD LAYOUTS
+   ========================================== */
+
+/* Inline fields (for badges/booleans) */
+.inline-field {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.inline-field .detail-label {
+  margin-bottom: 0;
+}
+
+/* Badge field specific styling */
+.badge-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.badge-field .detail-label {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   LIST & CUSTOM FIELDS
+   ========================================== */
+
+/* List field styling */
+.list-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.list-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+}
+
+/* Custom field container */
+.custom-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Apply detail-like styles to custom component internals */
+.custom-field :deep(.custom-content) {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+}

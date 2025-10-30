@@ -1,0 +1,127 @@
+<div class="aside-panel-wrapper">
+  @if (showHeader()) {
+    <header class="aside-panel-header">
+      <h2>{{ title() }}</h2>
+      <button type="button" class="btn-close" (click)="onClose()">✕</button>
+    </header>
+  }
+
+  <div class="aside-panel-container">
+    @for (section of visibleSections(); track $index) {
+      <section [class]="section.cssClass || ''">
+        @if (section.title) {
+          <div class="section-header" (click)="toggleSection($index)">
+            <h3 class="section-title">{{ section.title }}</h3>
+            <span class="collapse-icon" [class.collapsed]="isSectionCollapsed($index)">▼</span>
+          </div>
+        }
+
+        <div class="section-content" [class.collapsed]="isSectionCollapsed($index)">
+          <div class="fields-container">
+          @for (field of getVisibleFields(section); track field.name) {
+            @if (field.type === 'custom') {
+              <!-- Custom component field -->
+              <div class="detail-field custom-field" [class.full-width]="field.fullWidth">
+                @if (field.label) {
+                  <label class="detail-label">{{ field.label }}</label>
+                }
+                <ng-container #dynamicComponentContainer></ng-container>
+              </div>
+            } @else if (field.type === 'list') {
+              <!-- List field -->
+              <div class="detail-field list-field" [class.full-width]="field.fullWidth">
+                <label class="detail-label">{{ field.label }}</label>
+                @if (getListItems(field).length > 0) {
+                  <div class="detail-list">
+                    @if (field.listItemComponent) {
+                      @for (item of getListItems(field); track item.id || $index) {
+                        <ng-container #listItemContainer></ng-container>
+                      }
+                    } @else {
+                      @for (item of getListItems(field); track item.id || $index) {
+                        <div class="list-item">{{ item.name || item }}</div>
+                      }
+                    }
+                  </div>
+                } @else {
+                  <p class="detail-value empty">{{ field.emptyMessage || 'Sin datos' }}</p>
+                }
+              </div>
+            } @else if (field.type === 'badge') {
+              <!-- Badge field (boolean with styled badge) -->
+              <div class="detail-field badge-field" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <span 
+                  class="detail-badge"
+                  [class.active]="isFieldActive(field)"
+                  [class.inactive]="!isFieldActive(field)"
+                  [class]="isFieldActive(field) ? (field.badgeConfig?.activeClass || '') : (field.badgeConfig?.inactiveClass || '')"
+                >
+                  {{ getFieldValue(field) }}
+                </span>
+              </div>
+            } @else if (field.type === 'boolean') {
+              <!-- Boolean field (inline display) -->
+              <div class="detail-field boolean-field inline-field" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <span 
+                  class="detail-badge"
+                  [class.active]="isFieldActive(field)"
+                  [class.inactive]="!isFieldActive(field)"
+                >
+                  {{ getFieldValue(field) }}
+                </span>
+              </div>
+            } @else if (field.type === 'date') {
+              <!-- Date field -->
+              <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <p class="detail-value">
+                  {{ getFieldValue(field) | date:'dd/MM/yyyy' }}
+                </p>
+              </div>
+            } @else if (field.type === 'datetime') {
+              <!-- DateTime field -->
+              <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <p class="detail-value">
+                  {{ getFieldValue(field) | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+              </div>
+            } @else if (field.type === 'currency') {
+              <!-- Currency field -->
+              <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <p class="detail-value">{{ getFieldValue(field) }}</p>
+              </div>
+            } @else {
+              <!-- Default text/number field -->
+              <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
+                <label class="detail-label">{{ field.label }}</label>
+                <p class="detail-value">{{ getFieldValue(field) }}</p>
+              </div>
+            }
+          }
+        </div>
+        </div>
+      </section>
+    }
+  </div>
+
+  @if (showFooter()) {
+    <footer class="aside-panel-footer">
+      @for (action of getVisibleActions(); track $index) {
+        <button 
+          type="button"
+          [class]="'btn ' + (action.type || 'secondary')"
+          (click)="onActionClick(action)"
+        >
+          @if (action.icon) {
+            <span class="btn-icon">{{ action.icon }}</span>
+          }
+          {{ action.label }}
+        </button>
+      }
+    </footer>
+  }
+</div>
