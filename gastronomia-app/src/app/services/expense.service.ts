@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
-import { Expense, ExpenseResponseDTO, mapExpenseFromDTO, PageResponse } from '../shared/models';
+import { Expense, PageResponse } from '../shared/models';
 
 interface ExpenseFilters {
     supplierId?: number | null;
@@ -21,7 +20,7 @@ interface ExpenseFilters {
 })
 export class ExpenseService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/expenses`;
+  private readonly apiUrl = `${environment.apiBaseUrl}/expenses`;
 
   getExpenses(filters: ExpenseFilters = {}): Observable<PageResponse<Expense>> {
     let params = new HttpParams();
@@ -46,35 +45,26 @@ export class ExpenseService {
     params = params.set('size', (filters.size ?? 10).toString());
     params = params.set('sort', filters.sort ?? 'date,desc');
 
-    return this.http.get<PageResponse<ExpenseResponseDTO>>(this.apiUrl, { params }).pipe(
-      map(response => ({
-        ...response,
-        content: response.content.map(dto => mapExpenseFromDTO(dto))
-      }))
-    );
+    return this.http.get<PageResponse<Expense>>(this.apiUrl, { params });
   }
 
   getExpenseById(id: number): Observable<Expense> {
-    return this.http.get<ExpenseResponseDTO>(`${this.apiUrl}/${id}`).pipe(
-      map(dto => mapExpenseFromDTO(dto))
-    );
+    return this.http.get<Expense>(`${this.apiUrl}/${id}`);
   }
 
   createExpense(expense: Partial<Expense>): Observable<Expense> {
-    if (!expense.dateTime) {
-      throw new Error('dateTime is required');
+    if (!expense.date) {
+      throw new Error('date is required');
     }
     
-    const requestBody: any = {
-      supplierId: expense.supplierId,
+    const requestBody = {
+      supplierId: expense.supplier?.id,
       amount: expense.amount,
       comment: expense.comment || null,
-      dateTime: expense.dateTime
+      date: expense.date
     };
 
-    return this.http.post<ExpenseResponseDTO>(this.apiUrl, requestBody).pipe(
-      map(dto => mapExpenseFromDTO(dto))
-    );
+    return this.http.post<Expense>(this.apiUrl, requestBody);
   }
 }
 

@@ -1,9 +1,7 @@
 import { Component, inject, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AddExpenseForm } from '../add-expense-form';
-import { Header } from '../../../shared/components/header/header';
-import { Footer } from '../../../shared/components/footer/footer';
+import { ExpenseForm } from '../expense-form';
 import { Expense } from '../../../shared/models';
 import { ExpenseService } from '../../../services/expense.service';
 import { SafeDatePipe } from '../../../shared/pipes/safe-date.pipe';
@@ -11,7 +9,7 @@ import { SafeDatePipe } from '../../../shared/pipes/safe-date.pipe';
 @Component({
   selector: 'app-expenses-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddExpenseForm, Header, Footer, CurrencyPipe, SafeDatePipe],
+  imports: [CommonModule, FormsModule, ExpenseForm, CurrencyPipe, SafeDatePipe],
   templateUrl: './expenses-page.html',
   styleUrl: './expenses-page.css',
 })
@@ -85,7 +83,7 @@ export class ExpensesPage implements OnInit {
     } = {
       page: this.currentPage(),
       size: this.pageSize,
-      sort: 'dateTime,desc'
+      sort: 'date,desc'
     };
 
     if (this.filters.minAmount !== null) {

@@ -1,0 +1,16 @@
+<aside class="aside-panel">
+    @if (errorMessage()) {
+        <div class="error-message">
+            {{ errorMessage() }}
+        </div>
+    }
+
+    <app-form
+        [config]="formConfig()"
+        [showHeader]="true"
+        [showFooter]="true"
+        (formSubmit)="onFormSubmit($event)"
+        (formCancel)="onFormCancel()"
+        (formClose)="onFormClose()">
+    </app-form>
+</aside>

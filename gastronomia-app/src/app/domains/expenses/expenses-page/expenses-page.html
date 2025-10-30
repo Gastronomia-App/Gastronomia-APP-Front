@@ -1,5 +1,3 @@
-<app-header></app-header>
-
 <main class="main-content">
     <div class="page-header">
         <h1 class="page-title">Gestión de Gastos</h1>
@@ -109,15 +107,15 @@
                                     @for (expense of expenses(); track expense.id) {
                                         <tr>
                                             <td>
-                                                {{ expense.dateTime | safeDate }}
-                                                @if (!expense.dateTime) {
+                                                {{ expense.date | safeDate }}
+                                                @if (!expense.date) {
                                                     <small class="text-danger">(sin fecha)</small>
                                                 }
                                             </td>
                                             <td>
-                                                {{ expense.supplierName || expense.supplierId || '-' }}
-                                                @if (!expense.supplierName && expense.supplierId) {
-                                                    <small class="text-muted">(ID: {{ expense.supplierId }})</small>
+                                                {{ expense.supplier?.tradeName || expense.supplier?.legalName || '-' }}
+                                                @if (expense.supplier?.id) {
+                                                    <small class="text-muted">(ID: {{ expense.supplier?.id }})</small>
                                                 }
                                             </td>
                                             <td class="text-right font-semibold">
@@ -179,10 +177,10 @@
         </div>
 
         @if (isFormOpen()) {
-            <app-add-expense-form
+            <app-expense-form
                 (expenseCreated)="onExpenseCreated()"
                 (close)="closeExpenseForm()">
-            </app-add-expense-form>
+            </app-expense-form>
         }
     </div>
     
