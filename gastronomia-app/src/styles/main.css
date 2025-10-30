@@ -18,3 +18,5 @@
 @import './components/forms.css';
 @import './components/panels.css';
 @import './components/page.css';
+@import './components/aside-form.css';
+@import './components/auth-form.css';

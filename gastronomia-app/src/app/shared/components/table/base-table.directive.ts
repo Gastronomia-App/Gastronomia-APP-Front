@@ -1,7 +1,7 @@
-import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, DestroyRef, inject, computed, afterNextRender } from '@angular/core';
+import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { TableColumn, LoadMoreEvent } from '../../models';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TableDataService } from './services/table-data.service';
+import { TableDataService } from '../../services/table-data.service';
 
 /**
  * Base class for components that display data in a table
@@ -13,7 +13,7 @@ import { TableDataService } from './services/table-data.service';
  * 
  * @example
  * ```typescript
- * export class ProductTable  extends BaseTable<Product, ProductForm, ProductDetails> {
+ * export class ProductPage extends BaseTablePage<Product, ProductForm, ProductDetails> {
  *   constructor() {
  *     super();
  *     this.tableService.setPageSize(12);
@@ -38,7 +38,7 @@ export abstract class BaseTable<
   TForm = any,
   TDetails = any
 > implements OnInit, OnDestroy, AfterViewChecked {
-
+  
   @ViewChild('formComponent') formComponent?: TForm & { loadProduct?: (item: T) => void; resetForm?: () => void };
   @ViewChild('detailsComponent') detailsComponent?: TDetails & { loadProduct?: (item: T) => void };
 
@@ -47,15 +47,15 @@ export abstract class BaseTable<
   showDetails = signal(false);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
-  searchTerm = signal<string>('');
+  searchTerm: string = '';
 
   // Pending items for AfterViewChecked
   protected pendingFormItem?: T;
   protected pendingDetailsItem?: T;
-
-  // DestroyRef for handle memory leaks
-  protected destroyRef = inject(DestroyRef);
-
+  
+  // Subscriptions
+  protected subscriptions = new Subscription();
+  
   // Table service for data management
   protected tableService = new TableDataService<T>();
 
@@ -69,12 +69,26 @@ export abstract class BaseTable<
   protected abstract getItemName(item: T): string;
   protected abstract getItemId(item: T): number;
 
-  // Public getters for template (computed for reactive calculation)
-  columns = computed(() => this.getColumns()); 
-  filteredData = computed(() => this.tableService.filteredData());
-  isLoading = computed(() => this.tableService.isLoading());
-  pagination = computed(() => this.tableService.paginationConfig());
-  activeProductId = computed(() => this.highlightedRowId);
+  // Public getters for template
+  get columns(): TableColumn<T>[] {
+    return this.getColumns();
+  }
+
+  get filteredData(): T[] {
+    return this.tableService.filteredData();
+  }
+
+  get isLoading(): boolean {
+    return this.tableService.isLoading();
+  }
+
+  get paginationConfig() {
+    return this.tableService.paginationConfig();
+  }
+
+  get activeProductId(): number | null {
+    return this.highlightedRowId;
+  }
 
   ngOnInit(): void {
     this.initializeTable();
@@ -95,6 +109,7 @@ export abstract class BaseTable<
   }
 
   ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
     this.tableService.reset();
   }
 
@@ -136,13 +151,16 @@ export abstract class BaseTable<
    */
   onTableDetails(item: T): void {
     const itemId = this.getItemId(item);
-
-    this.fetchItemById(itemId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (full: T) => this.onViewDetails(full),
-        error: () => this.onViewDetails(item)
-      });
+    
+    this.fetchItemById(itemId).subscribe({
+      next: (fullItem: T) => {
+        this.onViewDetails(fullItem);
+      },
+      error: (error: any) => {
+        console.error(`❌ GET item ${itemId} - Error:`, error);
+        this.onViewDetails(item);
+      }
+    });
   }
 
   /**
@@ -150,13 +168,16 @@ export abstract class BaseTable<
    */
   onTableEdit(item: T): void {
     const itemId = this.getItemId(item);
-
-    this.fetchItemById(itemId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (full: T) => this.onEditItem(full),
-        error: () => this.onEditItem(item)
-      });
+    
+    this.fetchItemById(itemId).subscribe({
+      next: (fullItem: T) => {
+        this.onEditItem(fullItem);
+      },
+      error: (error: any) => {
+        console.error(`❌ GET item ${itemId} - Error:`, error);
+        this.onEditItem(item);
+      }
+    });
   }
 
   /**
@@ -165,14 +186,17 @@ export abstract class BaseTable<
   onTableDelete(item: T): void {
     const itemId = this.getItemId(item);
     const itemName = this.getItemName(item);
-
+    
     if (confirm(`¿Estás seguro de eliminar "${itemName}"?`)) {
-      this.deleteItem(itemId)
-        .pipe(takeUntilDestroyed(this.destroyRef)) // ⬅️ 6)
-        .subscribe({
-          next: () => this.refreshData(),
-          error: (e: any) => console.error(`❌ DELETE item ${itemId}`, e)
-        });
+      this.deleteItem(itemId).subscribe({
+        next: () => {
+          console.log('✅ Item eliminado exitosamente');
+          this.refreshData();
+        },
+        error: (error: any) => {
+          console.error(`❌ DELETE item ${itemId} - Error:`, error);
+        }
+      });
     }
   }
 
@@ -189,14 +213,14 @@ export abstract class BaseTable<
    * Handle search input
    */
   onSearch(): void {
-    this.tableService.search(this.searchTerm());
+    this.tableService.search(this.searchTerm);
   }
 
   /**
    * Clear search input
    */
   clearSearch(): void {
-    this.searchTerm.set('');
+    this.searchTerm = '';
     this.tableService.clearSearch();
   }
 
@@ -210,8 +234,12 @@ export abstract class BaseTable<
     this.showForm.set(true);
     this.currentItemId = null;
     this.highlightedRowId = null;
-
-    afterNextRender(() => this.formComponent?.resetForm?.());
+    
+    setTimeout(() => {
+      if (this.formComponent?.resetForm) {
+        this.formComponent.resetForm();
+      }
+    }, 0);
   }
 
   /**
