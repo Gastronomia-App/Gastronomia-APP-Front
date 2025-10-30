@@ -1,62 +1,143 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { EmployeeApi, Page } from '../services/employee-api';
+import { Router } from '@angular/router';
+import { EmployeeApi } from '../services/employee-api';
 import { Employee } from '../../../shared/models/employee.model';
+import { TableColumn } from '../../../shared/models';
+import { Table, BaseTable } from '../../../shared/components/table';
 
 @Component({
   selector: 'app-list-employees',
   standalone: true,
   templateUrl: './list-employees.html',
   styleUrl: './list-employees.css',
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, Table]
 })
-export class ListEmployeesComponent implements OnInit {
-  page?: Page<Employee>;
-  loading = false;
-  errorMsg = '';
-  q = '';
-  filtered: Employee[] = [];
+export class ListEmployeesComponent extends BaseTable<Employee> {
+  private api = inject(EmployeeApi);
+  private router = inject(Router);
 
-  constructor(private api: EmployeeApi) {}
+  // Output events para comunicación con el padre
+  onEmployeeSelected = output<Employee>();
+  onNewEmployeeClick = output<void>();
 
-  ngOnInit() { this.load(); }
+  override highlightedRowId: number | null = null;
 
-  load(page=0) {
-    this.loading = true;
-    this.errorMsg = '';
-    this.api.list(page, 10, 'id,asc').subscribe({
-      next: (p) => { 
-        this.page = p; 
-        this.filtered = p.content;
-        this.loading = false; 
-      },
-      error: (e) => { 
-        this.errorMsg = 'Error al cargar empleados';
-        this.loading = false; 
-      }
+  constructor() {
+    super();
+    console.log('🔧 ListEmployeesComponent constructor');
+    
+    // Configure page size
+    this.tableService.setPageSize(10);
+    
+    // Set custom filter function for employees
+    this.tableService.setFilterFunction((employee, term) => {
+      const searchTerm = term.toLowerCase();
+      return (
+        employee.name.toLowerCase().includes(searchTerm) ||
+        employee.lastName.toLowerCase().includes(searchTerm) ||
+        employee.username.toLowerCase().includes(searchTerm) ||
+        employee.dni.toLowerCase().includes(searchTerm) ||
+        (employee.email?.toLowerCase().includes(searchTerm) ?? false)
+      );
     });
   }
 
-  applyFilter() {
-    if (!this.page) return;
-    const query = this.q.toLowerCase().trim();
-    this.filtered = this.page.content.filter(e => 
-      e.name.toLowerCase().includes(query) ||
-      e.lastName.toLowerCase().includes(query) ||
-      e.username.toLowerCase().includes(query) ||
-      e.email?.toLowerCase().includes(query)
-    );
+  // ==================== Required Abstract Method Implementations ====================
+
+  protected getColumns(): TableColumn<Employee>[] {
+    return [
+      {
+        header: 'ID',
+        field: 'id',
+        sortable: true,
+        align: 'center',
+        width: '100px'
+      },
+      {
+        header: 'Nombre',
+        field: 'name',
+        sortable: true,
+        align: 'center',
+        width: '250px'
+      },
+      {
+        header: 'Apellido',
+        field: 'lastName',
+        sortable: true,
+        align: 'center',
+        width: '250px'
+      },
+      {
+        header: 'Teléfono',
+        field: 'phoneNumber',
+        sortable: false,
+        align: 'center',
+        width: '250px'
+      }
+    ];
   }
 
-  resetFilter() {
-    this.q = '';
-    if (this.page) {
-      this.filtered = this.page.content;
-    }
+  protected fetchData(page: number, size: number) {
+    console.log(`📡 Fetching employees: page=${page}, size=${size}`);
+    return this.api.list(page, size, 'id,asc');
   }
 
-  isActive(e: Employee): boolean {
-    return !e.deleted;
+  protected fetchItemById(id: number) {
+    return this.api.getById(id);
+  }
+
+  protected deleteItem(id: number) {
+    return this.api.delete(id);
+  }
+
+  protected getItemName(employee: Employee): string {
+    return `${employee.name} ${employee.lastName}`;
+  }
+
+  protected getItemId(employee: Employee): number {
+    return employee.id;
+  }
+
+  protected onEditItem(employee: Employee): void {
+    // Navigate to edit page or open edit form
+    this.router.navigate(['/employees', employee.id, 'edit']);
+  }
+
+  protected onViewDetails(employee: Employee): void {
+    // Navigate to details page or emit event
+    this.onEmployeeSelected.emit(employee);
+  }
+
+  // ==================== Public API for Parent Component ====================
+
+  /**
+   * Handler for the action button click (New Employee)
+   * Navigate to create employee page
+   */
+  public onNewEmployee(): void {
+    this.router.navigate(['/employees/new']);
+  }
+
+  /**
+   * Permite al componente padre forzar un refresh de los datos
+   */
+  public refreshList(): void {
+    this.refreshData();
+  }
+
+  /**
+   * Permite al componente padre establecer el término de búsqueda
+   */
+  public setSearchTerm(term: string): void {
+    this.searchTerm = term;
+    this.onSearch();
+  }
+
+  /**
+   * Permite al componente padre limpiar la búsqueda
+   */
+  public clearSearchTerm(): void {
+    this.clearSearch();
   }
 }

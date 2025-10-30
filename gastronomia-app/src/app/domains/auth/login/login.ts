@@ -30,8 +30,12 @@ export class LoginComponent {
     this.error = undefined;
 
     this.auth.login(this.form.value as any).subscribe({
-      next: () => this.router.navigateByUrl('/employees/list'),
+      next: () => {
+        console.log('✅ Login exitoso, redirigiendo a /employees');
+        this.router.navigateByUrl('/employees');
+      },
       error: (e) => {
+        console.error('❌ Error en login:', e);
         this.error = e?.error?.message ?? 'Credenciales inválidas';
         this.loading = false;
       }

@@ -2,15 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../enviroments/environment';
 import { Observable } from 'rxjs';
-import { Employee } from '../../../shared/models/employee.model';
-
-export interface Page<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // page index
-  size: number;
-}
+import { Employee, EmployeeRequestDTO } from '../../../shared/models/employee.model';
+import { PageResponse } from '../../../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeApi {
@@ -18,12 +11,12 @@ export class EmployeeApi {
 
   constructor(private http: HttpClient) {}
 
-  list(page=0, size=10, sort='id,asc'): Observable<Page<Employee>> {
+  list(page=0, size=10, sort='id,asc'): Observable<PageResponse<Employee>> {
     const params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
-    return this.http.get<Page<Employee>>(this.base, { params });
+    return this.http.get<PageResponse<Employee>>(this.base, { params });
   }
 
-  create(dto: Employee): Observable<Employee> {
+  create(dto: EmployeeRequestDTO): Observable<Employee> {
     return this.http.post<Employee>(this.base, dto);
   }
 
@@ -31,7 +24,7 @@ export class EmployeeApi {
     return this.http.get<Employee>(`${this.base}/${id}`);
   }
 
-  update(id: number, dto: Employee): Observable<Employee> {
+  update(id: number, dto: Partial<Employee>): Observable<Employee> {
     return this.http.put<Employee>(`${this.base}/${id}`, dto);
   }
 
