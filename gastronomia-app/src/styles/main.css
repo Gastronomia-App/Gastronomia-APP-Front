@@ -17,4 +17,5 @@
 @import './components/buttons.css';
 @import './components/forms.css';
 @import './components/panels.css';
-@import './components/page.css';
+@import './components/pages.css';
+@import './components/aside-panel.css';

@@ -1,12 +1,12 @@
-<div class="form-wrapper">
+<div class="aside-panel-wrapper">
   @if (showHeader()) {
-    <header class="form-header">
+    <header class="aside-panel-header">
       <h2>{{ formTitle() }}</h2>
       <button type="button" class="btn-close" (click)="onClose()">✕</button>
     </header>
   }
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="aside-panel-container">
     @for (section of visibleSections(); track $index) {
       <section [class]="section.cssClass || ''">
         @if (section.title) {
@@ -182,7 +182,7 @@
   </form>
 
   @if (showFooter()) {
-    <footer class="form-footer">
+    <footer class="aside-panel-footer">
       <button type="button" class="btn secondary" (click)="onCancel()">
         {{ cancelButtonLabel() }}
       </button>
