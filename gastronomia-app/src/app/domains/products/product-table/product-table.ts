@@ -21,7 +21,6 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
-  public destroyRef: DestroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
   onProductSelected = output<Product>();
@@ -36,13 +35,6 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
   confirmDialogVisible = false;
   confirmDialogDataValue: any = null;
   confirmDialogAction: (() => void) | null = null;
-
-  // Signal para paginación
-  pagination = signal<any>({
-    page: 1,
-    pageSize: 20,
-    total: 0
-  });
 
   constructor() {
     super();
@@ -234,20 +226,5 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
 
   public clearSearchTerm(): void {
     this.clearSearch();
-  }
-
-  showConfirmDialog() {
-    return !!this.confirmDialogVisible;
-  }
-
-  confirmDialogData() {
-    return this.confirmDialogDataValue || {};
-  }
-
-  onConfirmDialogConfirm() {
-    if (this.confirmDialogAction) {
-      this.confirmDialogAction();
-    }
-    this.confirmDialogVisible = false;
   }
 }

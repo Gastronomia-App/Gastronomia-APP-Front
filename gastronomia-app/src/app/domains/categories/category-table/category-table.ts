@@ -20,7 +20,6 @@ import { signal } from '@angular/core';
 export class CategoryTable extends BaseTable<Category> {
   private categoryService = inject(CategoryService);
   private categoryFormService = inject(CategoryFormService);
-  private destroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
   onCategorySelected = output<Category>();
@@ -32,12 +31,6 @@ export class CategoryTable extends BaseTable<Category> {
   confirmDialogVisible = false;
   confirmDialogDataValue: any = null;
   confirmDialogAction: (() => void) | null = null;
-
-  pagination = signal<any>({
-    page: 1,
-    pageSize: 20,
-    total: 0
-  });
 
   constructor() {
     super();
@@ -181,21 +174,6 @@ export class CategoryTable extends BaseTable<Category> {
     
     // Return black for light colors, white for dark colors
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
-  }
-
-  public showConfirmDialog(): boolean {
-    return !!this.confirmDialogVisible;
-  }
-
-  public confirmDialogData() {
-    return this.confirmDialogDataValue || {};
-  }
-
-  public onConfirmDialogConfirm() {
-    if (this.confirmDialogAction) {
-      this.confirmDialogAction();
-    }
-    this.confirmDialogVisible = false;
   }
 }
 
