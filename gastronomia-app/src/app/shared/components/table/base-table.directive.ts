@@ -1,67 +1,32 @@
-import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, DestroyRef, inject, computed, afterNextRender } from '@angular/core';
+import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, computed, inject, DestroyRef, afterNextRender } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { TableColumn, LoadMoreEvent } from '../../models';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TableDataService } from './services/table-data.service';
+import { TableDataService } from '../../services/table-data.service';
 
-/**
- * Base class for components that display data in a table
- * Handles common table operations: loading, filtering, pagination, CRUD actions
- * 
- * @template T - The data entity type
- * @template TForm - The form component type
- * @template TDetails - The details component type
- * 
- * @example
- * ```typescript
- * export class ProductTable  extends BaseTable<Product, ProductForm, ProductDetails> {
- *   constructor() {
- *     super();
- *     this.tableService.setPageSize(12);
- *   }
- * 
- *   protected getColumns(): TableColumn<Product>[] {
- *     return [
- *       { header: 'Name', field: 'name', sortable: true },
- *       { header: 'Price', field: 'price', formatter: (v) => `$${v}` }
- *     ];
- *   }
- * 
- *   protected fetchData = (page: number, size: number) => {
- *     return this.productService.getProductsPage(page, size);
- *   }
- * }
- * ```
- */
 @Directive()
 export abstract class BaseTable<
   T extends Record<string, any>,
   TForm = any,
   TDetails = any
 > implements OnInit, OnDestroy, AfterViewChecked {
-
+  
   @ViewChild('formComponent') formComponent?: TForm & { loadProduct?: (item: T) => void; resetForm?: () => void };
   @ViewChild('detailsComponent') detailsComponent?: TDetails & { loadProduct?: (item: T) => void };
 
   // UI State
   showForm = signal(false);
   showDetails = signal(false);
-  showConfirmDialog = signal(false);
-  confirmDialogData = signal<{
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  } | null>(null);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
-  searchTerm = signal<string>('');
+  public searchTerm = signal<string>("");
 
   // Pending items for AfterViewChecked
   protected pendingFormItem?: T;
   protected pendingDetailsItem?: T;
-
-  // DestroyRef for handle memory leaks
-  protected destroyRef = inject(DestroyRef);
-
+  
+  // Subscriptions
+  protected subscriptions = new Subscription();
+  
   // Table service for data management
   protected tableService = new TableDataService<T>();
 
@@ -75,11 +40,15 @@ export abstract class BaseTable<
   protected abstract getItemName(item: T): string;
   protected abstract getItemId(item: T): number;
 
-  // Public getters for template (computed for reactive calculation)
-  columns = computed(() => this.getColumns()); 
+  // Public getters for template
+  columns = computed(() => this.getColumns());
+
   filteredData = computed(() => this.tableService.filteredData());
+
   isLoading = computed(() => this.tableService.isLoading());
-  pagination = computed(() => this.tableService.paginationConfig());
+
+  paginationConfig = computed(() => this.tableService.paginationConfig());
+
   activeProductId = computed(() => this.highlightedRowId);
 
   ngOnInit(): void {
@@ -101,6 +70,7 @@ export abstract class BaseTable<
   }
 
   ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
     this.tableService.reset();
   }
 
@@ -142,13 +112,16 @@ export abstract class BaseTable<
    */
   onTableDetails(item: T): void {
     const itemId = this.getItemId(item);
-
-    this.fetchItemById(itemId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (full: T) => this.onViewDetails(full),
-        error: () => this.onViewDetails(item)
-      });
+    
+    this.fetchItemById(itemId).subscribe({
+      next: (fullItem: T) => {
+        this.onViewDetails(fullItem);
+      },
+      error: (error: any) => {
+        console.error(`❌ GET item ${itemId} - Error:`, error);
+        this.onViewDetails(item);
+      }
+    });
   }
 
   /**
@@ -156,13 +129,16 @@ export abstract class BaseTable<
    */
   onTableEdit(item: T): void {
     const itemId = this.getItemId(item);
-
-    this.fetchItemById(itemId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (full: T) => this.onEditItem(full),
-        error: () => this.onEditItem(item)
-      });
+    
+    this.fetchItemById(itemId).subscribe({
+      next: (fullItem: T) => {
+        this.onEditItem(fullItem);
+      },
+      error: (error: any) => {
+        console.error(`❌ GET item ${itemId} - Error:`, error);
+        this.onEditItem(item);
+      }
+    });
   }
 
   /**
@@ -171,59 +147,18 @@ export abstract class BaseTable<
   onTableDelete(item: T): void {
     const itemId = this.getItemId(item);
     const itemName = this.getItemName(item);
-
-    // Show confirmation dialog
-    this.confirmDialogData.set({
-      title: 'Confirmar eliminación',
-      message: `¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción no se puede deshacer.`,
-      onConfirm: () => {
-        this.executeDelete(itemId);
-      }
-    });
-    this.showConfirmDialog.set(true);
-  }
-
-  /**
-   * Execute delete operation
-   */
-  private executeDelete(itemId: number): void {
-    this.deleteItem(itemId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
+    
+    if (confirm(`¿Estás seguro de eliminar "${itemName}"?`)) {
+      this.deleteItem(itemId).subscribe({
         next: () => {
+          console.log('✅ Item eliminado exitosamente');
           this.refreshData();
-          this.closeConfirmDialog();
         },
-        error: (e: any) => {
-          console.error(`❌ DELETE item ${itemId}`, e);
-          this.closeConfirmDialog();
+        error: (error: any) => {
+          console.error(`❌ DELETE item ${itemId} - Error:`, error);
         }
       });
-  }
-
-  /**
-   * Close confirmation dialog
-   */
-  closeConfirmDialog(): void {
-    this.showConfirmDialog.set(false);
-    this.confirmDialogData.set(null);
-  }
-
-  /**
-   * Handle confirmation dialog confirm
-   */
-  onConfirmDialogConfirm(): void {
-    const data = this.confirmDialogData();
-    if (data?.onConfirm) {
-      data.onConfirm();
     }
-  }
-
-  /**
-   * Handle confirmation dialog cancel
-   */
-  onConfirmDialogCancel(): void {
-    this.closeConfirmDialog();
   }
 
   /**
@@ -231,6 +166,12 @@ export abstract class BaseTable<
    */
   onLoadMore(event: LoadMoreEvent): void {
     this.tableService.loadMore(this.fetchData.bind(this), event);
+  }
+  
+/**
+ * Handle confirmation dialog cancel
+ */
+  onConfirmDialogCancel(): void {
   }
 
   // ==================== Search and Filter ====================
@@ -260,8 +201,12 @@ export abstract class BaseTable<
     this.showForm.set(true);
     this.currentItemId = null;
     this.highlightedRowId = null;
-
-    afterNextRender(() => this.formComponent?.resetForm?.());
+    
+    setTimeout(() => {
+      if (this.formComponent?.resetForm) {
+        this.formComponent.resetForm();
+      }
+    }, 0);
   }
 
   /**

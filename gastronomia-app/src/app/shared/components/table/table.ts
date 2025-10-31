@@ -12,11 +12,12 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import {
   TableColumn,
   TableAction,
   TableFilter,
+  FilterOption,
   ActiveFilter,
   PaginationConfig,
   SortConfig,
@@ -46,40 +47,40 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   enableInfiniteScroll = input<boolean>(true);
   highlightedRowId = input<number | string | null>(null);
   rowIdentifier = input<keyof T>('id' as keyof T);
-
+  
   // Search & Filter inputs
   enableSearch = input<boolean>(true);
   searchPlaceholder = input<string>('Buscar...');
   enableFilters = input<boolean>(false);
   filters = input<TableFilter<T>[]>([]);
-
+  
   // Optional action button inputs
   enableActionButton = input<boolean>(false);
   actionButtonLabel = input<string>('Nuevo');
   actionButtonIcon = input<string | null>(null);
-
+  
   // Pagination inputs
   pagination = input<PaginationConfig | null>(null);
-
+  
   // Sort inputs
   enableSort = input<boolean>(false);
-
+  
   // Outputs
   rowClick = output<RowClickEvent<T>>();
   edit = output<T>();
   delete = output<T>();
   details = output<T>();
   loadMore = output<LoadMoreEvent>();
-  sort = output<SortConfig<T>>();
+  sort = output<SortConfig>();
   searchChange = output<string>();
   filtersChange = output<ActiveFilter[]>();
   actionButtonClick = output<void>();
 
   // Internal state
-  private sortState = signal<SortConfig<T> | null>(null);
+  private sortState = signal<SortConfig | null>(null);
   private scrollListener?: () => void;
   private isAutoLoading = false; // Prevent concurrent auto-loads
-
+  
   // Search & Filter state
   searchTerm = signal<string>('');
   activeFilters = signal<ActiveFilter[]>([]);
@@ -101,7 +102,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   // Default actions (edit and delete)
   defaultActions = computed<TableAction<T>[]>(() => {
     if (!this.hasDefaultActions()) return [];
-
+    
     return [
       {
         icon: this.sanitizer.bypassSecurityTrustHtml(this.EDIT_ICON) as any,
@@ -126,7 +127,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   // Computed filtered and searched data
   displayedData = computed(() => {
     let result = [...this.data()];
-
+    
     // Apply search filter
     const search = this.searchTerm().toLowerCase().trim();
     if (search && this.enableSearch()) {
@@ -137,13 +138,13 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
         });
       });
     }
-
+    
     // Apply custom filters
     const filters = this.activeFilters();
     if (filters.length > 0 && this.enableFilters()) {
       filters.forEach(activeFilter => {
         const filterConfig = this.filters().find(f => String(f.field) === activeFilter.field);
-
+        
         if (filterConfig?.filterFn) {
           // Use custom filter function
           result = result.filter(row => filterConfig.filterFn!(row, activeFilter.value));
@@ -151,31 +152,31 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
           // Default filter: exact match
           result = result.filter(row => {
             const value = this.getNestedValue(row, activeFilter.field);
-
+            
             // Handle array values (multiselect)
             if (Array.isArray(activeFilter.value)) {
               return activeFilter.value.includes(value);
             }
-
+            
             // Handle single value
             return value === activeFilter.value;
           });
         }
       });
     }
-
+    
     // Apply sorting
     const currentSort = this.sortState();
     if (currentSort && this.enableSort()) {
       result.sort((a, b) => {
-        const aValue = this.getNestedValue(a, String(currentSort.field));
-        const bValue = this.getNestedValue(b, String(currentSort.field));
-
+        const aValue = this.getNestedValue(a, currentSort.field);
+        const bValue = this.getNestedValue(b, currentSort.field);
+        
         // Handle null/undefined values
         if (aValue == null && bValue == null) return 0;
         if (aValue == null) return 1;
         if (bValue == null) return -1;
-
+        
         // Compare values
         let comparison = 0;
         if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -186,12 +187,12 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
           // Fallback: convert to string
           comparison = String(aValue).localeCompare(String(bValue));
         }
-
+        
         // Apply direction
         return currentSort.direction === 'asc' ? comparison : -comparison;
       });
     }
-
+    
     return result;
   });
 
@@ -210,7 +211,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
       // Trigger re-check when data or pagination changes
       const currentData = this.data();
       const currentPagination = this.pagination();
-
+      
       if (currentData.length > 0 && currentPagination) {
         setTimeout(() => {
           this.checkAndLoadMoreIfNeeded();
@@ -248,9 +249,9 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
         clientHeight: element.clientHeight,
         currentRows: this.data().length
       });
-
+      
       this.isAutoLoading = true;
-
+      
       this.loadMore.emit({
         currentPage: paginationData.currentPage + 1,
         pageSize: paginationData.pageSize
@@ -260,7 +261,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
       setTimeout(() => {
         this.isAutoLoading = false;
         this.checkAndLoadMoreIfNeeded();
-      }, 100);
+      }, 800);
     }
   }
 
@@ -335,7 +336,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     if (!column.sortable) return;
 
     const currentSort = this.sortState();
-    const field = column.field as keyof T;
+    const field = String(column.field);
 
     if (currentSort?.field === field) {
       // Same column: cycle through directions
@@ -343,18 +344,17 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
         // asc -> desc
         this.sortState.set({ field, direction: 'desc' });
       } else {
-        // desc -> asc
-        this.sortState.set({ field, direction: 'asc' });
+        // desc -> null (clear sort)
+        this.sortState.set(null);
       }
     } else {
       // New column: start with asc
       this.sortState.set({ field, direction: 'asc' });
     }
 
-    // Emit sort event for parent components that need it
-    const currentState = this.sortState();
-    if (currentState) {
-      this.sort.emit(currentState);
+    // Emit sort event (optional, for parent components that need it)
+    if (this.sortState()) {
+      this.sort.emit(this.sortState()!);
     }
   }
 
@@ -365,7 +365,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     if (!column.sortable) return '';
 
     const currentSort = this.sortState();
-    if (currentSort?.field !== column.field) {
+    if (currentSort?.field !== String(column.field)) {
       return '⇅'; // No sort
     }
 
@@ -379,7 +379,12 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     const value = this.getNestedValue(row, String(column.field));
 
     if (column.formatter) {
-      return column.formatter(value, row);
+      const formatted = column.formatter(value, row);
+      // If formatter returns HTML string, bypass security for safe HTML
+      if (typeof formatted === 'string' && formatted.includes('<')) {
+        return this.sanitizer.bypassSecurityTrustHtml(formatted);
+      }
+      return formatted;
     }
 
     if (column.pipe) {
@@ -387,6 +392,13 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     }
 
     return value ?? '-';
+  }
+
+  /**
+   * Sanitize HTML for safe rendering (bypass security for trusted content)
+   */
+  sanitizeHtml(html: string): any {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   /**
@@ -406,7 +418,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
       case 'currency':
         return `$${Number(value).toFixed(2)}`;
       case 'number':
-        return Number(value).toLocaleString('es-AR', {
+        return Number(value).toLocaleString('es-AR', { 
           minimumFractionDigits: args?.split('-')[0] || 0,
           maximumFractionDigits: args?.split('-')[1] || 2
         });
@@ -479,10 +491,10 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   onFilterChange(field: string, value: any): void {
     const filters = this.activeFilters();
     const existingIndex = filters.findIndex(f => f.field === field);
-
+    
     // Remove filter if value is empty/null
-    if (value === null || value === undefined || value === '' ||
-      (Array.isArray(value) && value.length === 0)) {
+    if (value === null || value === undefined || value === '' || 
+        (Array.isArray(value) && value.length === 0)) {
       if (existingIndex !== -1) {
         const updated = [...filters];
         updated.splice(existingIndex, 1);
@@ -491,7 +503,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
       }
       return;
     }
-
+    
     // Update or add filter
     const updated = [...filters];
     if (existingIndex !== -1) {
@@ -499,7 +511,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     } else {
       updated.push({ field, value });
     }
-
+    
     this.activeFilters.set(updated);
     this.filtersChange.emit(updated);
   }
