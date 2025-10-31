@@ -210,7 +210,7 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-primary-lighter);
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -312,7 +312,7 @@
 
 .table thead tr {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 120px;
+  grid-template-columns: repeat(var(--table-columns, 4), 1fr) 120px;
   gap: 0;
   position: sticky;
   top: 0;
@@ -336,8 +336,12 @@
   letter-spacing: 0.02em;
 }
 
+/* Last column (actions) fixed width */
 .table th:last-child {
   border-right: none;
+  justify-content: center;
+  min-width: 120px;
+  max-width: 120px;
 }
 
 /* Table Body */
@@ -367,7 +371,7 @@
 
 .table tbody tr {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 120px;
+  grid-template-columns: repeat(var(--table-columns, 4), 1fr) 120px;
   gap: 0;
   background: var(--color-surface);
   transition: background 0.2s ease;
@@ -388,6 +392,13 @@
   box-sizing: border-box;
   font-size: 0.9rem;
   color: var(--color-text);
+}
+
+/* Last column (actions) fixed width */
+.table td:last-child {
+  justify-content: center;
+  min-width: 120px;
+  max-width: 120px;
 }
 
 /* ============================================
@@ -582,7 +593,13 @@
 
   .table thead tr,
   .table tbody tr {
-    grid-template-columns: 1.5fr 1fr 1fr 100px;
+    grid-template-columns: repeat(var(--table-columns, 4), 1fr) 100px;
+  }
+  
+  .table th:last-child,
+  .table td:last-child {
+    min-width: 100px;
+    max-width: 100px;
   }
 }
 
@@ -593,12 +610,18 @@
 
   .table thead tr,
   .table tbody tr {
-    grid-template-columns: 2fr 1fr 80px;
+    grid-template-columns: repeat(calc(var(--table-columns, 4) - 1), 1fr) 80px;
   }
-
-  /* Hide estado column on mobile */
-  .table th:nth-child(3),
-  .table td:nth-child(3) {
+  
+  .table th:last-child,
+  .table td:last-child {
+    min-width: 80px;
+    max-width: 80px;
+  }
+  
+  /* Hide second column on mobile (if exists) */
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
     display: none;
   }
 }

@@ -1,37 +1,8 @@
-import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked } from '@angular/core';
+import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, computed, inject, DestroyRef, afterNextRender } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TableColumn, LoadMoreEvent } from '../../models';
 import { TableDataService } from '../../services/table-data.service';
 
-/**
- * Base class for components that display data in a table
- * Handles common table operations: loading, filtering, pagination, CRUD actions
- * 
- * @template T - The data entity type
- * @template TForm - The form component type
- * @template TDetails - The details component type
- * 
- * @example
- * ```typescript
- * export class ProductPage extends BaseTablePage<Product, ProductForm, ProductDetails> {
- *   constructor() {
- *     super();
- *     this.tableService.setPageSize(12);
- *   }
- * 
- *   protected getColumns(): TableColumn<Product>[] {
- *     return [
- *       { header: 'Name', field: 'name', sortable: true },
- *       { header: 'Price', field: 'price', formatter: (v) => `$${v}` }
- *     ];
- *   }
- * 
- *   protected fetchData = (page: number, size: number) => {
- *     return this.productService.getProductsPage(page, size);
- *   }
- * }
- * ```
- */
 @Directive()
 export abstract class BaseTable<
   T extends Record<string, any>,
@@ -47,7 +18,7 @@ export abstract class BaseTable<
   showDetails = signal(false);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
-  searchTerm: string = '';
+  public searchTerm = signal<string>("");
 
   // Pending items for AfterViewChecked
   protected pendingFormItem?: T;
@@ -70,25 +41,15 @@ export abstract class BaseTable<
   protected abstract getItemId(item: T): number;
 
   // Public getters for template
-  get columns(): TableColumn<T>[] {
-    return this.getColumns();
-  }
+  columns = computed(() => this.getColumns());
 
-  get filteredData(): T[] {
-    return this.tableService.filteredData();
-  }
+  filteredData = computed(() => this.tableService.filteredData());
 
-  get isLoading(): boolean {
-    return this.tableService.isLoading();
-  }
+  isLoading = computed(() => this.tableService.isLoading());
 
-  get paginationConfig() {
-    return this.tableService.paginationConfig();
-  }
+  paginationConfig = computed(() => this.tableService.paginationConfig());
 
-  get activeProductId(): number | null {
-    return this.highlightedRowId;
-  }
+  activeProductId = computed(() => this.highlightedRowId);
 
   ngOnInit(): void {
     this.initializeTable();
@@ -206,6 +167,12 @@ export abstract class BaseTable<
   onLoadMore(event: LoadMoreEvent): void {
     this.tableService.loadMore(this.fetchData.bind(this), event);
   }
+  
+/**
+ * Handle confirmation dialog cancel
+ */
+  onConfirmDialogCancel(): void {
+  }
 
   // ==================== Search and Filter ====================
 
@@ -213,14 +180,14 @@ export abstract class BaseTable<
    * Handle search input
    */
   onSearch(): void {
-    this.tableService.search(this.searchTerm);
+    this.tableService.search(this.searchTerm());
   }
 
   /**
    * Clear search input
    */
   clearSearch(): void {
-    this.searchTerm = '';
+    this.searchTerm.set('');
     this.tableService.clearSearch();
   }
 
