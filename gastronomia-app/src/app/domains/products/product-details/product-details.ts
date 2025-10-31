@@ -2,9 +2,9 @@ import { Component, inject, output, OnInit, signal, computed, viewChild, effect 
 import { CommonModule } from '@angular/common';
 import { ItemCard } from '../../../shared/components/item-card';
 import { Detail } from '../../../shared/components/detail/detail';
-import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, DetailConfig } from '../../../shared/models';
+import { CategoryService } from '../../categories/services';
 
 @Component({
   selector: 'app-product-details',
@@ -16,7 +16,7 @@ import { Category, Product, DetailConfig } from '../../../shared/models';
   }
 })
 export class ProductDetails implements OnInit {
-  private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
   
   onDetailsClosed = output<void>();
@@ -31,12 +31,8 @@ export class ProductDetails implements OnInit {
   // Computed
   categoryName = computed(() => {
     const currentProduct = this.product();
-    const currentCategories = this.categories();
     
-    if (!currentProduct?.categoryId) return '-';
-    
-    const category = currentCategories.find(c => c.id === currentProduct.categoryId);
-    return category?.name || '-';
+    return currentProduct?.category?.name || '-';
   });
 
   constructor() {
@@ -171,7 +167,7 @@ export class ProductDetails implements OnInit {
   }
 
   private loadCategories(): void {
-    this.productService.getCategories().subscribe({
+    this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
       },

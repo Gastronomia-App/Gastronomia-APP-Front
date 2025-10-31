@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, output, ChangeDetectorRef, viewChild, signal, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, output, ChangeDetectorRef, viewChild, signal, computed, effect, afterNextRender } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Form } from '../../../shared/components/form';
@@ -6,6 +6,7 @@ import { SearchableList } from '../../../shared/components/searchable-list';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import { CategoryService } from '../../categories/services';
 
 @Component({
   selector: 'app-product-form',
@@ -19,6 +20,7 @@ import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubm
 })
 export class ProductForm implements OnInit {
   private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -196,10 +198,9 @@ export class ProductForm implements OnInit {
           groupsField.customInputs = groupsInputs;
         }
         
-        // Re-render dynamic components
-        setTimeout(() => {
-          this.formComponent()?.renderDynamicComponents();
-        }, 0);
+        afterNextRender(() => {
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -212,7 +213,7 @@ export class ProductForm implements OnInit {
 
   private loadCategories(): void {
     this.isLoadingCategories.set(true);
-    this.productService.getCategories().subscribe({
+    this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
         this.updateCategoryOptions();
@@ -284,10 +285,10 @@ export class ProductForm implements OnInit {
         groupsField.customInputs = this.productGroupsInputs();
       }
       
-      // Re-render dynamic components with updated inputs
-      setTimeout(() => {
+      afterNextRender(() => {
         this.formComponent()?.renderDynamicComponents();
-      }, 0);
+      });
+      
     }
   }
 
@@ -329,9 +330,9 @@ export class ProductForm implements OnInit {
   }
 
   onFormSubmit(event: FormSubmitEvent<Product>): void {
-    const formData: any = {
+    const formData: Partial<Product> = {
       name: event.data.name || '',
-      categoryId: Number(event.data.categoryId) || 0,
+      category: event.data.category || '-',
       description: event.data.description || undefined,
       price: Number(event.data.price) || 0,
       cost: Number(event.data.cost) || undefined,
@@ -339,10 +340,14 @@ export class ProductForm implements OnInit {
       controlStock: event.data.controlStock ?? false,
       stock: Number(event.data.stock) || 0,
       components: this.selectedComponents().map(c => ({
-        productId: c.id,
+        id: c.id,
+        name: c.name,
         quantity: c.quantity || 1
       })),
-      productGroupIds: this.selectedProductGroups().map(g => g.id)
+      productGroups: this.selectedProductGroups().map(g => ({
+        id: g.id,
+        name: g.name
+      }))
     };
 
     if (event.isEditMode && event.editingId) {
@@ -379,9 +384,9 @@ export class ProductForm implements OnInit {
     this.isEditMode = true;
     this.editingProductId = product.id;
 
-    const productData: Partial<Product> = {
+    const productData: any = {
       name: product.name,
-      categoryId: product.categoryId,
+      categoryId: product.category.id,
       description: product.description || '',
       price: product.price,
       cost: product.cost,

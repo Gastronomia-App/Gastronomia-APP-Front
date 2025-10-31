@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { Category, Product, ProductGroup, PageResponse } from '../../../shared/models';
+import { map, Observable } from 'rxjs';
+import { Category, PageResponse, Product, ProductGroup } from '../../../shared/models';
 
 @Injectable({
   providedIn: 'root'
@@ -10,17 +10,12 @@ export class ProductService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api';
 
-  // Get all categories
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
-  }
-
   // Get all product groups
   getProductGroups(): Observable<ProductGroup[]> {
     return this.http.get<ProductGroup[]>(`${this.apiUrl}/groups`);
   }
 
-  // Get all products (extrae el array del objeto Page)
+  // Get all products
   getProducts(): Observable<Product[]> {
     return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products`).pipe(
       map(response => response.content)
@@ -30,6 +25,7 @@ export class ProductService {
   getProductsPage(page: number = 0, size: number = 20): Observable<PageResponse<Product>> {
     return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products?page=${page}&size=${size}`);
   }
+
 
   // Get product by ID
   getProductById(id: number): Observable<Product> {
@@ -51,4 +47,3 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
   }
 }
-

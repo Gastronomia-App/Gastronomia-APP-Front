@@ -39,7 +39,6 @@ export class ProductFormService {
 
   viewProductDetails(product: Product): void {
     this.viewProductDetailsSubject.next(product);
-    // NO establecemos el activeProductId aquí, se maneja en product-page
   }
 
   closeAllPanels(): void {

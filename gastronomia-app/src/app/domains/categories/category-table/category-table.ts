@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, DestroyRef, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryService } from '../services/category.service';
 import { CategoryFormService } from '../services/category-form.service';
@@ -6,6 +6,7 @@ import { Category, TableColumn, TableFilter } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
+import { signal } from '@angular/core';
 
 @Component({
   selector: 'app-category-table',
@@ -19,6 +20,7 @@ import { Confirm } from "../../../shared/components/confirm";
 export class CategoryTable extends BaseTable<Category> {
   private categoryService = inject(CategoryService);
   private categoryFormService = inject(CategoryFormService);
+  private destroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
   onCategorySelected = output<Category>();
@@ -27,6 +29,16 @@ export class CategoryTable extends BaseTable<Category> {
   // Filters configuration
   filters: TableFilter<Category>[] = [];
   
+  confirmDialogVisible = false;
+  confirmDialogDataValue: any = null;
+  confirmDialogAction: (() => void) | null = null;
+
+  pagination = signal<any>({
+    page: 1,
+    pageSize: 20,
+    total: 0
+  });
+
   constructor() {
     super();
     
@@ -45,11 +57,19 @@ export class CategoryTable extends BaseTable<Category> {
         header: 'Nombre',
         field: 'name',
         sortable: true,
-        align: 'left'
+        align: 'left',
+        formatter: (value: string, row: Category) => {
+          if (row.color) {
+            // Return HTML for colored badge
+            return `<span class="category-badge" style="background-color: ${row.color}; color: ${this.getContrastColor(row.color)};">${value}</span>`;
+          }
+          return value;
+        }
       },
       {
         header: 'Productos',
         field: 'products',
+        sortable: true,
         align: 'left',
         formatter: (value: any[]) => value?.length?.toString() || '0'
       }
@@ -57,8 +77,7 @@ export class CategoryTable extends BaseTable<Category> {
   }
 
   protected fetchData(page: number, size: number) {
-    // El endpoint no soporta paginación, ignoramos los parámetros
-    return this.categoryService.getCategories();
+    return this.categoryService.getCategoriesPage(page, size);
   }
 
   protected fetchItemById(id: number) {
@@ -143,6 +162,40 @@ export class CategoryTable extends BaseTable<Category> {
    */
   public clearSearchTerm(): void {
     this.clearSearch();
+  }
+
+  /**
+   * Calculate contrast color (white or black) based on background color
+   */
+  private getContrastColor(hexColor: string): string {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return black for light colors, white for dark colors
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  }
+
+  public showConfirmDialog(): boolean {
+    return !!this.confirmDialogVisible;
+  }
+
+  public confirmDialogData() {
+    return this.confirmDialogDataValue || {};
+  }
+
+  public onConfirmDialogConfirm() {
+    if (this.confirmDialogAction) {
+      this.confirmDialogAction();
+    }
+    this.confirmDialogVisible = false;
   }
 }
 

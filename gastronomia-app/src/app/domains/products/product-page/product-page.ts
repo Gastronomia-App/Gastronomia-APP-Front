@@ -1,6 +1,6 @@
 import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ProductTable } from '../product-list/product-table';
+import { ProductTable } from '../product-table/product-table';
 import { ProductForm } from '../product-form/product-form';
 import { ProductDetails } from '../product-details/product-details';
 import { ProductFormService } from '../services/product-form.service';

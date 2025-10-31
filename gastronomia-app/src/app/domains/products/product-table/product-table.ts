@@ -1,11 +1,12 @@
-import { Component, inject, ViewChild, output, DestroyRef } from '@angular/core';
+import { Component, inject, ViewChild, output, DestroyRef, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
-import { Product, TableColumn, TableFilter } from '../../../shared/models';
+import { Product, TableColumn, TableFilter, Category } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
+import { CategoryService } from '../../categories/services';
 
 @Component({
   selector: 'app-product-table',
@@ -16,43 +17,36 @@ import { Confirm } from "../../../shared/components/confirm";
     class: 'entity-table'
   }
 })
-export class ProductTable extends BaseTable<Product> {
+export class ProductTable extends BaseTable<Product> implements OnInit {
   private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
+  public destroyRef: DestroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
   onProductSelected = output<Product>();
   onNewProductClick = output<void>();
 
+  // Categories for filter
+  categories = signal<Category[]>([]);
+
   // Filters configuration
-  filters: TableFilter<Product>[] = [
-    {
-      label: 'Precio Mínimo',
-      field: 'minPrice',
-      type: 'number',
-      placeholder: '0.00',
-      filterFn: (product, value) => {
-        if (!value || value === '') return true;
-        const minPrice = parseFloat(value);
-        return product.price >= minPrice;
-      }
-    },
-    {
-      label: 'Precio Máximo',
-      field: 'maxPrice',
-      type: 'number',
-      placeholder: '0.00',
-      filterFn: (product, value) => {
-        if (!value || value === '') return true;
-        const maxPrice = parseFloat(value);
-        return product.price <= maxPrice;
-      }
-    }
-  ];
+  filters: TableFilter<Product>[] = [];
   
+  confirmDialogVisible = false;
+  confirmDialogDataValue: any = null;
+  confirmDialogAction: (() => void) | null = null;
+
+  // Signal para paginación
+  pagination = signal<any>({
+    page: 1,
+    pageSize: 20,
+    total: 0
+  });
+
   constructor() {
     super();
-    // Configure page size
+
     this.tableService.setPageSize(20);
     
     // Set custom filter function for products
@@ -60,9 +54,70 @@ export class ProductTable extends BaseTable<Product> {
       const searchTerm = term.toLowerCase();
       return (
         product.name.toLowerCase().includes(searchTerm) ||
-        (product.description?.toLowerCase().includes(searchTerm) ?? false)
+        (product.description?.toLowerCase().includes(searchTerm) ?? false) ||
+        (product.category?.name?.toLowerCase().includes(searchTerm) ?? false)
       );
     });
+  }
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+    
+    // Load categories for filter
+    this.categoryService.getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (categories) => {
+          this.categories.set(categories);
+          this.initializeFilters();
+        },
+        error: (error) => {
+          console.error('❌ Error loading categories:', error);
+          this.initializeFilters();
+        }
+      });
+  }
+
+  private initializeFilters(): void {
+    this.filters = [
+      {
+        label: 'Categoría',
+        field: 'categoryId',
+        type: 'select',
+        options: [
+          ...this.categories().map(cat => ({
+            value: cat.id.toString(),
+            label: cat.name
+          }))
+        ],
+        filterFn: (product, value) => {
+          if (!value || value === '') return true;
+          return product.category?.id?.toString() === value;
+        }
+      },
+      {
+        label: 'Precio Mínimo',
+        field: 'minPrice',
+        type: 'number',
+        placeholder: '0.00',
+        filterFn: (product, value) => {
+          if (!value || value === '') return true;
+          const minPrice = parseFloat(value);
+          return product.price >= minPrice;
+        }
+      },
+      {
+        label: 'Precio Máximo',
+        field: 'maxPrice',
+        type: 'number',
+        placeholder: '0.00',
+        filterFn: (product, value) => {
+          if (!value || value === '') return true;
+          const maxPrice = parseFloat(value);
+          return product.price <= maxPrice;
+        }
+      }
+    ];
   }
 
   // ==================== Required Abstract Method Implementations ====================
@@ -81,6 +136,12 @@ export class ProductTable extends BaseTable<Product> {
         sortable: true,
         align: 'left',
         formatter: (value: number) => `$${value.toFixed(2)}`
+      },
+      {
+        header: 'Categoria',
+        field: 'category.name',
+        sortable: true,
+        align: 'left'
       },
       {
         header: 'Estado',
@@ -158,33 +219,35 @@ export class ProductTable extends BaseTable<Product> {
 
   // ==================== Public API for Parent Component ====================
 
-  /**
-   * Handler for the action button click (New Product)
-   * Emits an event to the parent component
-   */
   public onNewProduct(): void {
     this.onNewProductClick.emit();
   }
 
-  /**
-   * Permite al componente padre forzar un refresh de los datos
-   */
   public refreshList(): void {
     this.refreshData();
   }
 
-  /**
-   * Permite al componente padre establecer el término de búsqueda
-   */
   public setSearchTerm(term: string): void {
     this.searchTerm.set(term);
     this.onSearch();
   }
 
-  /**
-   * Permite al componente padre limpiar la búsqueda
-   */
   public clearSearchTerm(): void {
     this.clearSearch();
+  }
+
+  showConfirmDialog() {
+    return !!this.confirmDialogVisible;
+  }
+
+  confirmDialogData() {
+    return this.confirmDialogDataValue || {};
+  }
+
+  onConfirmDialogConfirm() {
+    if (this.confirmDialogAction) {
+      this.confirmDialogAction();
+    }
+    this.confirmDialogVisible = false;
   }
 }

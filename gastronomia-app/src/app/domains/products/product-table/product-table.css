@@ -4,6 +4,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  --table-columns: 4; /* 4 data columns + 1 actions column */
 }
 
 .results-info {
