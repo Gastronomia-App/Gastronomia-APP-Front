@@ -15,7 +15,6 @@ import {
   ComponentRef,
   DestroyRef
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { 
   FormBuilder, 
@@ -46,6 +45,7 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
   
   // Track dynamic component references for cleanup
   private dynamicComponents: ComponentRef<any>[] = [];
+  private dynamicSubscriptions: Array<{ unsubscribe(): void }> = [];
   
   // ViewContainerRef for dynamic component insertion
   @ViewChildren('dynamicComponentContainer', { read: ViewContainerRef })
@@ -199,9 +199,17 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
           validators.push(...field.validators);
         }
 
+        // Get default value based on field type
+        let defaultValue = field.defaultValue ?? '';
+        
+        // For color inputs, ensure a valid hex color format
+        if (field.type === 'color' && !defaultValue) {
+          defaultValue = '#000000';
+        }
+
         // Create form control
         formControls[String(field.name)] = [
-          { value: field.defaultValue ?? '', disabled: field.disabled ?? false },
+          { value: defaultValue, disabled: field.disabled ?? false },
           validators
         ];
       });
@@ -388,6 +396,8 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
     // Clean up existing dynamic components
     this.dynamicComponents.forEach(cmpRef => cmpRef.destroy());
     this.dynamicComponents = [];
+    this.dynamicSubscriptions.forEach(sub => sub.unsubscribe());
+    this.dynamicSubscriptions = [];
     
     let containerIndex = 0;
     const containers = this.dynamicContainers.toArray();
@@ -417,12 +427,14 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
             });
           }
           
-          // Subscribe to outputs with takeUntilDestroyed
+          // Subscribe to outputs and clean up with DestroyRef
           if (field.customOutputs) {
             Object.entries(field.customOutputs).forEach(([key, handler]) => {
               const output = componentRef.instance[key];
               if (output && typeof output.subscribe === 'function') {
-                output.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(handler);
+                const subscription = output.subscribe(handler);
+                this.dynamicSubscriptions.push(subscription);
+                this.destroyRef.onDestroy(() => subscription.unsubscribe());
               }
             });
           }

@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import {
   DetailConfig,
   DetailFieldConfig,
@@ -32,6 +33,7 @@ import {
 export class Detail<T extends Record<string, any>> implements AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+  private sanitizer = inject(DomSanitizer);
   
   // Track dynamic component references for cleanup
   private dynamicComponents: ComponentRef<any>[] = [];
@@ -122,7 +124,12 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
     
     // Use custom formatter if provided
     if (field.formatter) {
-      return field.formatter(rawValue, currentData);
+      const formatted = field.formatter(rawValue, currentData);
+      // If formatter returns HTML, bypass security
+      if (typeof formatted === 'string' && formatted.includes('<')) {
+        return this.sanitizer.bypassSecurityTrustHtml(formatted);
+      }
+      return formatted;
     }
     
     // Default formatting based on type
@@ -165,6 +172,14 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
     if (!currentData) return false;
     
     return !!currentData[field.name as keyof T];
+  }
+
+  /**
+   * Check if field value contains HTML (SafeHtml)
+   */
+  isHtmlValue(field: DetailFieldConfig<T>): boolean {
+    const value = this.getFieldValue(field);
+    return value && typeof value === 'object' && 'changingThisBreaksApplicationSecurity' in value;
   }
 
   /**

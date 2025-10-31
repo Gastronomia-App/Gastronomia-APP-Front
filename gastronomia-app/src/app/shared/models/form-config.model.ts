@@ -15,6 +15,7 @@ export type FormFieldType =
   | 'radio'
   | 'date'
   | 'datetime-local'
+  | 'color'
   | 'custom';
 
 /**

@@ -1,37 +1,8 @@
-import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked } from '@angular/core';
+import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, computed, inject, DestroyRef, afterNextRender } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TableColumn, LoadMoreEvent } from '../../models';
 import { TableDataService } from '../../services/table-data.service';
 
-/**
- * Base class for components that display data in a table
- * Handles common table operations: loading, filtering, pagination, CRUD actions
- * 
- * @template T - The data entity type
- * @template TForm - The form component type
- * @template TDetails - The details component type
- * 
- * @example
- * ```typescript
- * export class ProductPage extends BaseTablePage<Product, ProductForm, ProductDetails> {
- *   constructor() {
- *     super();
- *     this.tableService.setPageSize(12);
- *   }
- * 
- *   protected getColumns(): TableColumn<Product>[] {
- *     return [
- *       { header: 'Name', field: 'name', sortable: true },
- *       { header: 'Price', field: 'price', formatter: (v) => `$${v}` }
- *     ];
- *   }
- * 
- *   protected fetchData = (page: number, size: number) => {
- *     return this.productService.getProductsPage(page, size);
- *   }
- * }
- * ```
- */
 @Directive()
 export abstract class BaseTable<
   T extends Record<string, any>,
@@ -205,6 +176,12 @@ export abstract class BaseTable<
    */
   onLoadMore(event: LoadMoreEvent): void {
     this.tableService.loadMore(this.fetchData.bind(this), event);
+  }
+  
+/**
+ * Handle confirmation dialog cancel
+ */
+  onConfirmDialogCancel(): void {
   }
 
   // ==================== Search and Filter ====================
