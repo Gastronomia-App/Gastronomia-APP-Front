@@ -191,6 +191,7 @@ export abstract class BaseTable<
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          this.onItemDeleted(itemId);
           this.refreshData();
           this.closeConfirmDialog();
         },
@@ -199,6 +200,14 @@ export abstract class BaseTable<
           this.closeConfirmDialog();
         }
       });
+  }
+
+  /**
+   * Hook called after an item is successfully deleted
+   * Override in subclasses to add custom behavior
+   */
+  protected onItemDeleted(itemId: number): void {
+    // Override in subclasses if needed
   }
 
   /**
