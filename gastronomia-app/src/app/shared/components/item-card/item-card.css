@@ -51,6 +51,7 @@
 .quantity-input {
     -moz-appearance: textfield !important;
     appearance: textfield !important;
+    max-width: 60px;
 }
 
 .item-price {
