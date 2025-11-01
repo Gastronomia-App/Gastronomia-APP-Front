@@ -10,8 +10,8 @@ import { Employee, FormConfig, FormSubmitEvent } from '../../../shared/models';
   selector: 'app-employee-form',
   standalone: true,
   imports: [CommonModule, Form],
-  templateUrl: './create-employee.html',
-  styleUrl: './create-employee.css',
+  templateUrl: './employee-form.html',
+  styleUrl: './employee-form.css',
   host: {
     class: 'entity-form'
   }

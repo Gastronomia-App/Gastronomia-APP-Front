@@ -1,19 +1,19 @@
 import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { EmployeesList } from '../employees-list/list-employees';
-import { EmployeeForm } from '../employees-form/create-employee';
+import { EmployeesTable } from '../employees-table/employees-table';
+import { EmployeeForm } from '../employees-form/employee-form';
 import { EmployeesDetail } from '../employees-detail/employees-detail';
 import { EmployeeFormService } from '../services/employee-form.service';
 import { Employee } from '../../../shared/models';
 
 @Component({
   selector: 'app-employees-page',
-  imports: [EmployeeForm, EmployeesDetail, EmployeesList],
+  imports: [EmployeeForm, EmployeesDetail, EmployeesTable],
   templateUrl: './employees-page.html',
   styleUrl: './employees-page.css',
 })
 export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild(EmployeesList) employeeTable?: EmployeesList;
+  @ViewChild(EmployeesTable) employeeTable?: EmployeesTable;
   @ViewChild(EmployeeForm) employeeFormComponent?: EmployeeForm;
   @ViewChild(EmployeesDetail) employeeDetailsComponent?: EmployeesDetail;
   

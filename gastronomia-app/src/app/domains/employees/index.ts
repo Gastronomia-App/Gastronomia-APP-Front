@@ -5,8 +5,8 @@
 export { EmployeesPage } from './employees-page/employees-page';
 
 // Feature Components
-export { EmployeesList } from './employees-list/list-employees';
-export { EmployeeForm } from './employees-form/create-employee';
+export { EmployeesTable } from './employees-table/employees-table';
+export { EmployeeForm } from './employees-form/employee-form';
 export { EmployeesDetail } from './employees-detail/employees-detail';
 
 // Services

@@ -8,15 +8,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
 
 @Component({
-  selector: 'app-list-employees',
+  selector: 'app-employees-table',
   imports: [CommonModule, Table, Confirm],
-  templateUrl: './list-employees.html',
-  styleUrl: './list-employees.css',
+  templateUrl: './employees-table.html',
+  styleUrl: './employees-table.css',
   host: {
     class: 'entity-table'
   }
 })
-export class EmployeesList extends BaseTable<Employee> implements OnInit {
+export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   private employeeService = inject(EmployeeService);
   private employeeFormService = inject(EmployeeFormService);
   public destroyRef: DestroyRef = inject(DestroyRef);
