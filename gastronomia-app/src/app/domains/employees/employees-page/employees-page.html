@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Employee table component with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-list-employees (onNewEmployeeClick)="openEmployeeForm()"></app-list-employees>
+    </div>
+  </div>
+
+  @if (showEmployeeForm()) {
+    <app-employee-form (onFormClosed)="closeEmployeeForm()"></app-employee-form>
+  }
+
+  @if (showEmployeeDetails()) {
+    <app-employees-detail (onDetailsClosed)="closeEmployeeDetails()"></app-employees-detail>
+  }
+</div>

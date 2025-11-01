@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../enviroments/environment';
-import { LoginRequestDTO, LoginResponseDTO, AuthSession, mapLoginResponseToSession } from '../../shared/models/auth.model';
+import { AuthSession } from '../../shared/models/auth.model';
 
 const TOKEN_KEY = 'access_token';
 const SESSION_KEY = 'auth_session';
@@ -18,20 +18,20 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   // --------- Login / Logout ---------
-  login(body: LoginRequestDTO): Observable<AuthSession> {
-    return this.http.post<LoginResponseDTO>(`${this.base}/login`, body).pipe(
-      tap(res => {
+  login(body: { username: string; password: string }): Observable<AuthSession> {
+    console.log('🔐 AuthService - Enviando login:', { url: `${this.base}/login`, body });
+    return this.http.post<AuthSession>(`${this.base}/login`, body).pipe(
+      tap(session => {
+        console.log('✅ AuthService - Login exitoso:', session);
         // Guardar token crudo por compatibilidad con el interceptor
-        localStorage.setItem(TOKEN_KEY, res.token);
+        localStorage.setItem(TOKEN_KEY, session.token);
 
-        // Construir y guardar sesión (username / role, etc.)
-        const session = mapLoginResponseToSession(res);
+        // Guardar sesión completa
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
         // Emitir nueva sesión
         this.sessionSubject.next(session);
-      }),
-      map(res => mapLoginResponseToSession(res))
+      })
     );
   }
 
