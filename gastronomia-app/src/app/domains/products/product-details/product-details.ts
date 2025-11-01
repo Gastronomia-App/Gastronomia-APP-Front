@@ -1,5 +1,6 @@
-import { Component, inject, output, OnInit, signal, computed, viewChild, effect } from '@angular/core';
+import { Component, inject, output, OnInit, signal, computed, viewChild, effect, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ItemCard } from '../../../shared/components/item-card';
 import { Detail } from '../../../shared/components/detail/detail';
 import { ProductFormService } from '../services/product-form.service';
@@ -18,6 +19,7 @@ import { CategoryService } from '../../categories/services';
 export class ProductDetails implements OnInit {
   private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
+  private destroyRef = inject(DestroyRef);
   
   onDetailsClosed = output<void>();
   
@@ -164,6 +166,19 @@ export class ProductDetails implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+    this.setupProductDeletedSubscription();
+  }
+
+  /**
+   * Listen for product deletion to auto-close details
+   */
+  private setupProductDeletedSubscription(): void {
+    this.productFormService.productDeleted$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        // Close details when any product is deleted
+        this.onClose();
+      });
   }
 
   private loadCategories(): void {

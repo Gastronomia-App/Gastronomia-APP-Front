@@ -16,7 +16,8 @@ export interface Product {
 }
 
 export interface ProductComponent {
-    id: number;
+    id?: number;          
+    productId: number;    
     name: string;
     quantity: number;
 }

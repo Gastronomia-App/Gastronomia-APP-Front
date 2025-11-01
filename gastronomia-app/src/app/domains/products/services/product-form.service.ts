@@ -12,6 +12,7 @@ export class ProductFormService {
   private closeDetailsSubject = new Subject<void>();
   private productCreatedSubject = new Subject<Product>();
   private productUpdatedSubject = new Subject<Product>();
+  private productDeletedSubject = new Subject<void>();
   private activeProductIdSubject = new BehaviorSubject<number | null>(null);
 
   openForm$ = this.openFormSubject.asObservable();
@@ -20,6 +21,7 @@ export class ProductFormService {
   closeDetails$ = this.closeDetailsSubject.asObservable();
   productCreated$ = this.productCreatedSubject.asObservable();
   productUpdated$ = this.productUpdatedSubject.asObservable();
+  productDeleted$ = this.productDeletedSubject.asObservable();
   activeProductId$ = this.activeProductIdSubject.asObservable();
 
   openForm(): void {
@@ -56,5 +58,9 @@ export class ProductFormService {
 
   notifyProductUpdated(product: Product): void {
     this.productUpdatedSubject.next(product);
+  }
+
+  notifyProductDeleted(): void {
+    this.productDeletedSubject.next();
   }
 }

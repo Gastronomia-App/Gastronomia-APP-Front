@@ -7,6 +7,7 @@ import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
 import { signal } from '@angular/core';
+import { getContrastColor } from '../../../shared/utils/color.helpers';
 
 @Component({
   selector: 'app-category-table',
@@ -54,7 +55,7 @@ export class CategoryTable extends BaseTable<Category> {
         formatter: (value: string, row: Category) => {
           if (row.color) {
             // Return HTML for colored badge
-            return `<span class="category-badge" style="background-color: ${row.color}; color: ${this.getContrastColor(row.color)};">${value}</span>`;
+            return `<span class="category-badge" style="background-color: ${row.color}; color: ${getContrastColor(row.color)};">${value}</span>`;
           }
           return value;
         }
@@ -155,25 +156,6 @@ export class CategoryTable extends BaseTable<Category> {
    */
   public clearSearchTerm(): void {
     this.clearSearch();
-  }
-
-  /**
-   * Calculate contrast color (white or black) based on background color
-   */
-  private getContrastColor(hexColor: string): string {
-    // Remove # if present
-    const hex = hexColor.replace('#', '');
-    
-    // Convert to RGB
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    // Return black for light colors, white for dark colors
-    return luminance > 0.5 ? '#000000' : '#FFFFFF';
   }
 }
 

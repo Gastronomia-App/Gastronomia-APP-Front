@@ -187,6 +187,11 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
     this.productFormService.viewProductDetails(product);
   }
 
+  protected override onItemDeleted(itemId: number): void {
+    // Notify that a product was deleted so form/details close
+    this.productFormService.notifyProductDeleted();
+  }
+
   // ==================== Custom Subscriptions ====================
 
   protected override setupCustomSubscriptions(): void {
