@@ -1,0 +1,39 @@
+<div class="editor-wrapper">
+    <div class="grid-scroll">
+        <div class="grid" [style.gridTemplateColumns]="'repeat(' + cols() + ', var(--cell-size))'"
+            [style.gridTemplateRows]="'repeat(' + rows() + ', var(--cell-size))'">
+            @for (r of [].constructor(rows()); track $index; let row = $index) {
+            @for (c of [].constructor(cols()); track $index; let col = $index) {
+            <div class="grid-cell" (mouseenter)="hoverCell(row, col)" (mouseleave)="hoverCell(null, null)"
+                (click)="onCellClick(row, col, $event)" (dragover)="onDragOver($event)" (drop)="onDrop(row, col)">
+                @if (getSeatingAt(row, col)) {
+                <div class="seat {{ getSeatClasses(getSeatingAt(row, col)!) }}"
+     [class.selected]="isSelected(getSeatingAt(row, col)!)"
+     [class.dragging]="draggedSeat?.id === getSeatingAt(row, col)!.id"
+     draggable="true"
+     (dragstart)="onDragStart(getSeatingAt(row, col)!)"
+     (dragend)="onDragEnd()">
+                    <span class="seat-number">
+                        {{ getSeatingAt(row, col)!.number }}
+                    </span>
+                </div>
+                } @else {
+                <div class="empty">
+                    @if (isHovered(row, col)) {
+                    <span class="add-icon">+</span>
+                    }
+                </div>
+                }
+            </div>
+            }
+            }
+        </div>
+
+        @if (showMenu()) {
+        <div class="context-menu" [style.top.px]="menuY()" [style.left.px]="menuX()">
+            <button (click)="addSeating('ROUND')">⚪</button>
+            <button (click)="addSeating('SQUARE')">⬜</button>
+        </div>
+        }
+    </div>
+</div>

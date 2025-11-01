@@ -13,10 +13,10 @@ export const routes: Routes = [
     component: LoginPageComponent
     },
     {
-    path: 'customers',
+    path: 'seating',
   loadComponent: () =>
-    import('./domains/customer/customer-page/customer-page')
-      .then(m => m.CustomerPage),
+  import('./domains/table/table-page/table-page')
+    .then(m => m.TablePage),
   canActivate: [authGuard]
 }
  

@@ -1,0 +1,16 @@
+<div class="aside-panel-wrapper">
+  @if (seating()) {
+    <app-form
+      [config]="formConfig()"
+      [isEditMode]="mode() === 'edit'"
+      [initialData]="seating()!"
+      [showHeader]="true"
+      [showFooter]="true"
+      [headerTitle]="mode() === 'create' ? 'Nueva mesa' : 'Editar mesa'"
+      [submitButtonLabel]="mode() === 'create' ? 'Crear mesa' : 'Guardar'"
+      (formSubmit)="onSubmit($event)"
+      (formCancel)="onCancel()"
+      (formClose)="onClose()"
+    ></app-form>
+  }
+</div>

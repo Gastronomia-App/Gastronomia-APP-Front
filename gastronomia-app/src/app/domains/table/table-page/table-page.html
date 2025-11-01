@@ -1,0 +1,63 @@
+<section class="page-table-container">
+    <!-- IZQUIERDA -->
+    <div class="page-table-left">
+        <div class="page-table-sub-header">
+            <header class="sub-header">
+                <div class="sub-header-left">
+                    <button class="tab active">Salón</button>
+                </div>
+
+                <div class="sub-header-right">
+                    <button class="icon-btn" [class.exit]="editMode()" (click)="toggleEditMode()">
+                        @if (editMode()) {
+                        ✅ Salir
+                        } @else {
+                        ⚙️
+                        }
+                    </button>
+                </div>
+            </header>
+        </div>
+
+        <div class="page-table-matrix">
+            @if (loading()) {
+            <p>Cargando mesas...</p>
+            } @else if (error()) {
+            <p class="error">{{ error() }}</p>
+            } @else if (seatings().length > 0) {
+            @if (!editMode()) {
+            <!-- vista normal -->
+            <app-table-grid [tables]="seatings()" (select)="onSelectTable($event)"></app-table-grid>
+            } @else {
+            <!-- editor -->
+            <app-table-grid-editor (createRequested)="onCreateFromGrid($event)" (editRequested)="onEditFromGrid($event)"
+                (moveRequested)="onMoveRequested($event)">
+            </app-table-grid-editor>
+            }
+            } @else {
+            <p>No hay mesas registradas.</p>
+            }
+        </div>
+    </div>
+
+    <!-- ASIDE -->
+    <aside class="page-table-aside">
+        @if (editMode()) {
+        @if (draftSeating()) {
+        <app-table-form [seating]="draftSeating()!" mode="create" (closed)="onFormClosed()"></app-table-form>
+        } @else if (selectedSeating()) {
+        <app-table-form [seating]="selectedSeating()!" mode="edit" (closed)="onFormClosed()"></app-table-form>
+        } @else {
+        <div class="aside-content">
+            <h3>Configuración de mesa</h3>
+            <p>Hacé click en una celda o mesa para editarla.</p>
+        </div>
+        }
+        } @else {
+        <div class="aside-content">
+            <h3>Detalles del salón</h3>
+            <p>Entrá en modo edición para modificar la disposición.</p>
+        </div>
+        }
+    </aside>
+</section>
