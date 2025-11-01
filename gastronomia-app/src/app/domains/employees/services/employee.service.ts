@@ -46,7 +46,7 @@ export class EmployeeService {
 
   // Update employee
   updateEmployee(id: number, employee: Partial<Employee>): Observable<Employee> {
-    return this.http.put<Employee>(`${this.base}/${id}`, employee);
+    return this.http.patch<Employee>(`${this.base}/${id}`, employee);
   }
 
   // Delete employee

@@ -1,4 +1,4 @@
-import { Component, inject, output, signal, viewChild, computed } from '@angular/core';
+import { Component, inject, output, signal, computed, viewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Detail } from '../../../shared/components/detail/detail';
 import { EmployeeFormService } from '../services/employee-form.service';
@@ -30,6 +30,18 @@ export class EmployeesDetail {
     return currentEmployee ? this.getRoleLabel(currentEmployee.role) : '-';
   });
 
+  constructor() {
+    // Effect to re-render detail when employee changes
+    effect(() => {
+      const currentEmployee = this.employee();
+      // Track dependency
+      if (currentEmployee) {
+        // Trigger re-render in detail component
+        this.detailComponent()?.renderDynamicComponents();
+      }
+    });
+  }
+
   // Detail configuration
   detailConfig: DetailConfig<Employee> = {
     title: 'Detalles del empleado',
@@ -37,7 +49,7 @@ export class EmployeesDetail {
     showFooter: true,
     sections: [
       {
-        title: 'Información Personal',
+        title: 'Información personal',
         fields: [
           {
             name: 'name',
@@ -67,7 +79,7 @@ export class EmployeesDetail {
         ]
       },
       {
-        title: 'Información de Acceso',
+        title: 'Información de acceso',
         fields: [
           {
             name: 'username',
@@ -123,7 +135,7 @@ export class EmployeesDetail {
     this.onDetailsClosed.emit();
   }
 
-  getRoleLabel(role: string): string {
+  private getRoleLabel(role: string): string {
     const roleLabels: Record<string, string> = {
       'OWNER': 'Propietario',
       'ADMIN': 'Administrador',
