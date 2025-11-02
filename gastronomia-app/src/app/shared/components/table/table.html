@@ -55,7 +55,7 @@
                   </select>
                 }
                 
-                @if (filter.type === 'number' || filter.type === 'text') {
+                @if (filter.type === 'number' || filter.type === 'text' || filter.type === 'date') {
                   <div class="filter-input-wrapper">
                     <label class="filter-label">{{ filter.label }}</label>
                     <input 
