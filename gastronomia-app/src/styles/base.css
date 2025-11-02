@@ -23,3 +23,33 @@ h1, h2, h3, h4, h5 {
 p, label, span {
   color: var(--color-text-muted);
 }
+
+/* ============================================
+   SCROLLBAR STYLES - GLOBAL
+   Custom scrollbar for all elements
+   ============================================ */
+
+/* Webkit scrollbar (Chrome, Safari, Edge, Opera) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-light);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg);
+}

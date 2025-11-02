@@ -1,12 +1,12 @@
-<div class="detail-wrapper">
+<div class="aside-panel-wrapper">
   @if (showHeader()) {
-    <header class="detail-header">
+    <header class="aside-panel-header">
       <h2>{{ title() }}</h2>
       <button type="button" class="btn-close" (click)="onClose()">✕</button>
     </header>
   }
 
-  <div class="detail-container">
+  <div class="aside-panel-container">
     @for (section of visibleSections(); track $index) {
       <section [class]="section.cssClass || ''">
         @if (section.title) {
@@ -98,7 +98,11 @@
               <!-- Default text/number field -->
               <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
                 <label class="detail-label">{{ field.label }}</label>
-                <p class="detail-value">{{ getFieldValue(field) }}</p>
+                @if (isHtmlValue(field)) {
+                  <p class="detail-value" [innerHTML]="getFieldValue(field)"></p>
+                } @else {
+                  <p class="detail-value">{{ getFieldValue(field) }}</p>
+                }
               </div>
             }
           }
@@ -109,7 +113,7 @@
   </div>
 
   @if (showFooter()) {
-    <footer class="detail-footer">
+    <footer class="aside-panel-footer">
       @for (action of getVisibleActions(); track $index) {
         <button 
           type="button"

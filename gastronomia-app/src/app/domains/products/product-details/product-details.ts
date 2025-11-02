@@ -1,0 +1,218 @@
+import { Component, inject, output, OnInit, signal, computed, viewChild, effect, DestroyRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ItemCard } from '../../../shared/components/item-card';
+import { Detail } from '../../../shared/components/detail/detail';
+import { ProductFormService } from '../services/product-form.service';
+import { Category, Product, DetailConfig } from '../../../shared/models';
+import { CategoryService } from '../../categories/services';
+
+@Component({
+  selector: 'app-product-details',
+  imports: [CommonModule, Detail],
+  templateUrl: './product-details.html',
+  styleUrl: './product-details.css',
+  host: {
+    class: 'entity-details'
+  }
+})
+export class ProductDetails implements OnInit {
+  private categoryService = inject(CategoryService);
+  private productFormService = inject(ProductFormService);
+  private destroyRef = inject(DestroyRef);
+  
+  onDetailsClosed = output<void>();
+  
+  // Reference to the generic Detail component
+  detailComponent = viewChild(Detail);
+  
+  // Signals
+  product = signal<Product | null>(null);
+  categories = signal<Category[]>([]);
+  
+  // Computed
+  categoryName = computed(() => {
+    const currentProduct = this.product();
+    
+    return currentProduct?.category?.name || '-';
+  });
+
+  constructor() {
+    // Effect to re-render detail when product changes
+    effect(() => {
+      const currentProduct = this.product();
+      // Track dependency
+      if (currentProduct) {
+        // Trigger re-render in detail component
+        this.detailComponent()?.renderDynamicComponents();
+      }
+    });
+  }
+
+  // Detail configuration
+  detailConfig: DetailConfig<Product> = {
+    title: 'Detalles del producto',
+    showHeader: true,
+    showFooter: true,
+    sections: [
+      {
+        title: 'Información principal',
+        fields: [
+          {
+            name: 'name',
+            label: 'Nombre',
+            type: 'text'
+          },
+          {
+            name: 'categoryId',
+            label: 'Categoría',
+            type: 'text',
+            formatter: () => this.categoryName()
+          },
+          {
+            name: 'price',
+            label: 'Precio',
+            type: 'currency'
+          },
+          {
+            name: 'cost',
+            label: 'Costo',
+            type: 'currency'
+          },
+          {
+            name: 'description',
+            label: 'Descripción',
+            type: 'text',
+            fullWidth: true
+          }
+        ]
+      },
+      {
+        title: 'Configuración',
+        fields: [
+          {
+            name: 'active',
+            label: 'Activo',
+            type: 'badge',
+            cssClass: 'inline-field',
+            booleanLabels: {
+              true: 'Sí',
+              false: 'No'
+            }
+          },
+          {
+            name: 'controlStock',
+            label: 'Controlar stock',
+            type: 'badge',
+            cssClass: 'inline-field',
+            booleanLabels: {
+              true: 'Sí',
+              false: 'No'
+            }
+          },
+          {
+            name: 'stock',
+            label: 'Stock',
+            type: 'number',
+            condition: (data) => !!data.controlStock
+          }
+        ]
+      },
+      {
+        title: 'Composición',
+        fields: [
+          {
+            name: 'components',
+            label: 'Componentes',
+            type: 'list',
+            fullWidth: true,
+            listItems: (data) => data.components || [],
+            listItemComponent: ItemCard,
+            listItemInputs: {
+              customFields: [
+                {
+                  key: 'quantity',
+                  type: 'number',
+                  editable: false
+                }
+              ],
+              editableFields: false,
+              showRemoveButton: false
+            },
+            emptyMessage: 'Sin componentes'
+          },
+          {
+            name: 'productGroups',
+            label: 'Grupos de opciones',
+            type: 'list',
+            fullWidth: true,
+            listItems: (data) => data.productGroups || [],
+            listItemComponent: ItemCard,
+            listItemInputs: {
+              customFields: [],
+              showRemoveButton: false
+            },
+            emptyMessage: 'Sin grupos'
+          }
+        ]
+      }
+    ],
+    actions: [
+      {
+        label: 'Cerrar',
+        type: 'secondary',
+        handler: () => this.onClose()
+      },
+      {
+        label: 'Editar',
+        type: 'primary',
+        handler: () => this.onEdit()
+      }
+    ]
+  };
+
+  ngOnInit(): void {
+    this.loadCategories();
+    this.setupProductDeletedSubscription();
+  }
+
+  /**
+   * Listen for product deletion to auto-close details
+   */
+  private setupProductDeletedSubscription(): void {
+    this.productFormService.productDeleted$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        // Close details when any product is deleted
+        this.onClose();
+      });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories.set(categories);
+      },
+      error: (error) => {
+        console.error('❌ GET /api/categories - Error:', error);
+        this.categories.set([]);
+      }
+    });
+  }
+
+  loadProduct(product: Product): void {
+    this.product.set(product);
+  }
+
+  onEdit(): void {
+    const currentProduct = this.product();
+    if (currentProduct) {
+      this.productFormService.openEditForm(currentProduct);
+      this.onClose();
+    }
+  }
+
+  onClose(): void {
+    this.onDetailsClosed.emit();
+  }
+}

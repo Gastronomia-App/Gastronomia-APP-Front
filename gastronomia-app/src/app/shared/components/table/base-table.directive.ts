@@ -45,6 +45,12 @@ export abstract class BaseTable<
   // UI State
   showForm = signal(false);
   showDetails = signal(false);
+  showConfirmDialog = signal(false);
+  confirmDialogData = signal<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
   searchTerm = signal<string>('');
@@ -159,21 +165,50 @@ export abstract class BaseTable<
       });
   }
 
+  // Confirmation modal state
+  public showDeleteConfirmation = signal(false);
+  public itemToDelete: { id: number; name: string } | null = null;
+
   /**
-   * Handle delete button click
+   * Handle delete button click - PUBLIC for template binding
    */
-  onTableDelete(item: T): void {
+  public onTableDelete(item: T): void {
     const itemId = this.getItemId(item);
     const itemName = this.getItemName(item);
+    
+    this.itemToDelete = { id: itemId, name: itemName };
+    this.showDeleteConfirmation.set(true);
+  }
 
-    if (confirm(`¿Estás seguro de eliminar "${itemName}"?`)) {
+  /**
+   * Confirm deletion - PUBLIC for template binding
+   */
+  public onConfirmDelete(): void {
+    if (this.itemToDelete) {
+      const itemId = this.itemToDelete.id;
       this.deleteItem(itemId)
-        .pipe(takeUntilDestroyed(this.destroyRef)) // ⬅️ 6)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: () => this.refreshData(),
-          error: (e: any) => console.error(`❌ DELETE item ${itemId}`, e)
+          next: () => {
+            this.refreshData();
+            this.showDeleteConfirmation.set(false);
+            this.itemToDelete = null;
+          },
+          error: (e: any) => {
+            console.error(`Error deleting item ${itemId}:`, e);
+            this.showDeleteConfirmation.set(false);
+            this.itemToDelete = null;
+          }
         });
     }
+  }
+
+  /**
+   * Cancel deletion - PUBLIC for template binding
+   */
+  public onCancelDelete(): void {
+    this.showDeleteConfirmation.set(false);
+    this.itemToDelete = null;
   }
 
   /**

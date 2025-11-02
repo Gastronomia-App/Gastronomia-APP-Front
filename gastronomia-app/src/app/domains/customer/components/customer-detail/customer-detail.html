@@ -1,0 +1,9 @@
+<aside class="aside-panel">
+  <app-detail
+    [config]="detailConfig"
+    [data]="customer()"
+    [showHeader]="true"
+    [showFooter]="true"
+    (detailClosed)="onClose()"
+  />
+</aside>

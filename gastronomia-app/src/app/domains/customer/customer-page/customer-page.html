@@ -1,0 +1,23 @@
+<div class="page-container">
+
+  <div class="page-content">
+    <!-- Tabla de clientes -->
+    <div class="table-section">
+      <app-customer-table
+        (onNewCustomerClick)="openCustomerForm()">
+      </app-customer-table>
+    </div>
+  </div>
+
+  @if (showCustomerForm()) {
+  <app-customer-form
+    (onFormClosed)="closeCustomerForm()"
+  />
+}
+
+@if (showCustomerDetails()) {
+  <app-customer-detail
+    (onDetailsClosed)="closeCustomerDetails()"
+  />
+}
+</div>
