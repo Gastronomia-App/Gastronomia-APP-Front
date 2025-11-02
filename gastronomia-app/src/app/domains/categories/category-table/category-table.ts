@@ -4,14 +4,14 @@ import { CategoryService } from '../services/category.service';
 import { CategoryFormService } from '../services/category-form.service';
 import { Category, TableColumn, TableFilter } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Confirm } from "../../../shared/components/confirm";
 import { signal } from '@angular/core';
 import { getContrastColor } from '../../../shared/utils/color.helpers';
 
 @Component({
   selector: 'app-category-table',
-  imports: [CommonModule, Table, Confirm],
+  imports: [CommonModule, Table, ConfirmationModalComponent],
   templateUrl: './category-table.html',
   styleUrl: './category-table.css',
   host: {
@@ -88,6 +88,13 @@ export class CategoryTable extends BaseTable<Category> {
 
   protected getItemId(category: Category): number {
     return category.id;
+  }
+
+  // ==================== Confirmation Modal ====================
+  
+  public get deleteConfirmationMessage(): string {
+    if (!this.itemToDelete) return '';
+    return `¿Estás seguro de eliminar la categoría "${this.itemToDelete.name}"? Esta acción no se puede deshacer.`;
   }
 
   protected onEditItem(category: Category): void {

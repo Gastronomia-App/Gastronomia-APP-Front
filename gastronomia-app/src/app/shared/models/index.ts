@@ -3,8 +3,8 @@ export type { ProductGroup, ProductOption, SelectedProductOption } from './produ
 export type { Category } from './category.model';
 export type { Customer, CustomerFilter } from './customer.model';
 export type { PageResponse } from './pageable.model';
-export type { Expense, ExpenseResponseDTO } from './expense.model';
-export { mapExpenseFromDTO } from './expense.model';
+export type { Expense } from './expense.model';
+export type { Supplier, Address } from './supplier.model';
 export type {
   TableColumn,
   TableAction,

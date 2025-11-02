@@ -45,12 +45,6 @@ export abstract class BaseTable<
   // UI State
   showForm = signal(false);
   showDetails = signal(false);
-  showConfirmDialog = signal(false);
-  confirmDialogData = signal<{
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  } | null>(null);
   currentItemId: number | null = null;
   highlightedRowId: number | null = null;
   searchTerm = signal<string>('');
