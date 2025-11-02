@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Business table component with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-business-table (onNewBusinessClick)="openBusinessForm()"></app-business-table>
+    </div>
+  </div>
+
+  @if (showBusinessForm()) {
+    <app-business-form (onFormClosed)="closeBusinessForm()"></app-business-form>
+  }
+
+  @if (showBusinessDetails()) {
+    <app-business-details (onDetailsClosed)="closeBusinessDetails()"></app-business-details>
+  }
+</div>

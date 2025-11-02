@@ -4,6 +4,7 @@ export type { Customer, CustomerFilter} from './customer.model';
 export type { PageResponse } from './pageable.model';
 export type { Expense, ExpenseResponseDTO } from './expense.model';
 export { mapExpenseFromDTO } from './expense.model';
+export type { Business, Address } from './business.model';
 export type { 
   TableColumn, 
   TableAction,

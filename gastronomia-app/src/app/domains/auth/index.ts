@@ -3,3 +3,4 @@
 
 // Components
 export { LoginComponent as LoginPageComponent } from './login/login';
+export { Register as RegisterComponent } from './register/register';

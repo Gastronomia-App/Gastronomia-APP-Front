@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './domains/auth';
+import { LoginPageComponent, RegisterComponent } from './domains/auth';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -8,17 +8,27 @@ export const routes: Routes = [
     redirectTo: '/login',
     pathMatch: 'full'
   },
-    {
+  {
     path: 'login',
     component: LoginPageComponent
-    },
-    {
+  },
+  {
+    path: 'register',
+    component: RegisterComponent
+  },
+  {
     path: 'customers',
-  loadComponent: () =>
-    import('./domains/customer/customer-page/customer-page')
-      .then(m => m.CustomerPage),
-  canActivate: [authGuard]
-}
+    loadComponent: () =>
+      import('./domains/customer/customer-page/customer-page')
+        .then(m => m.CustomerPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'businesses',
+    loadComponent: () =>
+      import('./domains/business/business-page/business-page')
+        .then(m => m.BusinessPage)
+  }
  
   /*
   ,

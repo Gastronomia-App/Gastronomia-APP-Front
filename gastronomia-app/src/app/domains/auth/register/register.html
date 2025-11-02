@@ -1,0 +1,283 @@
+<aside class="aside-panel business-form-panel">
+  <div class="panel-header">
+    <h2>{{ currentStep() === 1 ? 'Crear tu cuenta' : 'Datos del propietario' }}</h2>
+    <p class="subtitle">
+      {{ currentStep() === 1 ? 'Creá tu cuenta y probá Fudo de forma gratuita' : 'Paso 2 de 2' }}
+    </p>
+  </div>
+
+  <div class="panel-body">
+    <!-- Paso 1: Datos del negocio + credenciales -->
+    @if (currentStep() === 1) {
+      <form [formGroup]="step1Form" class="business-form">
+        <div class="form-section">
+          <h3 class="section-title">Datos del negocio</h3>
+          
+          <div class="form-field">
+            <label for="businessName">Nombre del negocio <span class="required">*</span></label>
+            <input 
+              id="businessName" 
+              type="text" 
+              formControlName="businessName"
+              class="input"
+              [class.error]="hasError(step1Form, 'businessName')"
+              placeholder="Ej: Café Central"
+            />
+            @if (hasError(step1Form, 'businessName')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'businessName') }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="cuit">CUIT <span class="required">*</span></label>
+            <input 
+              id="cuit" 
+              type="text" 
+              formControlName="cuit"
+              class="input"
+              [class.error]="hasError(step1Form, 'cuit')"
+              placeholder="XX-XXXXXXXX-X"
+            />
+            @if (hasError(step1Form, 'cuit')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'cuit') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Dirección</h3>
+          
+          <div class="form-field">
+            <label for="street">Calle <span class="required">*</span></label>
+            <input 
+              id="street" 
+              type="text" 
+              formControlName="street"
+              class="input"
+              [class.error]="hasError(step1Form, 'street')"
+              placeholder="Av. Corrientes 1234"
+            />
+            @if (hasError(step1Form, 'street')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'street') }}</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="city">Ciudad <span class="required">*</span></label>
+              <input 
+                id="city" 
+                type="text" 
+                formControlName="city"
+                class="input"
+                [class.error]="hasError(step1Form, 'city')"
+                placeholder="Buenos Aires"
+              />
+              @if (hasError(step1Form, 'city')) {
+                <span class="error-message">{{ getErrorMessage(step1Form, 'city') }}</span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="province">Provincia <span class="required">*</span></label>
+              <input 
+                id="province" 
+                type="text" 
+                formControlName="province"
+                class="input"
+                [class.error]="hasError(step1Form, 'province')"
+                placeholder="Buenos Aires"
+              />
+              @if (hasError(step1Form, 'province')) {
+                <span class="error-message">{{ getErrorMessage(step1Form, 'province') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="zipCode">Código Postal <span class="required">*</span></label>
+            <input 
+              id="zipCode" 
+              type="text" 
+              formControlName="zipCode"
+              class="input"
+              [class.error]="hasError(step1Form, 'zipCode')"
+              placeholder="1406"
+            />
+            @if (hasError(step1Form, 'zipCode')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'zipCode') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Credenciales de acceso</h3>
+          
+          <div class="form-field">
+            <label for="email">E-mail de contacto <span class="required">*</span></label>
+            <input 
+              id="email" 
+              type="email" 
+              formControlName="email"
+              class="input"
+              [class.error]="hasError(step1Form, 'email')"
+              placeholder="nombre@gmail.com"
+            />
+            @if (hasError(step1Form, 'email')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'email') }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="password">Contraseña para tu cuenta <span class="required">*</span></label>
+            <input 
+              id="password" 
+              type="password" 
+              formControlName="password"
+              class="input"
+              [class.error]="hasError(step1Form, 'password')"
+              placeholder="••••••••"
+            />
+            <span class="help-text">Debe contener mínimo 8 caracteres, mayúsculas, minúsculas y un número</span>
+            @if (hasError(step1Form, 'password')) {
+              <span class="error-message">{{ getErrorMessage(step1Form, 'password') }}</span>
+            }
+          </div>
+        </div>
+      </form>
+    }
+
+    <!-- Paso 2: Datos personales del owner -->
+    @if (currentStep() === 2) {
+      <form [formGroup]="step2Form" class="business-form">
+        <div class="form-section">
+          <h3 class="section-title">Información personal</h3>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="name">Nombre <span class="required">*</span></label>
+              <input 
+                id="name" 
+                type="text" 
+                formControlName="name"
+                class="input"
+                [class.error]="hasError(step2Form, 'name')"
+                placeholder="Juan"
+              />
+              @if (hasError(step2Form, 'name')) {
+                <span class="error-message">{{ getErrorMessage(step2Form, 'name') }}</span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="lastName">Apellido <span class="required">*</span></label>
+              <input 
+                id="lastName" 
+                type="text" 
+                formControlName="lastName"
+                class="input"
+                [class.error]="hasError(step2Form, 'lastName')"
+                placeholder="Pérez"
+              />
+              @if (hasError(step2Form, 'lastName')) {
+                <span class="error-message">{{ getErrorMessage(step2Form, 'lastName') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="dni">DNI <span class="required">*</span></label>
+            <input 
+              id="dni" 
+              type="text" 
+              formControlName="dni"
+              class="input"
+              [class.error]="hasError(step2Form, 'dni')"
+              placeholder="12345678"
+            />
+            @if (hasError(step2Form, 'dni')) {
+              <span class="error-message">{{ getErrorMessage(step2Form, 'dni') }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="phoneNumber">Teléfono de la persona encargada <span class="required">*</span></label>
+            <input 
+              id="phoneNumber" 
+              type="text" 
+              formControlName="phoneNumber"
+              class="input"
+              [class.error]="hasError(step2Form, 'phoneNumber')"
+              placeholder="541123456789"
+            />
+            <span class="help-text">Ejemplo: 9 11 2346-6789</span>
+            @if (hasError(step2Form, 'phoneNumber')) {
+              <span class="error-message">{{ getErrorMessage(step2Form, 'phoneNumber') }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="username">Usuario <span class="required">*</span></label>
+            <input 
+              id="username" 
+              type="text" 
+              formControlName="username"
+              class="input"
+              [class.error]="hasError(step2Form, 'username')"
+              placeholder="juanperez"
+            />
+            <span class="help-text">Entre 5 y 20 caracteres</span>
+            @if (hasError(step2Form, 'username')) {
+              <span class="error-message">{{ getErrorMessage(step2Form, 'username') }}</span>
+            }
+          </div>
+        </div>
+      </form>
+    }
+
+    <!-- Mensajes de error -->
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        {{ errorMessage() }}
+      </div>
+    }
+  </div>
+
+  <div class="panel-footer">
+    <div class="step-indicators">
+      <span class="step-indicator" [class.active]="currentStep() === 1">1</span>
+      <span class="step-indicator" [class.active]="currentStep() === 2">2</span>
+    </div>
+
+    <div class="actions">
+      @if (currentStep() === 1) {
+        <button 
+          type="button" 
+          class="btn btn-primary btn-block" 
+          (click)="nextStep()"
+        >
+          Continuar
+        </button>
+      }
+
+      @if (currentStep() === 2) {
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="previousStep()"
+          [disabled]="isSubmitting()"
+        >
+          Atrás
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="submit()"
+          [disabled]="isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Creando...' : 'Crear negocio' }}
+        </button>
+      }
+    </div>
+  </div>
+</aside>
