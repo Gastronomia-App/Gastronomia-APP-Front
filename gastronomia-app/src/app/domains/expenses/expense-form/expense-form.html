@@ -1,0 +1,19 @@
+<!-- expense-form.html -->
+<aside class="aside-panel">
+  <!-- Generic Form Component with integrated header and footer -->
+  <app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode"
+    [editingId]="editingExpenseId"
+    [showHeader]="true"
+    [showFooter]="true"
+    [headerTitle]="'Nuevo gasto'"
+    [headerEditTitle]="'Editar gasto'"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Crear'"
+    [submitEditButtonLabel]="'Guardar'"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+    (formClose)="onClose()">
+  </app-form>
+</aside>
