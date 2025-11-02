@@ -4,7 +4,15 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  --table-columns: 4; /* 4 data columns + 1 actions column */
+}
+
+/* Override grid columns for 4 data columns + 1 actions column */
+::ng-deep .table thead tr {
+  grid-template-columns: 1.5fr 1fr 1.5fr 1fr 120px !important;
+}
+
+::ng-deep .table tbody tr {
+  grid-template-columns: 1.5fr 1fr 1.5fr 1fr 120px !important;
 }
 
 .results-info {

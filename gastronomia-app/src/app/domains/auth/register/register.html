@@ -1,8 +1,8 @@
-<aside class="aside-panel business-form-panel">
+<aside class="aside-panel">
   <div class="panel-header">
     <h2>{{ currentStep() === 1 ? 'Crear tu cuenta' : 'Datos del propietario' }}</h2>
     <p class="subtitle">
-      {{ currentStep() === 1 ? 'Creá tu cuenta y probá Fudo de forma gratuita' : 'Paso 2 de 2' }}
+      {{ currentStep() === 1 ? 'Creá tu cuenta y probá Gastronomía de forma gratuita' : 'Paso 2 de 2' }}
     </p>
   </div>
 
@@ -24,7 +24,7 @@
               placeholder="Ej: Café Central"
             />
             @if (hasError(step1Form, 'businessName')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'businessName') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'businessName') }}</span>
             }
           </div>
 
@@ -36,10 +36,11 @@
               formControlName="cuit"
               class="input"
               [class.error]="hasError(step1Form, 'cuit')"
-              placeholder="XX-XXXXXXXX-X"
+              placeholder="20123456789"
             />
+            <span class="help-text">Introducir números sin espacios ni guiones</span>
             @if (hasError(step1Form, 'cuit')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'cuit') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'cuit') }}</span>
             }
           </div>
         </div>
@@ -58,7 +59,7 @@
               placeholder="Av. Corrientes 1234"
             />
             @if (hasError(step1Form, 'street')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'street') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'street') }}</span>
             }
           </div>
 
@@ -74,7 +75,7 @@
                 placeholder="Buenos Aires"
               />
               @if (hasError(step1Form, 'city')) {
-                <span class="error-message">{{ getErrorMessage(step1Form, 'city') }}</span>
+                <span class="field-error">{{ getErrorMessage(step1Form, 'city') }}</span>
               }
             </div>
 
@@ -89,7 +90,7 @@
                 placeholder="Buenos Aires"
               />
               @if (hasError(step1Form, 'province')) {
-                <span class="error-message">{{ getErrorMessage(step1Form, 'province') }}</span>
+                <span class="field-error">{{ getErrorMessage(step1Form, 'province') }}</span>
               }
             </div>
           </div>
@@ -105,7 +106,7 @@
               placeholder="1406"
             />
             @if (hasError(step1Form, 'zipCode')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'zipCode') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'zipCode') }}</span>
             }
           </div>
         </div>
@@ -124,7 +125,7 @@
               placeholder="nombre@gmail.com"
             />
             @if (hasError(step1Form, 'email')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'email') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'email') }}</span>
             }
           </div>
 
@@ -140,7 +141,7 @@
             />
             <span class="help-text">Debe contener mínimo 8 caracteres, mayúsculas, minúsculas y un número</span>
             @if (hasError(step1Form, 'password')) {
-              <span class="error-message">{{ getErrorMessage(step1Form, 'password') }}</span>
+              <span class="field-error">{{ getErrorMessage(step1Form, 'password') }}</span>
             }
           </div>
         </div>
@@ -165,7 +166,7 @@
                 placeholder="Juan"
               />
               @if (hasError(step2Form, 'name')) {
-                <span class="error-message">{{ getErrorMessage(step2Form, 'name') }}</span>
+                <span class="field-error">{{ getErrorMessage(step2Form, 'name') }}</span>
               }
             </div>
 
@@ -180,7 +181,7 @@
                 placeholder="Pérez"
               />
               @if (hasError(step2Form, 'lastName')) {
-                <span class="error-message">{{ getErrorMessage(step2Form, 'lastName') }}</span>
+                <span class="field-error">{{ getErrorMessage(step2Form, 'lastName') }}</span>
               }
             </div>
           </div>
@@ -196,7 +197,7 @@
               placeholder="12345678"
             />
             @if (hasError(step2Form, 'dni')) {
-              <span class="error-message">{{ getErrorMessage(step2Form, 'dni') }}</span>
+              <span class="field-error">{{ getErrorMessage(step2Form, 'dni') }}</span>
             }
           </div>
 
@@ -212,7 +213,7 @@
             />
             <span class="help-text">Ejemplo: 9 11 2346-6789</span>
             @if (hasError(step2Form, 'phoneNumber')) {
-              <span class="error-message">{{ getErrorMessage(step2Form, 'phoneNumber') }}</span>
+              <span class="field-error">{{ getErrorMessage(step2Form, 'phoneNumber') }}</span>
             }
           </div>
 
@@ -228,7 +229,7 @@
             />
             <span class="help-text">Entre 5 y 20 caracteres</span>
             @if (hasError(step2Form, 'username')) {
-              <span class="error-message">{{ getErrorMessage(step2Form, 'username') }}</span>
+              <span class="field-error">{{ getErrorMessage(step2Form, 'username') }}</span>
             }
           </div>
         </div>

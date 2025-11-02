@@ -1,16 +1,94 @@
-<div class="page-container">
-  <div class="page-content">
-    <!-- Business table component with integrated search, filters, and action button -->
-    <div class="table-section">
-      <app-business-table (onNewBusinessClick)="openBusinessForm()"></app-business-table>
-    </div>
+<div class="my-business-page">
+  <div class="page-header">
+    <h1>Mi Negocio</h1>
+    @if (!isEditMode() && myBusiness()) {
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="onEditClick()">
+          ✏️ Editar
+        </button>
+        <button class="btn danger" (click)="onDeleteClick()">
+          🗑️ Eliminar
+        </button>
+      </div>
+    }
   </div>
 
-  @if (showBusinessForm()) {
-    <app-business-form (onFormClosed)="closeBusinessForm()"></app-business-form>
+  @if (isLoading()) {
+    <div class="loading-state">
+      <p>Cargando información del negocio...</p>
+    </div>
   }
 
-  @if (showBusinessDetails()) {
-    <app-business-details (onDetailsClosed)="closeBusinessDetails()"></app-business-details>
+  @if (errorMessage()) {
+    <div class="error-state">
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+
+  @if (myBusiness() && !isLoading()) {
+    <div class="business-form-container">
+      <app-business-form 
+        [isEditMode]="isEditMode()"
+        [editingBusinessId]="myBusiness()!.id"
+        [businessData]="myBusiness()"
+        (formSubmit)="onFormSubmit($event)"
+        (formCancel)="onCancelEdit()">
+      </app-business-form>
+    </div>
   }
 </div>
+
+<!-- Confirmation Dialog for Save -->
+@if (showSaveConfirm()) {
+  <app-confirm
+    title="Confirmar cambios"
+    message="¿Estás seguro de que deseas guardar los cambios en tu negocio?"
+    confirmLabel="Guardar"
+    cancelLabel="Cancelar"
+    (onConfirm)="onConfirmSave()"
+    (onCancel)="onCancelSave()"
+  />
+}
+
+<!-- Confirmation Dialog for Delete with text input -->
+@if (showDeleteConfirm()) {
+  <div class="confirm-backdrop" (click)="onBackdropClick($event)">
+    <div class="confirm-dialog">
+      <div class="confirm-header">
+        <h2 class="confirm-title">Confirmar eliminación</h2>
+      </div>
+      
+      <div class="confirm-body">
+        <p class="confirm-message">
+          Esta acción eliminará permanentemente tu negocio y no se puede deshacer.
+        </p>
+        <p class="confirm-message">
+          Para confirmar, escribe <strong>"eliminar"</strong> en el campo de abajo:
+        </p>
+        <input 
+          type="text" 
+          class="delete-confirm-input"
+          [(ngModel)]="deleteConfirmText"
+          placeholder="Escribe 'eliminar' para confirmar"
+          (input)="onDeleteInputChange()"
+        />
+      </div>
+      
+      <div class="confirm-footer">
+        <button 
+          type="button" 
+          class="btn btn-cancel" 
+          (click)="onCancelDelete()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-confirm danger" 
+          [disabled]="!isDeleteConfirmed()"
+          (click)="onConfirmDelete()">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,7 +1,5 @@
-/* Host - Full height container */
+/* Host - Full width container */
 :host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  display: block;
+  width: 100%;
 }

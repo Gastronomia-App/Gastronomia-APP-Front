@@ -9,16 +9,9 @@ export class BusinessService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
 
-  // Get all businesses (for dropdowns, filters, etc.)
-  getBusinesses(): Observable<Business[]> {
-    return this.http.get<Business[]>(`${this.apiUrl}/businesses`);
-  }
-
-  // Get paginated businesses
-  getBusinessesPage(page: number = 0, size: number = 20): Observable<PageResponse<Business>> {
-    return this.http.get<PageResponse<Business>>(`${this.apiUrl}/businesses`, {
-      params: { page: page.toString(), size: size.toString() }
-    });
+  // Get my business (authenticated user)
+  getMyBusiness(): Observable<Business> {
+    return this.http.get<Business>(`${this.apiUrl}/businesses/me`);
   }
 
   // Get business by ID

@@ -26,105 +26,27 @@ describe('BusinessService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getBusinesses', () => {
-    it('should fetch all businesses', () => {
-      const mockBusinesses: Business[] = [
-        {
-          id: 1,
-          name: 'Business 1',
-          cuit: '20-12345678-9',
-          address: {
-            street: 'Street 1',
-            city: 'City 1',
-            province: 'Province 1',
-            zipCode: '1234'
-          }
+  describe('getMyBusiness', () => {
+    it('should fetch the authenticated user\'s business', () => {
+      const mockBusiness: Business = {
+        id: 1,
+        name: 'My Business',
+        cuit: '20-12345678-9',
+        address: {
+          street: 'Street 1',
+          city: 'City 1',
+          province: 'Province 1',
+          zipCode: '1234'
         }
-      ];
-
-      service.getBusinesses().subscribe(businesses => {
-        expect(businesses).toEqual(mockBusinesses);
-        expect(businesses.length).toBe(1);
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/businesses`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockBusinesses);
-    });
-  });
-
-  describe('getBusinessesPage', () => {
-    it('should fetch paginated businesses', () => {
-      const mockPageResponse: PageResponse<Business> = {
-        content: [
-          {
-            id: 1,
-            name: 'Business 1',
-            cuit: '20-12345678-9',
-            address: {
-              street: 'Street 1',
-              city: 'City 1',
-              province: 'Province 1',
-              zipCode: '1234'
-            }
-          }
-        ],
-        pageable: {
-          pageNumber: 0,
-          pageSize: 20,
-          sort: { sorted: false, unsorted: true, empty: true },
-          offset: 0,
-          paged: true,
-          unpaged: false
-        },
-        totalPages: 1,
-        totalElements: 1,
-        size: 20,
-        number: 0,
-        sort: { sorted: false, unsorted: true, empty: true },
-        numberOfElements: 1,
-        first: true,
-        last: true,
-        empty: false
       };
 
-      service.getBusinessesPage(0, 20).subscribe(response => {
-        expect(response).toEqual(mockPageResponse);
-        expect(response.content.length).toBe(1);
+      service.getMyBusiness().subscribe(business => {
+        expect(business).toEqual(mockBusiness);
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/businesses?page=0&size=20`);
+      const req = httpMock.expectOne(`${apiUrl}/businesses/me`);
       expect(req.request.method).toBe('GET');
-      req.flush(mockPageResponse);
-    });
-
-    it('should use default pagination values', () => {
-      const mockPageResponse: PageResponse<Business> = {
-        content: [],
-        pageable: {
-          pageNumber: 0,
-          pageSize: 20,
-          sort: { sorted: false, unsorted: true, empty: true },
-          offset: 0,
-          paged: true,
-          unpaged: false
-        },
-        totalPages: 0,
-        totalElements: 0,
-        size: 20,
-        number: 0,
-        sort: { sorted: false, unsorted: true, empty: true },
-        numberOfElements: 0,
-        first: true,
-        last: true,
-        empty: true
-      };
-
-      service.getBusinessesPage().subscribe();
-
-      const req = httpMock.expectOne(`${apiUrl}/businesses?page=0&size=20`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockPageResponse);
+      req.flush(mockBusiness);
     });
   });
 

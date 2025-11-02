@@ -1,19 +1,13 @@
-<!-- Aside panel container -->
-<aside class="aside-panel">
-    <!-- Generic Form Component with integrated header and footer -->
-    <app-form
-        [config]="formConfig"
-        [isEditMode]="isEditMode"
-        [editingId]="editingBusinessId"
-        [showHeader]="true"
-        [showFooter]="true"
-        [headerTitle]="'Nuevo negocio'"
-        [headerEditTitle]="'Editar negocio'"
-        [cancelButtonLabel]="'Cancelar'"
-        [submitButtonLabel]="'Crear'"
-        [submitEditButtonLabel]="'Guardar'"
-        (formSubmit)="onFormSubmit($event)"
-        (formCancel)="onFormCancel()"
-        (formClose)="onClose()">
-    </app-form>
-</aside>
+<!-- Business Form (can be read-only or editable) -->
+<app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode()"
+    [editingId]="editingBusinessId()"
+    [showHeader]="false"
+    [showFooter]="isEditMode()"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Guardar cambios'"
+    [submitEditButtonLabel]="'Guardar cambios'"
+    (formSubmit)="handleFormSubmit($event)"
+    (formCancel)="handleFormCancel()">
+</app-form>

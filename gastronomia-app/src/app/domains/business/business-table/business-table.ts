@@ -55,18 +55,9 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
   override ngOnInit(): void {
     super.ngOnInit();
     
-    // Load unique cities for filter
-    this.businessService.getBusinesses()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (businesses) => {
-          this.initializeFilters(businesses);
-        },
-        error: (error) => {
-          console.error('❌ Error loading businesses:', error);
-          this.initializeFilters([]);
-        }
-      });
+    // NOTE: This component is no longer used in the new architecture
+    // Business management now uses single business view instead of list
+    this.initializeFilters([]);
   }
 
   private initializeFilters(businesses: Business[]): void {
@@ -139,7 +130,9 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
   }
 
   protected fetchData(page: number, size: number) {
-    return this.businessService.getBusinessesPage(page, size);
+    // NOTE: This component is no longer used - kept for reference only
+    // Business management now uses getMyBusiness() instead
+    throw new Error('BusinessTable component is deprecated - use BusinessPage instead');
   }
 
   protected fetchItemById(id: number) {

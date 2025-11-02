@@ -1,108 +1,157 @@
-import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { BusinessTable } from '../business-table/business-table';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { BusinessForm } from '../business-form/business-form';
-import { BusinessDetails } from '../business-details/business-details';
-import { BusinessFormService } from '../services';
+import { BusinessService } from '../services';
 import { Business } from '../../../shared/models';
+import { Confirm } from '../../../shared/components/confirm';
 
 @Component({
   selector: 'app-business-page',
-  imports: [BusinessForm, BusinessDetails, BusinessTable],
+  imports: [CommonModule, FormsModule, BusinessForm, Confirm],
   templateUrl: './business-page.html',
   styleUrl: './business-page.css',
 })
-export class BusinessPage implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild(BusinessTable) businessTable?: BusinessTable;
-  @ViewChild(BusinessForm) businessFormComponent?: BusinessForm;
-  @ViewChild(BusinessDetails) businessDetailsComponent?: BusinessDetails;
-  
-  private businessFormService = inject(BusinessFormService);
-  private subscriptions = new Subscription();
-  private pendingBusiness?: Business;
-  private pendingDetailsBusiness?: Business;
+export class BusinessPage implements OnInit {
+  private businessService = inject(BusinessService);
   
   // UI state
-  showBusinessForm = signal(false);
-  showBusinessDetails = signal(false);
-  currentBusinessId: number | null = null;
+  myBusiness = signal<Business | null>(null);
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
+  isEditMode = signal(false);
+  
+  // Confirm dialogs
+  showDeleteConfirm = signal(false);
+  showSaveConfirm = signal(false);
+  pendingFormData: any = null;
+
+  // Delete confirmation
+  deleteConfirmText = '';
+  isDeleteConfirmed = signal(false);
 
   ngOnInit(): void {
-    // Subscribe to business form service events
-    this.subscriptions.add(
-      this.businessFormService.editBusiness$.subscribe((business) => {
-        this.showBusinessDetails.set(false);
-        this.currentBusinessId = business.id;
-        this.pendingBusiness = business;
-        this.showBusinessForm.set(true);
-      })
-    );
+    this.loadMyBusiness();
+  }
 
-    this.subscriptions.add(
-      this.businessFormService.viewBusinessDetails$.subscribe((business) => {
-        // Toggle details if same business
-        if (this.currentBusinessId === business.id && this.showBusinessDetails()) {
-          this.closeBusinessDetails();
+  // ==================== Data Loading ====================
+
+  loadMyBusiness(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.businessService.getMyBusiness().subscribe({
+      next: (business) => {
+        this.myBusiness.set(business);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading business:', error);
+        this.isLoading.set(false);
+        
+        if (error.status === 404) {
+          this.errorMessage.set('No tienes un negocio asociado');
+        } else if (error.status === 401) {
+          this.errorMessage.set('No estás autenticado');
         } else {
-          this.showBusinessForm.set(false);
-          this.currentBusinessId = business.id;
-          this.businessFormService.setActiveBusinessId(business.id);
-          this.pendingDetailsBusiness = business;
-          this.showBusinessDetails.set(true);
+          this.errorMessage.set('Error al cargar el negocio');
         }
-      })
-    );
-
-    this.subscriptions.add(
-      this.businessFormService.closeDetails$.subscribe(() => {
-        this.showBusinessDetails.set(false);
-        this.showBusinessForm.set(false);
-        this.currentBusinessId = null;
-        this.businessFormService.setActiveBusinessId(null);
-      })
-    );
-  }
-
-  ngAfterViewChecked(): void {
-    if (this.pendingBusiness && this.businessFormComponent) {
-      this.businessFormComponent.loadBusiness(this.pendingBusiness);
-      this.pendingBusiness = undefined;
-    }
-
-    if (this.pendingDetailsBusiness && this.businessDetailsComponent) {
-      this.businessDetailsComponent.loadBusiness(this.pendingDetailsBusiness);
-      this.pendingDetailsBusiness = undefined;
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  // ==================== Form and Panel Management ====================
-
-  openBusinessForm(): void {
-    this.showBusinessDetails.set(false);
-    this.showBusinessForm.set(true);
-    this.currentBusinessId = null;
-    this.businessFormService.setActiveBusinessId(null);
-    
-    setTimeout(() => {
-      if (this.businessFormComponent) {
-        this.businessFormComponent.resetForm();
       }
-    }, 0);
+    });
   }
 
-  closeBusinessForm(): void {
-    this.showBusinessForm.set(false);
-    this.currentBusinessId = null;
-    this.businessFormService.setActiveBusinessId(null);
+  // ==================== Actions ====================
+
+  onEditClick(): void {
+    this.isEditMode.set(true);
   }
 
-  closeBusinessDetails(): void {
-    this.showBusinessDetails.set(false);
-    this.currentBusinessId = null;
-    this.businessFormService.setActiveBusinessId(null);
+  onCancelEdit(): void {
+    this.isEditMode.set(false);
+    this.pendingFormData = null;
+  }
+
+  onFormSubmit(event: any): void {
+    this.pendingFormData = event.data;
+    this.showSaveConfirm.set(true);
+  }
+
+  onConfirmSave(): void {
+    if (!this.myBusiness() || !this.pendingFormData) return;
+
+    const businessId = this.myBusiness()!.id;
+    
+    this.businessService.updateBusiness(businessId, this.pendingFormData).subscribe({
+      next: (updated) => {
+        this.myBusiness.set(updated);
+        this.isEditMode.set(false);
+        this.showSaveConfirm.set(false);
+        this.pendingFormData = null;
+        alert('Negocio actualizado correctamente');
+      },
+      error: (error) => {
+        console.error('Error updating business:', error);
+        this.showSaveConfirm.set(false);
+        
+        if (error.status === 403) {
+          alert('No tienes permiso para modificar este negocio');
+        } else {
+          alert('Error al actualizar el negocio');
+        }
+      }
+    });
+  }
+
+  onCancelSave(): void {
+    this.showSaveConfirm.set(false);
+    this.pendingFormData = null;
+  }
+
+  onDeleteClick(): void {
+    this.deleteConfirmText = '';
+    this.isDeleteConfirmed.set(false);
+    this.showDeleteConfirm.set(true);
+  }
+
+  onDeleteInputChange(): void {
+    this.isDeleteConfirmed.set(this.deleteConfirmText.toLowerCase() === 'eliminar');
+  }
+
+  onConfirmDelete(): void {
+    if (!this.myBusiness() || !this.isDeleteConfirmed()) return;
+
+    const businessId = this.myBusiness()!.id;
+    
+    this.businessService.deleteBusiness(businessId).subscribe({
+      next: () => {
+        this.showDeleteConfirm.set(false);
+        alert('Negocio eliminado correctamente');
+        // Redirect or reload
+        window.location.href = '/';
+      },
+      error: (error) => {
+        console.error('Error deleting business:', error);
+        this.showDeleteConfirm.set(false);
+        
+        if (error.status === 403) {
+          alert('No tienes permiso para eliminar este negocio');
+        } else {
+          alert('Error al eliminar el negocio');
+        }
+      }
+    });
+  }
+
+  onCancelDelete(): void {
+    this.showDeleteConfirm.set(false);
+    this.deleteConfirmText = '';
+    this.isDeleteConfirmed.set(false);
+  }
+
+  onBackdropClick(event: MouseEvent): void {
+    // Solo cerrar si se hace click directamente en el backdrop
+    if (event.target === event.currentTarget) {
+      this.onCancelDelete();
+    }
   }
 }

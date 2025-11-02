@@ -1,4 +1,4 @@
-import { Component, inject, output, viewChild, OnInit } from '@angular/core';
+import { Component, inject, input, output, viewChild, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Form } from '../../../shared/components/form';
 import { FormConfig, FormSubmitEvent, Business } from '../../../shared/models';
@@ -22,12 +22,30 @@ export class BusinessForm implements OnInit {
   // Reference to the generic Form component
   formComponent = viewChild(Form);
 
-  // Output
-  onFormClosed = output<void>();
+  constructor() {
+    // Control form disabled state based on edit mode
+    effect(() => {
+      const formComp = this.formComponent();
+      const editMode = this.isEditMode();
+      
+      if (formComp?.form) {
+        if (editMode) {
+          formComp.form.enable();
+        } else {
+          formComp.form.disable();
+        }
+      }
+    });
+  }
 
-  // State
-  editingBusinessId: number | null = null;
-  isEditMode = false;
+  // Inputs
+  isEditMode = input<boolean>(false);
+  editingBusinessId = input<number | null>(null);
+  businessData = input<Business | null>(null);
+
+  // Outputs
+  formSubmit = output<FormSubmitEvent<Partial<Business>>>();
+  formCancel = output<void>();
 
   // Form configuration
   formConfig: FormConfig<Partial<Business>> = {
@@ -49,8 +67,8 @@ export class BusinessForm implements OnInit {
             label: 'CUIT',
             type: 'text',
             required: true,
-            placeholder: 'XX-XXXXXXXX-X',
-            helpText: 'Formato: XX-XXXXXXXX-X',
+            placeholder: '20123456789',
+            helpText: 'Introducir números sin espacios ni guiones',
             fullWidth: true,
           },
         ],
@@ -99,95 +117,44 @@ export class BusinessForm implements OnInit {
   };
 
   ngOnInit(): void {
-    // Initialization can be done here if needed
-  }
+    // Load business data when component initializes
+    const business = this.businessData();
+    if (business) {
+      const data: any = {
+        name: business.name,
+        cuit: business.cuit,
+        'address.street': business.address.street,
+        'address.city': business.address.city,
+        'address.province': business.address.province,
+        'address.zipCode': business.address.zipCode
+      };
 
-  /**
-   * Manejar el envío del formulario
-   */
-  onFormSubmit(event: FormSubmitEvent<Partial<Business>>): void {
-    const formData: Partial<Business> = {
-      name: event.data.name || '',
-      cuit: event.data.cuit || '',
-      address: event.data.address || {
-        street: '',
-        city: '',
-        province: '',
-        zipCode: ''
-      }
-    };
-
-    if (event.isEditMode && event.editingId) {
-      console.log(`📤 PATCH /api/businesses/${event.editingId} - Request:`, formData);
-      this.businessService.updateBusiness(Number(event.editingId), formData).subscribe({
-        next: (business) => {
-          console.log(`📥 PATCH /api/businesses/${event.editingId} - Response:`, business);
-          this.businessFormService.notifyBusinessUpdated(business);
-          this.resetForm();
-          this.onClose();
-          this.businessFormService.viewBusinessDetails(business);
-        },
-        error: (error) => {
-          console.error(`❌ PATCH /api/businesses/${event.editingId} - Error:`, error);
-        },
+      // Load data into form component and set initial disabled state
+      setTimeout(() => {
+        const formComp = this.formComponent();
+        if (formComp) {
+          formComp.loadData(data);
+          
+          // Set initial disabled state
+          if (!this.isEditMode()) {
+            formComp.form.disable();
+          }
+        }
       });
-    } else {
-      // Crear nuevo negocio (sin owner, solo para usuarios ya autenticados)
-      // La creación completa con owner se hace en /register
-      console.log('⚠️ Creación de negocio sin owner requiere endpoint diferente en el backend');
-      // TODO: Implementar cuando el backend tenga el endpoint
-      this.onFormCancel();
     }
   }
 
   /**
-   * Cargar datos del negocio para edición
+   * Manejar el envío del formulario - emit to parent
    */
-  loadBusiness(business: Business): void {
-    this.isEditMode = true;
-    this.editingBusinessId = business.id;
-
-    const businessData: any = {
-      name: business.name,
-      cuit: business.cuit,
-      'address.street': business.address.street,
-      'address.city': business.address.city,
-      'address.province': business.address.province,
-      'address.zipCode': business.address.zipCode
-    };
-
-    // Load data into form component
-    const formComp = this.formComponent();
-    if (formComp) {
-      formComp.loadData(businessData);
-    }
+  handleFormSubmit(event: FormSubmitEvent<Partial<Business>>): void {
+    this.formSubmit.emit(event);
   }
 
   /**
-   * Resetear formulario
+   * Cancelar edición - emit to parent
    */
-  resetForm(): void {
-    this.isEditMode = false;
-    this.editingBusinessId = null;
-
-    const formComp = this.formComponent();
-    if (formComp) {
-      formComp.resetForm();
-    }
-  }
-
-  /**
-   * Cancelar edición
-   */
-  onFormCancel(): void {
-    this.resetForm();
-    this.onClose();
-  }
-
-  /**
-   * Cerrar el formulario
-   */
-  onClose(): void {
-    this.onFormClosed.emit();
+  handleFormCancel(): void {
+    this.formCancel.emit();
   }
 }
