@@ -1,5 +1,5 @@
-export const DEFAULT_SATURATION = 40;
-export const DEFAULT_LIGHTNESS = 75;
+export const DEFAULT_SATURATION = 62;
+export const DEFAULT_LIGHTNESS = 85;
 
 export function clampHue(value: number): number {
   return Math.max(0, Math.min(360, Math.round(value)));
