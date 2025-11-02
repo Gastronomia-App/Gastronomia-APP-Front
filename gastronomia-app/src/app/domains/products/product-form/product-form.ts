@@ -9,6 +9,7 @@ import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
+import { ProductGroupService } from '../../product-groups/services/product-group.service';
 
 @Component({
   selector: 'app-product-form',
@@ -22,6 +23,7 @@ import { CategoryService } from '../../categories/services';
 })
 export class ProductForm implements OnInit {
   private productService = inject(ProductService);
+  private productGroupService = inject(ProductGroupService);
   private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
@@ -38,11 +40,13 @@ export class ProductForm implements OnInit {
   availableProductGroups = signal<ProductGroup[]>([]);
 
   selectedComponents = signal<ProductComponent[]>([]);
-  selectedProductGroups = signal<ProductGroup[]>([]);
+  // Only id and name are required for assignments
+  selectedProductGroups = signal<Pick<ProductGroup, 'id' | 'name'>[]>([]);
 
   // Track original state for edit mode (to detect changes)
   originalComponents: ProductComponent[] = [];
-  originalProductGroups: ProductGroup[] = [];
+  // Only id and name are needed for comparison
+  originalProductGroups: Pick<ProductGroup, 'id' | 'name'>[] = [];
 
   isLoadingCategories = signal<boolean>(false);
   isLoadingComponents = signal<boolean>(false);
@@ -57,7 +61,15 @@ export class ProductForm implements OnInit {
     availableItems: this.availableComponents(),
     selectedItems: this.selectedComponents(),
     isLoading: this.isLoadingComponents(),
-    showQuantity: true
+    customFields: [
+      {
+        key: 'quantity',
+        label: 'Cantidad',
+        type: 'number' as const,
+        editable: true
+      }
+    ],
+    editableFields: true
   }));
 
   productGroupsInputs = computed(() => ({
@@ -65,7 +77,8 @@ export class ProductForm implements OnInit {
     availableItems: this.availableProductGroups(),
     selectedItems: this.selectedProductGroups(),
     isLoading: this.isLoadingGroups(),
-    showQuantity: false
+    customFields: [],
+    editableFields: false
   }));
 
   // Form configuration
@@ -276,7 +289,7 @@ export class ProductForm implements OnInit {
 
   private loadProductGroups(): void {
     this.isLoadingGroups.set(true);
-    this.productService.getProductGroups().subscribe({
+    this.productGroupService.getProductGroups().subscribe({
       next: (groups) => {
         this.availableProductGroups.set(Array.isArray(groups) ? groups : []);
         this.updateDynamicFieldsAndRerender();
@@ -345,7 +358,8 @@ export class ProductForm implements OnInit {
   }
 
   onProductGroupAdded(item: ProductGroup): void {
-    this.selectedProductGroups.update(groups => [...groups, { ...item }]);
+    // Only store id and name for assignments
+    this.selectedProductGroups.update(groups => [...groups, { id: item.id, name: item.name }]);
   }
 
   onProductGroupRemoved(itemId: number): void {

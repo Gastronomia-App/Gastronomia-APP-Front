@@ -1,4 +1,5 @@
 import { Category } from "./category.model";
+import { ProductGroup } from "./product-group.model";
 
 export interface Product {
     id: number;
@@ -20,9 +21,4 @@ export interface ProductComponent {
     productId: number;    
     name: string;
     quantity: number;
-}
-
-export interface ProductGroup {
-    id: number;
-    name: string;
 }

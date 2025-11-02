@@ -129,8 +129,14 @@ export class ProductDetails implements OnInit {
             listItems: (data) => data.components || [],
             listItemComponent: ItemCard,
             listItemInputs: {
-              showQuantity: true,
-              editableQuantity: false,
+              customFields: [
+                {
+                  key: 'quantity',
+                  type: 'number',
+                  editable: false
+                }
+              ],
+              editableFields: false,
               showRemoveButton: false
             },
             emptyMessage: 'Sin componentes'
@@ -143,6 +149,7 @@ export class ProductDetails implements OnInit {
             listItems: (data) => data.productGroups || [],
             listItemComponent: ItemCard,
             listItemInputs: {
+              customFields: [],
               showRemoveButton: false
             },
             emptyMessage: 'Sin grupos'

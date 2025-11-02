@@ -10,11 +10,6 @@ export class ProductService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api';
 
-  // Get all product groups
-  getProductGroups(): Observable<ProductGroup[]> {
-    return this.http.get<ProductGroup[]>(`${this.apiUrl}/groups`);
-  }
-
   // Get all products
   getProducts(): Observable<Product[]> {
     return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products`).pipe(
