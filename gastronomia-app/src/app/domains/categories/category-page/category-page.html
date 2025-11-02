@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Category table component with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-category-table (onNewCategoryClick)="openCategoryForm()"></app-category-table>
+    </div>
+  </div>
+
+  @if (showCategoryForm()) {
+    <app-category-form (onFormClosed)="closeCategoryForm()"></app-category-form>
+  }
+
+  @if (showCategoryDetails()) {
+    <app-category-details (onDetailsClosed)="closeCategoryDetails()"></app-category-details>
+  }
+</div>

@@ -98,7 +98,11 @@
               <!-- Default text/number field -->
               <div class="detail-field" [class.full-width]="field.fullWidth" [class]="field.cssClass || ''">
                 <label class="detail-label">{{ field.label }}</label>
-                <p class="detail-value">{{ getFieldValue(field) }}</p>
+                @if (isHtmlValue(field)) {
+                  <p class="detail-value" [innerHTML]="getFieldValue(field)"></p>
+                } @else {
+                  <p class="detail-value">{{ getFieldValue(field) }}</p>
+                }
               </div>
             }
           }

@@ -8,18 +8,36 @@ export const routes: Routes = [
     redirectTo: '/login',
     pathMatch: 'full'
   },
-    {
+  {
     path: 'login',
     component: LoginPageComponent
-    },
-    {
+  },
+  {
+    path: 'products',
+    loadComponent: () => import('./domains/products/product-page/product-page')
+    .then(m => m.ProductPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./domains/categories/category-page/category-page')
+    .then(m => m.CategoryPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'groups',
+    loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
+    .then(m => m.ProductGroupPage),
+    canActivate: [authGuard]
+  },
+  {
     path: 'customers',
-  loadComponent: () =>
-    import('./domains/customer/customer-page/customer-page')
-      .then(m => m.CustomerPage),
-  canActivate: [authGuard]
-}
- 
+    loadComponent: () =>
+      import('./domains/customer/customer-page/customer-page')
+        .then(m => m.CustomerPage),
+    canActivate: [authGuard]
+  }
+
   /*
   ,
   {

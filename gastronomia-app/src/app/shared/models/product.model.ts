@@ -1,7 +1,10 @@
+import { Category } from "./category.model";
+import { ProductGroup } from "./product-group.model";
+
 export interface Product {
     id: number;
     name: string;
-    categoryId: number;
+    category: Category;
     description?: string;
     price: number;
     cost?: number;
@@ -14,12 +17,8 @@ export interface Product {
 }
 
 export interface ProductComponent {
-    id: number;
+    id?: number;          
+    productId: number;    
     name: string;
     quantity: number;
-}
-
-export interface ProductGroup {
-    id: number;
-    name: string;
 }

@@ -1,0 +1,11 @@
+<div class="color-picker">
+  <input
+    type="range"
+    min="0"
+    max="360"
+    [value]="hue()"
+    (input)="onSliderChange($event)"
+    class="hue-slider"
+    [ngStyle]="{ '--selected-color': currentColor() }"
+  />
+</div>

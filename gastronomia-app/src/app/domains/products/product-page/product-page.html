@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Product table component with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-product-table (onNewProductClick)="openProductForm()"></app-product-table>
+    </div>
+  </div>
+
+  @if (showProductForm()) {
+    <app-product-form (onFormClosed)="closeProductForm()"></app-product-form>
+  }
+
+  @if (showProductDetails()) {
+    <app-product-details (onDetailsClosed)="closeProductDetails()"></app-product-details>
+  }
+</div>
