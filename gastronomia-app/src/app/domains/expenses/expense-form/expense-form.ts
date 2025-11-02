@@ -1,11 +1,20 @@
-import { Component, EventEmitter, inject, OnInit, Output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { 
+  Component, 
+  inject, 
+  OnInit, 
+  output, 
+  ChangeDetectorRef, 
+  viewChild, 
+  signal,
+  DestroyRef
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Form } from '../../../shared/components/form/form';
-import { Expense, Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
-import { ExpenseService } from '../../../services/expense.service';
+import { ExpenseService, ExpenseFormService } from '../services';
 import { SupplierService } from '../../../services/supplier.service';
-import { SelectDropdownComponent } from '../../../shared/components/select-dropdown';
+import { Expense, Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
 
 @Component({
   selector: 'app-expense-form',
@@ -15,21 +24,38 @@ import { SelectDropdownComponent } from '../../../shared/components/select-dropd
   styleUrl: './expense-form.css',
 })
 export class ExpenseForm implements OnInit {
-  private readonly expenseService = inject(ExpenseService);
-  private readonly supplierService = inject(SupplierService);
+  // ==================== Dependency Injection ====================
+  
+  private expenseService = inject(ExpenseService);
+  private supplierService = inject(SupplierService);
+  private expenseFormService = inject(ExpenseFormService);
+  private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
-  @Output() close = new EventEmitter<void>();
-  @Output() expenseCreated = new EventEmitter<void>();
+  // ==================== ViewChild Reference ====================
+  
+  // Reference to the generic Form component - REQUIRED for manual operations
+  formComponent = viewChild(Form);
 
-  protected isLoading = signal(false);
-  protected errorMessage = signal<string | null>(null);
-  protected suppliers = signal<Supplier[]>([]);
-  protected selectedSupplierId = signal<number | null>(null);
+  // ==================== Outputs ====================
+  
+  onFormClosed = output<void>();
 
-  protected formConfig = signal<FormConfig<Expense>>({
-    title: 'Nuevo Gasto',
-    editTitle: 'Editar Gasto',
-    submitLabel: 'Crear Gasto',
+  // ==================== Signals for Reactive Data ====================
+  
+  // Data sources for select fields - Use SIGNALS for reactivity
+  suppliers = signal<Supplier[]>([]);
+  
+  // Loading states
+  isLoadingSuppliers = signal<boolean>(false);
+
+  // Edit mode state
+  editingExpenseId: number | null = null;
+  isEditMode = false;
+
+  // ==================== Form Configuration ====================
+  
+  formConfig: FormConfig<Expense> = {
     sections: [
       {
         title: 'Información del Gasto',
@@ -46,24 +72,12 @@ export class ExpenseForm implements OnInit {
             helpText: 'Seleccione la fecha y hora del gasto'
           },
           {
-            name: 'supplier',
+            name: 'supplierId',
             label: 'Proveedor',
-            type: 'custom',
+            type: 'select',
             required: true,
-            fullWidth: false,
-            customComponent: SelectDropdownComponent,
-            customInputs: {
-              label: 'Proveedor',
-              placeholder: 'Seleccione un proveedor',
-              options: [],
-              selectedId: null,
-              required: true,
-              disabled: false,
-              errorMessage: ''
-            },
-            customOutputs: {
-              selectionChange: (supplierId: number | null) => this.onSupplierChange(supplierId)
-            }
+            options: [], // Will be populated from signal
+            fullWidth: false
           },
           {
             name: 'amount',
@@ -91,12 +105,16 @@ export class ExpenseForm implements OnInit {
         ]
       }
     ]
-  });
+  };
 
+  // ==================== Lifecycle Hooks ====================
+  
   ngOnInit(): void {
     this.loadSuppliers();
   }
 
+  // ==================== Helper Methods ====================
+  
   private getCurrentDateTime(): string {
     const now = new Date();
     const year = now.getFullYear();
@@ -107,96 +125,164 @@ export class ExpenseForm implements OnInit {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
+  // ==================== Data Loading Methods ====================
+  
   private loadSuppliers(): void {
-    this.isLoading.set(true);
-    this.supplierService.getSuppliers({ size: 100 }).subscribe({
-      next: (response) => {
-        const activeSuppliers = response.content.filter(s => !s.deleted);
-        this.suppliers.set(activeSuppliers);
-        
-        // Update the custom component inputs with supplier options
-        this.updateSupplierOptions(activeSuppliers);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Error loading suppliers');
-        this.isLoading.set(false);
-      }
-    });
+    this.isLoadingSuppliers.set(true);
+    this.supplierService.getSuppliers({ size: 100 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const activeSuppliers = response.content.filter(s => !s.deleted);
+          this.suppliers.set(activeSuppliers);
+          this.updateSupplierOptions();
+          this.isLoadingSuppliers.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading suppliers:', error);
+          this.isLoadingSuppliers.set(false);
+          this.suppliers.set([]);
+          
+          const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
+          if (supplierField) {
+            supplierField.options = [];
+            supplierField.helpText = 'Error al cargar proveedores';
+          }
+        }
+      });
   }
 
-  private updateSupplierOptions(suppliers: Supplier[]): void {
-    const options = suppliers.map(s => ({
-      id: s.id,
-      name: s.tradeName || s.legalName
-    }));
-
-    // Update form config with new options
-    this.formConfig.update(config => {
-      const newConfig = { ...config };
-      const supplierField = newConfig.sections[0].fields.find(f => f.name === 'supplier');
-      if (supplierField && supplierField.customInputs) {
-        supplierField.customInputs['options'] = options;
-      }
-      return newConfig;
-    });
+  // ==================== Update Select Options ====================
+  
+  private updateSupplierOptions(): void {
+    const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
+    if (supplierField) {
+      supplierField.options = this.suppliers().map(s => ({
+        label: s.tradeName || s.legalName,
+        value: s.id
+      }));
+    }
   }
 
-  protected onSupplierChange(supplierId: number | null): void {
-    this.selectedSupplierId.set(supplierId);
+  // ==================== Form Submission Handler ====================
+  
+  onFormSubmit(event: FormSubmitEvent<Expense>): void {
+    // Ensure dateTime has a valid value
+    let dateTimeValue = event.data.date;
+    if (!dateTimeValue) {
+      dateTimeValue = this.getCurrentDateTime();
+    }
     
-    // Update error message in the custom component
-    const supplierField = this.formConfig().sections[0].fields.find(f => f.name === 'supplier');
-    if (supplierField && supplierField.customInputs) {
-      supplierField.customInputs['errorMessage'] = supplierId ? '' : 'Proveedor es requerido';
-      supplierField.customInputs['selectedId'] = supplierId;
+    // HTML datetime-local returns format: "YYYY-MM-DDTHH:mm"
+    // Java LocalDateTime expects: "YYYY-MM-DDTHH:mm:ss"
+    if (dateTimeValue && !dateTimeValue.includes(':00', dateTimeValue.length - 3)) {
+      dateTimeValue = dateTimeValue + ':00';
+    }
+    
+    // Transform form data to match API expectations
+    const formData: any = {
+      supplierId: Number((event.data as any).supplierId),
+      amount: Number(event.data.amount),
+      dateTime: dateTimeValue
+    };
+    
+    if (event.data.comment && event.data.comment.trim() !== '') {
+      formData.comment = event.data.comment.trim();
+    }
+
+    if (event.isEditMode && event.editingId) {
+      // UPDATE operation
+      this.expenseService.updateExpense(Number(event.editingId), formData)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (expense) => {
+            this.expenseFormService.notifyExpenseUpdated(expense);
+            this.resetForm();
+            this.onClose();
+            this.expenseFormService.viewExpenseDetails(expense);
+          },
+          error: (error) => {
+            console.error('Error updating expense:', error);
+            alert(`Error al actualizar el gasto: ${error.error?.message || error.message || 'Error desconocido'}`);
+          }
+        });
+    } else {
+      // CREATE operation
+      this.expenseService.createExpense(formData)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (expense) => {
+            this.expenseFormService.notifyExpenseCreated(expense);
+            this.resetForm();
+            this.onClose();
+            this.expenseFormService.viewExpenseDetails(expense);
+          },
+          error: (error) => {
+            console.error('Error creating expense:', error);
+            alert(`Error al crear el gasto: ${error.error?.message || error.message || 'Error desconocido'}`);
+          }
+        });
     }
   }
 
-  protected onFormSubmit(event: FormSubmitEvent<Expense>): void {
-    this.errorMessage.set(null);
+  // ==================== Load Expense for Edit ====================
+  
+  loadExpense(expense: Expense): void {
+    this.isEditMode = true;
+    this.editingExpenseId = expense.id;
 
-    // Validate supplier is selected
-    if (!this.selectedSupplierId()) {
-      this.errorMessage.set('Debe seleccionar un proveedor');
-      return;
+    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
+    let formattedDate = expense.date;
+    if (formattedDate && formattedDate.includes(':')) {
+      // Remove seconds if present
+      const parts = formattedDate.split(':');
+      if (parts.length >= 3) {
+        formattedDate = `${parts[0]}:${parts[1]}`; // Keep only YYYY-MM-DDTHH:mm
+      }
     }
 
-    this.isLoading.set(true);
-
-    // Find the selected supplier
-    const supplier = this.suppliers().find(s => s.id === this.selectedSupplierId());
-    if (!supplier) {
-      this.errorMessage.set('Proveedor no encontrado');
-      this.isLoading.set(false);
-      return;
-    }
-
-    const expenseToSubmit: Partial<Expense> = {
-      supplier: supplier,
-      amount: event.data.amount,
-      comment: event.data.comment || undefined,
-      date: event.data.date ? new Date(event.data.date).toISOString() : new Date().toISOString()
+    // Prepare data for form - only form fields
+    const expenseData: Partial<Expense> = {
+      date: formattedDate,
+      amount: expense.amount,
+      comment: expense.comment || ''
     };
 
-    this.expenseService.createExpense(expenseToSubmit).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.expenseCreated.emit();
-        this.close.emit();
-      },
-      error: () => {
-        this.errorMessage.set('Error al crear el gasto. Por favor, intente nuevamente.');
-        this.isLoading.set(false);
-      }
-    });
+    // Add supplierId to the data
+    const dataWithSupplier: any = {
+      ...expenseData,
+      supplierId: expense.supplier?.id
+    };
+
+    // Load data into form component
+    const formComp = this.formComponent();
+    if (formComp) {
+      formComp.loadData(dataWithSupplier);
+    }
+
+    this.cdr.detectChanges();
   }
 
-  protected onFormCancel(): void {
-    this.close.emit();
+  // ==================== Reset Form ====================
+  
+  resetForm(): void {
+    this.isEditMode = false;
+    this.editingExpenseId = null;
+
+    const formComp = this.formComponent();
+    if (formComp) {
+      formComp.resetForm();
+    }
   }
 
-  protected onFormClose(): void {
-    this.close.emit();
+  // ==================== Form Actions ====================
+  
+  onFormCancel(): void {
+    this.resetForm();
+    this.onClose();
+  }
+
+  onClose(): void {
+    this.onFormClosed.emit();
   }
 }

@@ -1,187 +1,20 @@
-<main class="main-content">
-    <div class="page-header">
-        <h1 class="page-title">Gestión de Gastos</h1>
+<div class="page-container">
+  <div class="page-content">
+    <!-- Expense Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-expense-table
+        (onNewExpenseClick)="openExpenseForm()">
+      </app-expense-table>
     </div>
+  </div>
 
-    <div class="filters-section panel">
-        <div class="filters-header">
-            <button type="button" class="btn-primary" (click)="openExpenseForm()">
-                + Nuevo Gasto
-            </button>
-        </div>
-        
-        <div class="filters-row">
-            <div class="filter-group">
-                <label for="minAmount">Monto Mínimo</label>
-                <input 
-                    type="number" 
-                    id="minAmount"
-                    placeholder="$ 0"
-                    [(ngModel)]="filters.minAmount"
-                    (input)="applyFilters()">
-            </div>
+  @if (showExpenseForm()) {
+    <aside class="aside-panel">
+      <app-expense-form (onFormClosed)="closeExpenseForm()"></app-expense-form>
+    </aside>
+  }
 
-            <div class="filter-group">
-                <label for="maxAmount">Monto Máximo</label>
-                <input 
-                    type="number" 
-                    id="maxAmount"
-                    placeholder="$ 0"
-                    [(ngModel)]="filters.maxAmount"
-                    (input)="applyFilters()">
-            </div>
-
-            <div class="filter-group">
-                <label for="startDate">Fecha Inicio</label>
-                <input 
-                    type="date" 
-                    id="startDate"
-                    [(ngModel)]="filters.startDate"
-                    (change)="applyFilters()">
-            </div>
-
-            <div class="filter-group">
-                <label for="endDate">Fecha Fin</label>
-                <input 
-                    type="date" 
-                    id="endDate"
-                    [(ngModel)]="filters.endDate"
-                    (change)="applyFilters()">
-            </div>
-
-            <div class="filter-group">
-                <label for="supplierId">ID Proveedor</label>
-                <input 
-                    type="number" 
-                    id="supplierId"
-                    placeholder="ID del proveedor"
-                    [(ngModel)]="filters.supplierId"
-                    (input)="applyFilters()">
-            </div>
-
-            <button 
-                type="button" 
-                class="btn-clear secondary"
-                (click)="clearFilters()"
-                title="Limpiar filtros">
-                Limpiar
-            </button>
-        </div>
-    </div>
-
-    <div class="content-layout">
-        <div class="content-main">
-            @if (isLoading()) {
-                <div class="empty-state">
-                    <p class="text-muted">Cargando gastos...</p>
-                </div>
-            }
-
-            @if (errorMessage()) {
-                <div class="error-message">
-                    {{ errorMessage() }}
-                </div>
-            }
-
-            @if (!isLoading() && !errorMessage()) {
-                @if (expenses().length === 0) {
-                    <div class="empty-state">
-                        <p class="text-muted">
-                            No hay gastos registrados. Haz clic en "+ Nuevo Gasto" para crear uno.
-                        </p>
-                    </div>
-                } @else {
-                    <div class="expenses-container">
-                        <div class="table-wrapper">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 18%">Fecha y Hora</th>
-                                        <th style="width: 22%">Proveedor</th>
-                                        <th style="width: 15%" class="text-right">Monto</th>
-                                        <th style="width: 35%">Comentario</th>
-                                        <th style="width: 10%" class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (expense of expenses(); track expense.id) {
-                                        <tr>
-                                            <td>
-                                                {{ expense.date | safeDate }}
-                                                @if (!expense.date) {
-                                                    <small class="text-danger">(sin fecha)</small>
-                                                }
-                                            </td>
-                                            <td>
-                                                {{ expense.supplier?.tradeName || expense.supplier?.legalName || '-' }}
-                                                @if (expense.supplier?.id) {
-                                                    <small class="text-muted">(ID: {{ expense.supplier?.id }})</small>
-                                                }
-                                            </td>
-                                            <td class="text-right font-semibold">
-                                                {{ expense.amount | currency:'ARS':'symbol-narrow':'1.2-2' }}
-                                            </td>
-                                            <td class="text-truncate">{{ expense.comment || '-' }}</td>
-                                            <td class="text-center">
-                                                <div class="action-buttons">
-                                                    <button 
-                                                        type="button" 
-                                                        class="icon-btn modify-btn"
-                                                        (click)="onModifyExpense(expense.id)"
-                                                        title="Modificar gasto">
-                                                        <img src="assets/images/modify-icon.png" alt="Modificar" />
-                                                    </button>
-                                                    <button 
-                                                        type="button" 
-                                                        class="icon-btn delete-btn"
-                                                        (click)="onDeleteExpense(expense.id)"
-                                                        title="Eliminar gasto">
-                                                        <img src="assets/images/delete-icon.png" alt="Eliminar" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="table-footer">
-                            <div class="total-summary">
-                                <div class="summary-info">
-                                    <span class="summary-label">Mostrando {{ expenses().length }} de {{ totalElements() }} gastos</span>
-                                </div>
-                                <div class="total-amount">
-                                    <span class="total-label">Total mostrado:</span>
-                                    <span class="total-value">
-                                        {{ getTotalAmount() | currency:'ARS':'symbol-narrow':'1.2-2' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if (isLoadingMore()) {
-                            <div class="loading-more">
-                                <p class="text-muted">Cargando más gastos...</p>
-                            </div>
-                        }
-
-                        @if (!isLoadingMore() && currentPage() >= totalPages() - 1 && expenses().length > 0) {
-                            <div class="end-message">
-                                <p class="text-muted">No hay más gastos para mostrar</p>
-                            </div>
-                        }
-                    </div>
-                }
-            }
-        </div>
-
-        @if (isFormOpen()) {
-            <app-expense-form
-                (expenseCreated)="onExpenseCreated()"
-                (close)="closeExpenseForm()">
-            </app-expense-form>
-        }
-    </div>
-    
-</main>
+  @if (showExpenseDetails()) {
+    <app-expense-details (onDetailsClosed)="closeExpenseDetails()"></app-expense-details>
+  }
+</div>
