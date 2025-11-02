@@ -25,46 +25,58 @@
     gap: var(--spacing-sm);
 }
 
-.quantity-input {
-    height: 20px;
-    width: 60px;
+/* Custom fields */
+.custom-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-label {
+    font-size: var(--font-xs);
+    color: var(--color-text-muted);
+    align-self: center;
+}
+
+.field-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.custom-input {
+    height: 24px;
+    max-width: 60px;
     text-align: center;
     padding: var(--spacing-xs);
     border: 1px solid var(--color-border);
     border-radius: 3px;
+    font-size: var(--font-sm);
 }
 
-.quantity-input:disabled {
+.custom-input:disabled {
     background-color: var(--color-bg-secondary);
-    cursor: not-allowed;
+    color: var(--color-text-muted);
 }
 
-/* Remove number input spinners */
-.quantity-input::-webkit-outer-spin-button,
-.quantity-input::-webkit-inner-spin-button {
+.field-suffix {
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* Remove number input spinners for custom inputs */
+.custom-input::-webkit-outer-spin-button,
+.custom-input::-webkit-inner-spin-button {
     -webkit-appearance: none !important;
     appearance: none !important;
     margin: 0 !important;
     display: none !important;
 }
 
-.quantity-input {
+.custom-input {
     -moz-appearance: textfield !important;
     appearance: textfield !important;
-    max-width: 60px;
-}
-
-.item-price {
-    font-size: var(--font-sm);
-    color: var(--color-text-muted);
-    font-weight: 500;
-}
-
-.item-subtotal {
-    font-weight: 600;
-    min-width: 70px;
-    text-align: right;
-    font-size: var(--font-sm);
 }
 
 .btn-reset {
