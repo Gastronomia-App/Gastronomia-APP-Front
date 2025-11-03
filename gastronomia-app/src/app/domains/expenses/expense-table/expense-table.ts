@@ -37,9 +37,8 @@ export class ExpenseTable extends BaseTable<Expense> {
       type: 'number',
       placeholder: '0.00',
       filterFn: (expense, value) => {
-        if (!value || value === '') return true;
-        const minAmount = parseFloat(value);
-        return expense.amount >= minAmount;
+        // No client-side filtering, all filtering is done by backend
+        return true;
       }
     },
     {
@@ -48,9 +47,8 @@ export class ExpenseTable extends BaseTable<Expense> {
       type: 'number',
       placeholder: '0.00',
       filterFn: (expense, value) => {
-        if (!value || value === '') return true;
-        const maxAmount = parseFloat(value);
-        return expense.amount <= maxAmount;
+        // No client-side filtering, all filtering is done by backend
+        return true;
       }
     },
     {
@@ -58,11 +56,8 @@ export class ExpenseTable extends BaseTable<Expense> {
       field: 'startDate',
       type: 'date',
       filterFn: (expense, value) => {
-        if (!value || value === '') return true;
-        const startDate = new Date(value);
-        startDate.setHours(0, 0, 0, 0); // Start of day
-        const expenseDate = new Date(expense.date);
-        return expenseDate >= startDate;
+        // No client-side filtering, all filtering is done by backend
+        return true;
       }
     },
     {
@@ -70,11 +65,8 @@ export class ExpenseTable extends BaseTable<Expense> {
       field: 'endDate',
       type: 'date',
       filterFn: (expense, value) => {
-        if (!value || value === '') return true;
-        const endDate = new Date(value);
-        endDate.setHours(23, 59, 59, 999); // End of day
-        const expenseDate = new Date(expense.date);
-        return expenseDate <= endDate;
+        // No client-side filtering, all filtering is done by backend
+        return true;
       }
     }
   ];
@@ -104,6 +96,14 @@ export class ExpenseTable extends BaseTable<Expense> {
     // Set page size for expenses (20 items per page)
     this.tableService.setPageSize(20);
   }
+
+  // ==================== Filter State ====================
+  
+  // Store current filter values
+  private currentMinAmount: number | null = null;
+  private currentMaxAmount: number | null = null;
+  private currentStartDateFilter: string | null = null;
+  private currentEndDateFilter: string | null = null;
 
   // ==================== Required Abstract Method Implementations ====================
   
@@ -153,11 +153,31 @@ export class ExpenseTable extends BaseTable<Expense> {
   }
 
   protected fetchData(page: number, size: number) {
-    return this.expenseService.getExpenses({
+    // Build filter parameters for backend
+    const filters: any = {
       page,
       size,
       sort: 'dateTime,desc'
-    });
+    };
+
+    // Add filters if they exist
+    if (this.currentMinAmount !== null) {
+      filters.minAmount = this.currentMinAmount;
+    }
+
+    if (this.currentMaxAmount !== null) {
+      filters.maxAmount = this.currentMaxAmount;
+    }
+
+    if (this.currentStartDateFilter) {
+      filters.startDate = this.currentStartDateFilter;
+    }
+
+    if (this.currentEndDateFilter) {
+      filters.endDate = this.currentEndDateFilter;
+    }
+
+    return this.expenseService.getExpenses(filters);
   }
 
   protected fetchItemById(id: number) {
@@ -243,5 +263,35 @@ export class ExpenseTable extends BaseTable<Expense> {
    */
   public clearSearchTerm(): void {
     this.clearSearch();
+  }
+
+  /**
+   * Handler for filters change event from table component
+   * Updates filter properties and reloads data from backend
+   */
+  public onFiltersChange(filters: any[]): void {
+    // Reset all filters first
+    this.currentMinAmount = null;
+    this.currentMaxAmount = null;
+    this.currentStartDateFilter = null;
+    this.currentEndDateFilter = null;
+
+    // Apply active filters
+    filters.forEach(filter => {
+      if (filter.field === 'minAmount' && filter.value) {
+        this.currentMinAmount = parseFloat(filter.value);
+      } else if (filter.field === 'maxAmount' && filter.value) {
+        this.currentMaxAmount = parseFloat(filter.value);
+      } else if (filter.field === 'startDate' && filter.value) {
+        const date = new Date(filter.value);
+        this.currentStartDateFilter = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      } else if (filter.field === 'endDate' && filter.value) {
+        const date = new Date(filter.value);
+        this.currentEndDateFilter = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      }
+    });
+
+    // Reload data with new filters
+    this.refreshData();
   }
 }
