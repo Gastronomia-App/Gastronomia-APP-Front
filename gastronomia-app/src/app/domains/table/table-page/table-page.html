@@ -34,18 +34,20 @@
             <p>Cargando mesas...</p>
             } @else if (error()) {
             <p class="error">{{ error() }}</p>
-            } @else if (seatings().length > 0) {
+            } @else {
             @if (!editMode()) {
             <!-- vista normal -->
+            @if (seatings().length > 0) {
             <app-table-grid [tables]="seatings()" (select)="onSelectTable($event)"></app-table-grid>
             } @else {
-            <!-- editor -->
+            <p>No hay mesas registradas. Entrá en <strong>modo edición</strong> para crear la primera.</p>
+            }
+            } @else {
+            <!-- editor: siempre se muestra en modo edición, aunque no haya mesas -->
             <app-table-grid-editor [draftSeat]="draftSeating()" (draftRequested)="onDraftRequested($event)"
                 (editRequested)="onEditFromGrid($event)" (moveRequested)="onMoveRequested($event)">
             </app-table-grid-editor>
             }
-            } @else {
-            <p>No hay mesas registradas.</p>
             }
         </div>
     </div>
