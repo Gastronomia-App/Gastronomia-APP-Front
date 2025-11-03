@@ -1,0 +1,13 @@
+<!-- Business Form (can be read-only or editable) -->
+<app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode()"
+    [editingId]="editingBusinessId()"
+    [showHeader]="false"
+    [showFooter]="isEditMode()"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Guardar cambios'"
+    [submitEditButtonLabel]="'Guardar cambios'"
+    (formSubmit)="handleFormSubmit($event)"
+    (formCancel)="handleFormCancel()">
+</app-form>
