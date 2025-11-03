@@ -55,6 +55,7 @@ export class CustomerDetails implements OnInit {
             name: 'discount', 
             label: 'Descuento (%)', 
             type: 'badge',
+            cssClass: 'inline-field',
             booleanLabels: {
               true: 'Con descuento',
               false: 'Sin descuento'
