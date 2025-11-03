@@ -125,7 +125,7 @@
       <tbody #tableBody>
         <!-- Empty State -->
         @if (displayedData().length === 0 && !loading()) {
-          <tr>
+          <tr class="empty-state-row">
             <td [attr.colspan]="totalColumns()" class="empty-state">
               {{ emptyMessage() }}
             </td>
