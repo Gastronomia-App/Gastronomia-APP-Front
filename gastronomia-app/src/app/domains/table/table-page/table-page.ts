@@ -21,7 +21,6 @@ export class TablePage {
   readonly error = signal<string | null>(null);
 
   readonly editMode = signal<boolean>(false);
-
   readonly draftSeating = signal<Seating | null>(null);
   readonly selectedSeating = signal<Seating | null>(null);
 
@@ -44,39 +43,28 @@ export class TablePage {
   }
 
   toggleEditMode(): void {
-    const next = !this.editMode();
-    this.editMode.set(next);
-
-    // 👇 siempre que cambio de modo, limpio el aside
+    this.editMode.set(!this.editMode());
     this.draftSeating.set(null);
     this.selectedSeating.set(null);
   }
 
-  // vista normal (no editor)
   onSelectTable(seating: Seating): void {
     if (!this.editMode()) {
-      // 👇 si estoy en vista, NO quiero que quede nada colgado
       this.draftSeating.set(null);
       this.selectedSeating.set(null);
       return;
     }
-    // si algún día querés que en modo edición se seleccione desde el grid normal,
-    // lo implementás acá
   }
 
-  // editor → crear
+  // 🔹 Editor → Crear nueva mesa (forma simple)
   onCreateFromGrid(event: { row: number; col: number; shape: 'SQUARE' | 'ROUND' }): void {
-    const current = this.seatings();
-    const nextNumber = current.length > 0 ? Math.max(...current.map((s) => s.number)) + 1 : 1;
-
     const draft: Seating = {
       id: 0,
-      number: nextNumber,
+      number: 0,
       posX: event.col + 1,
       posY: event.row + 1,
       shape: event.shape,
       size: 'SMALL',
-      orientation: 'HORIZONTAL',
       status: 'FREE',
     };
 
@@ -84,29 +72,48 @@ export class TablePage {
     this.draftSeating.set(draft);
   }
 
-  // editor → editar
   onEditFromGrid(seating: Seating): void {
     this.draftSeating.set(null);
     this.selectedSeating.set(structuredClone(seating));
   }
 
-  // el form avisa que terminó
   onFormClosed(): void {
     this.draftSeating.set(null);
     this.selectedSeating.set(null);
-
-    this.loadSeatings()
+    this.loadSeatings();
   }
 
-   onMoveRequested(event: { id: number; newPosX: number; newPosY: number }): void {
-  this.seatingService.movePosition(event.id, {
-    posX: event.newPosX,
-    posY: event.newPosY,
-  }).subscribe({
-    next: () => this.loadSeatings(),
-    error: () => console.error('❌ Error al mover mesa'),
-  });
-}
+  onMoveRequested(event: { id: number; newPosX: number; newPosY: number }): void {
+    this.seatingService
+      .movePosition(event.id, {
+        posX: event.newPosX,
+        posY: event.newPosY,
+      })
+      .subscribe({
+        next: () => this.loadSeatings(),
+        error: () => console.error('❌ Error al mover mesa'),
+      });
+  }
 
-  
+  // 🔹 Nuevo método → recibe evento desde el grid con forma y tamaño
+  onDraftRequested(e: {
+    row: number;
+    col: number;
+    shape: 'ROUND' | 'SQUARE';
+    size: 'SMALL' | 'MEDIUM' | 'LARGE';
+  }): void {
+    this.draftSeating.set({
+      id: 0,
+      number: 0,
+      posX: e.col + 1,
+      posY: e.row + 1,
+      status: 'FREE',
+      shape: e.shape,
+      size: e.size,
+    });
+
+    // Limpia selección de otra mesa
+    this.selectedSeating.set(null);
+  }
+
 }

@@ -144,6 +144,9 @@
                   @if (badge) {
                     <span [class]="badge.class">{{ badge.label }}</span>
                   }
+                } @else if (column.formatter) {
+                  <!-- Formatted Value with HTML support -->
+                  <span [innerHTML]="getCellValue(row, column)"></span>
                 } @else {
                   <!-- Default Value -->
                   {{ getCellValue(row, column) }}

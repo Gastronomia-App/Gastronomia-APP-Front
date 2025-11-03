@@ -6,7 +6,6 @@ export interface Seating {
   status: 'FREE' | 'OCCUPIED' | 'BILLING';
   shape: 'SQUARE' | 'ROUND';
   size: 'SMALL' | 'MEDIUM' | 'LARGE';
-  orientation: 'HORIZONTAL' | 'VERTICAL';
 }
 
 export type SeatingCreateRequest = Omit<Seating, 'id' | 'status'>;

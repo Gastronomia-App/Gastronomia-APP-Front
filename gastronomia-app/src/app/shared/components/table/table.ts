@@ -379,7 +379,12 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     const value = this.getNestedValue(row, String(column.field));
 
     if (column.formatter) {
-      return column.formatter(value, row);
+      const formatted = column.formatter(value, row);
+      // If formatter returns HTML string, bypass security for safe HTML
+      if (typeof formatted === 'string' && formatted.includes('<')) {
+        return this.sanitizer.bypassSecurityTrustHtml(formatted);
+      }
+      return formatted;
     }
 
     if (column.pipe) {
@@ -387,6 +392,13 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     }
 
     return value ?? '-';
+  }
+
+  /**
+   * Sanitize HTML for safe rendering (bypass security for trusted content)
+   */
+  sanitizeHtml(html: string): any {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   /**

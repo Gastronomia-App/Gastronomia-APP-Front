@@ -7,9 +7,11 @@ import {
   effect,
   viewChild,
   ChangeDetectorRef,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Form } from '../../../../shared/components/form/form';
+import { Confirm } from '../../../../shared/components/confirm/confirm'; // ✅ import del modal confirm
 import {
   Seating,
   SeatingCreateRequest,
@@ -17,25 +19,34 @@ import {
 } from '../../../../shared/models/seating';
 import { TablesService } from '../../services/tables-service';
 import { FormConfig, FormSubmitEvent } from '../../../../shared/models/form-config.model';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-table-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, Confirm, AlertComponent],
   templateUrl: './table-form.html',
   styleUrl: './table-form.css',
 })
 export class TableForm {
   private readonly tablesService = inject(TablesService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly errorDialog = signal<{ title: string; message: string } | null>(null);
+
+readonly showAlert = signal(false);
+readonly alertTitle = signal('');
+readonly alertMessage = signal('');
+readonly alertDetails = signal<any>(null);
+
+
 
   seating = input<Seating>();
   mode = input<'create' | 'edit'>('create');
   closed = output<void>();
 
   formRef = viewChild(Form<any>);
+  readonly showConfirm = signal(false); // ✅ señal para controlar el modal
 
-  // Config del form dinámico
   formConfig = computed<FormConfig<Seating>>(() => {
     const s = this.seating();
     return {
@@ -103,17 +114,6 @@ export class TableForm {
               ],
               defaultValue: s?.size ?? 'SMALL',
             },
-            {
-              name: 'orientation',
-              label: 'Orientación',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'Horizontal', value: 'HORIZONTAL' },
-                { label: 'Vertical', value: 'VERTICAL' },
-              ],
-              defaultValue: s?.orientation ?? 'HORIZONTAL',
-            },
           ],
         },
       ],
@@ -121,7 +121,6 @@ export class TableForm {
   });
 
   constructor() {
-    // ✅ Resetea el form cuando cambia seating() o mode()
     effect(() => {
       const s = this.seating();
       const form = this.formRef();
@@ -134,55 +133,81 @@ export class TableForm {
           posY: s.posY,
           shape: s.shape,
           size: s.size,
-          orientation: s.orientation,
         } as any);
         this.cdr.detectChanges();
       }
     });
   }
 
-  // 🟢 Guardar o crear
   onSubmit(event: FormSubmitEvent<Seating>): void {
-    if (this.mode() === 'create') {
-      const payload: SeatingCreateRequest = {
-        number: Number(event.data.number),
-        posX: Number(event.data.posX),
-        posY: Number(event.data.posY),
-        shape: event.data.shape,
-        size: event.data.size,
-        orientation: event.data.orientation,
-      };
+  if (this.mode() === 'create') {
+    const payload: SeatingCreateRequest = {
+      number: Number(event.data.number),
+      posX: Number(event.data.posX),
+      posY: Number(event.data.posY),
+      shape: event.data.shape,
+      size: event.data.size,
+    };
 
-      this.tablesService.create(payload).subscribe({
-        next: (created) => {
-          console.log('✅ Mesa creada:', created);
-          this.closed.emit();
-        },
-        error: (err) => console.error('❌ Error al crear mesa:', err),
-      });
-    } else {
-      const base = this.seating();
-      if (!base) return;
+    this.tablesService.create(payload).subscribe({
+      next: (created) => {
+        console.log('✅ Mesa creada o reactivada:', created);
+        this.closed.emit();
+      },
+      error: (err) => {
+        this.alertTitle.set('Error al crear mesa');
+        this.alertMessage.set(err.error?.message || 'Ocurrió un error inesperado.');
+        this.alertDetails.set(err);
+        this.showAlert.set(true);
+      },
+    });
+  } else {
+    const base = this.seating();
+    if (!base) return;
 
-      const payload: SeatingUpdateRequest = {
-        id: base.id,
-        number: Number(event.data.number),
-        posX: Number(event.data.posX),
-        posY: Number(event.data.posY),
-        shape: event.data.shape,
-        size: event.data.size,
-        orientation: event.data.orientation,
-      };
+    const payload: SeatingUpdateRequest = {
+      id: base.id,
+      number: Number(event.data.number),
+      posX: Number(event.data.posX),
+      posY: Number(event.data.posY),
+      shape: event.data.shape,
+      size: event.data.size,
+    };
 
-      this.tablesService.update(base.id, payload).subscribe({
-        next: (updated) => {
-          console.log('💾 Mesa actualizada:', updated);
-          this.closed.emit();
-        },
-        error: (err) => console.error('❌ Error al actualizar mesa:', err),
-      });
-    }
+    this.tablesService.update(base.id, payload).subscribe({
+      next: (updated) => {
+        console.log('💾 Mesa actualizada:', updated);
+        this.closed.emit();
+      },
+      error: (err) => {
+        this.alertTitle.set('Error al actualizar mesa');
+        this.alertMessage.set(err.error?.message || 'Ocurrió un error al actualizar.');
+        this.alertDetails.set(err);
+        this.showAlert.set(true);
+      },
+    });
   }
+}
+
+  onDeleteConfirmed(): void {
+  const s = this.seating();
+  if (!s) return;
+
+  this.tablesService.delete(s.id).subscribe({
+    next: () => {
+      console.log('🗑️ Mesa eliminada:', s.id);
+      this.showConfirm.set(false);
+      this.closed.emit();
+    },
+    error: (err) => {
+      this.alertTitle.set('Error al eliminar mesa');
+      this.alertMessage.set(err.error?.message || 'No se pudo eliminar la mesa.');
+      this.alertDetails.set(err);
+      this.showAlert.set(true);
+    },
+  });
+}
+
 
   onCancel(): void {
     this.closed.emit();
