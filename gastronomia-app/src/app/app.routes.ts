@@ -50,6 +50,12 @@ export const routes: Routes = [
       import('./domains/audits/audit-page/audit-page')
         .then(m => m.AuditsPage),
     canActivate: [authGuard]
+  },{
+     path: 'tables',
+  loadComponent: () =>
+    import('./domains/table/table-page/table-page')
+      .then(m => m.TablePage),
+  canActivate: [authGuard]
   }
 
 
