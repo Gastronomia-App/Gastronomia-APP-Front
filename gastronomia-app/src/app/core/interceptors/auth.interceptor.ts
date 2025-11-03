@@ -11,17 +11,21 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.auth.token;
-    const authReq = token
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    const isLoginEndpoint = req.url.includes('/employees/login');
+    
+    // Preserve the original HTTP method when cloning to prevent PATCH→PUT conversion
+    const authReq = (token && !isLoginEndpoint)
+      ? req.clone({ 
+          setHeaders: { Authorization: `Bearer ${token}` },
+          method: req.method
+        })
       : req;
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
-          if (!req.url.includes('/employees/login')) {
-            this.auth.logout();
-            this.router.navigate(['/login']);
-          }
+        if (err.status === 401 && !req.url.includes('/employees/login')) {
+          this.auth.logout();
+          this.router.navigate(['/login']);
         }
         return throwError(() => err);
       })

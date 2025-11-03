@@ -1,0 +1,103 @@
+<div class="editor-wrapper">
+  <div class="grid-scroll">
+    <div
+      class="grid"
+      [style.gridTemplateColumns]="'repeat(' + cols() + ', var(--cell-size))'"
+      [style.gridTemplateRows]="'repeat(' + rows() + ', var(--cell-size))'"
+    >
+      @for (r of [].constructor(rows()); track $index; let row = $index) {
+      @for (c of [].constructor(cols()); track $index; let col = $index) {
+      <div
+        class="grid-cell"
+        [class.selected]="isCellSelected(row, col)"
+        (mouseenter)="hoverCell(row, col)"
+        (mouseleave)="hoverCell(null, null)"
+        (dragover)="onDragOverCell(row, col, $event)"
+        (dragleave)="onDragLeaveCell()"
+        (drop)="onDrop(row, col)"
+      >
+        @if (getSeatingAt(row, col)) {
+          <!-- Mesa real -->
+          <div
+            class="seat {{ getSeatClasses(getSeatingAt(row, col)!) }}"
+            [class.selected]="isSelected(getSeatingAt(row, col)!)"
+            draggable="true"
+            (dragstart)="onDragStart(getSeatingAt(row, col)!, $event)"
+            (dragend)="onDragEnd()"
+            (click)="onSeatClick(getSeatingAt(row, col)!, $event)"
+          >
+            <span class="seat-number">{{ getSeatingAt(row, col)!.number }}</span>
+          </div>
+        } @else if (draftSeat() && draftSeat()!.posY === row + 1 && draftSeat()!.posX === col + 1) {
+          <!-- Borrador (lo pinta el padre en el aside) -->
+          <div class="seat preview draft {{ getSeatClasses(draftSeat()!) }}">
+            <span class="seat-number">{{ draftSeat()!.number }}</span>
+          </div>
+        } @else if (draggedSeat && hoverTarget()?.row === row && hoverTarget()?.col === col) {
+          <!-- Fantasma de arrastre -->
+          <div class="seat preview {{ getSeatClasses(draggedSeat) }}">
+            <span class="seat-number">{{ draggedSeat.number }}</span>
+          </div>
+        } @else if (!draggedSeat) {
+          <div class="empty" (click)="onCellClick(row, col, $event)">
+            @if (isHovered(row, col)) {
+              <span class="add-icon">+</span>
+            }
+          </div>
+        } @else {
+          <div class="empty"></div>
+        }
+      </div>
+      }
+      }
+    </div>
+
+    @if (showMenu()) {
+      <div
+        class="context-menu"
+        [style.top.px]="menuY()"
+        [style.left.px]="menuX()"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Bloque de FORMA -->
+        <button class="panel" (click)="toggleShape()" aria-label="Cambiar forma">
+          <div class="icon">
+            <!-- SVG inline: círculo/cuadrado según estado -->
+            @if (menuShape() === 'ROUND') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon">
+                <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon">
+                <rect x="6.5" y="6.5" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" rx="2"/>
+              </svg>
+            }
+          </div>
+        </button>
+
+        <!-- Bloque de TAMAÑO -->
+        <button class="panel" (click)="cycleSize()" aria-label="Cambiar tamaño">
+          <div class="icon">
+            <!-- SVG inline: el mismo cuadrado, variando padding visual por size -->
+            @if (menuSize() === 'SMALL') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon">
+                <rect x="3.5" y="3.5" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" rx="3"/>
+                <rect x="11" y="11" width="2" height="2" fill="currentColor"/>
+              </svg>
+            } @else if (menuSize() === 'MEDIUM') {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon">
+                <rect x="3.5" y="3.5" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" rx="3"/>
+                <rect x="9" y="9" width="6" height="6" fill="currentColor"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon">
+                <rect x="3.5" y="3.5" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" rx="3"/>
+                <rect x="7" y="7" width="10" height="10" fill="currentColor"/>
+              </svg>
+            }
+          </div>
+        </button>
+      </div>
+    }
+  </div>
+</div>

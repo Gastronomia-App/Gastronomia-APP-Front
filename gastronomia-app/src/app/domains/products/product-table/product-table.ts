@@ -5,12 +5,12 @@ import { ProductFormService } from '../services/product-form.service';
 import { Product, TableColumn, TableFilter, Category } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Confirm } from "../../../shared/components/confirm";
+import { ConfirmationModalComponent } from "../../../shared/components/confirmation-modal";
 import { CategoryService } from '../../categories/services';
 
 @Component({
   selector: 'app-product-table',
-  imports: [CommonModule, Table, Confirm],
+  imports: [CommonModule, Table, ConfirmationModalComponent],
   templateUrl: './product-table.html',
   styleUrl: './product-table.css',
   host: {
@@ -171,6 +171,10 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
     return product.id;
   }
 
+  public get deleteConfirmationMessage(): string {
+    return `¿Estás seguro de eliminar el producto "${this.itemToDelete?.name}"? Esta acción no se puede deshacer.`;
+  }
+
   protected onEditItem(product: Product): void {
     // Ensure required arrays exist
     if (!product.components) product.components = [];
@@ -185,11 +189,6 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
     if (!product.productGroups) product.productGroups = [];
     
     this.productFormService.viewProductDetails(product);
-  }
-
-  protected override onItemDeleted(itemId: number): void {
-    // Notify that a product was deleted so form/details close
-    this.productFormService.notifyProductDeleted();
   }
 
   // ==================== Custom Subscriptions ====================

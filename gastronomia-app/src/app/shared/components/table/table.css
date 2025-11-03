@@ -349,6 +349,7 @@
   display: block;
   overflow-y: auto;
   overflow-x: hidden;
+  width: 100%;
 }
 
 .table tbody tr {
@@ -404,11 +405,27 @@
 }
 
 /* Empty and loading states */
-.empty-state,
-.loading-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--color-text-muted);
+.table tbody .empty-state-row,
+.table tbody .loading-state-row {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  grid-template-columns: unset !important;
+  min-height: 100px;
+}
+
+.table tbody .empty-state,
+.table tbody .loading-state {
+  text-align: center !important;
+  width: 100% !important;
+  padding: 2rem !important;
+  color: var(--color-text-muted) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  flex: 1 !important;
+  max-width: none !important;
 }
 
 .loading-spinner {

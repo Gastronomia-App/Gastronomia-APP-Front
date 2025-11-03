@@ -51,6 +51,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   // Search & Filter inputs
   enableSearch = input<boolean>(true);
   searchPlaceholder = input<string>('Buscar...');
+  searchFilterFn = input<((item: T, searchTerm: string) => boolean) | null>(null);
   enableFilters = input<boolean>(false);
   filters = input<TableFilter<T>[]>([]);
   
@@ -131,12 +132,20 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     // Apply search filter
     const search = this.searchTerm().toLowerCase().trim();
     if (search && this.enableSearch()) {
-      result = result.filter(row => {
-        return this.columns().some(column => {
-          const value = this.getNestedValue(row, String(column.field));
-          return value?.toString().toLowerCase().includes(search);
+      const customFilterFn = this.searchFilterFn();
+      
+      if (customFilterFn) {
+        // Use custom search filter function
+        result = result.filter(row => customFilterFn(row, search));
+      } else {
+        // Default search: look in all columns
+        result = result.filter(row => {
+          return this.columns().some(column => {
+            const value = this.getNestedValue(row, String(column.field));
+            return value?.toString().toLowerCase().includes(search);
+          });
         });
-      });
+      }
     }
     
     // Apply custom filters

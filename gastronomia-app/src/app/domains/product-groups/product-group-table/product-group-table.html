@@ -21,13 +21,14 @@
 />
 
 <!-- Confirmation Dialog -->
-@if (showConfirmDialog()) {
-  <app-confirm
-    [title]="confirmDialogData()?.title || 'Confirmar'"
-    [message]="confirmDialogData()?.message || ''"
-    [confirmLabel]="'Eliminar'"
-    [cancelLabel]="'Cancelar'"
-    (onConfirm)="onConfirmDialogConfirm()"
-    (onCancel)="onConfirmDialogCancel()"
-  />
-}
+<app-confirmation-modal
+  [isVisible]="showDeleteConfirmation()"
+  title="Confirmar eliminación"
+  [message]="deleteConfirmationMessage"
+  confirmText="Eliminar"
+  cancelText="Cancelar"
+  [isDanger]="true"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()"
+>
+</app-confirmation-modal>

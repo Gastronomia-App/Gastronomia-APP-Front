@@ -1,0 +1,48 @@
+<div class="tables-container">
+
+  <div class="tables-section free-section">
+    <div class="section-header">
+      <h3>Mesas Libres</h3>
+      <span class="badge-count">{{ freeTables().length }}</span>
+    </div>
+    <div class="tables-row scrollable">
+      @for (table of freeTables(); track table.id) {
+      <div class="table-item" [ngClass]="[table.shape.toLowerCase(), table.size.toLowerCase()]"
+        (click)="onSelect(table)">
+        <div class="table-inner st-free">{{ table.number }}</div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="tables-section occupied-section">
+    <div class="section-header">
+      <h3>Mesas Ocupadas</h3>
+      <span class="badge-count">{{ occupiedTables().length }}</span>
+    </div>
+    <div class="tables-row scrollable">
+      @for (table of occupiedTables(); track table.id) {
+      <div class="table-item" [ngClass]="[table.shape.toLowerCase(), table.size.toLowerCase()]"
+        (click)="onSelect(table)">
+        <div class="table-inner st-occupied">{{ table.number }}</div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="tables-section billing-section">
+    <div class="section-header">
+      <h3>Mesas en Facturación</h3>
+      <span class="badge-count">{{ billingTables().length }}</span>
+    </div>
+    <div class="tables-row scrollable">
+      @for (table of billingTables(); track table.id) {
+      <div class="table-item" [ngClass]="[table.shape.toLowerCase(), table.size.toLowerCase()]"
+        (click)="onSelect(table)">
+        <div class="table-inner st-billing">{{ table.number }}</div>
+      </div>
+      }
+    </div>
+  </div>
+
+</div>

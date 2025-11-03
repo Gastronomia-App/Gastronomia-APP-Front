@@ -4,14 +4,14 @@ import { ProductGroupService } from '../services/product-group.service';
 import { ProductGroupFormService } from '../services/product-group-form.service';
 import { ProductGroup, TableColumn } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Confirm } from "../../../shared/components/confirm";
 import { PageResponse } from '../../../shared/models';
 import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-product-group-table',
-  imports: [CommonModule, Table, Confirm],
+  imports: [CommonModule, Table, ConfirmationModalComponent],
   templateUrl: './product-group-table.html',
   styleUrl: './product-group-table.css',
   host: {
@@ -127,6 +127,13 @@ export class ProductGroupTable extends BaseTable<ProductGroup> implements OnInit
     return productGroup.id;
   }
 
+  // ==================== Confirmation Modal ====================
+  
+  public get deleteConfirmationMessage(): string {
+    if (!this.itemToDelete) return '';
+    return `¿Estás seguro de eliminar el grupo de productos "${this.itemToDelete.name}"? Esta acción no se puede deshacer.`;
+  }
+
   protected onEditItem(productGroup: ProductGroup): void {
     // Ensure required arrays exist
     if (!productGroup.options) productGroup.options = [];
@@ -139,11 +146,6 @@ export class ProductGroupTable extends BaseTable<ProductGroup> implements OnInit
     if (!productGroup.options) productGroup.options = [];
     
     this.productGroupFormService.viewProductGroupDetails(productGroup);
-  }
-
-  protected override onItemDeleted(itemId: number): void {
-    // Notify that a product group was deleted so form/details close
-    this.productGroupFormService.notifyProductGroupDeleted();
   }
 
   // ==================== Custom Subscriptions ====================

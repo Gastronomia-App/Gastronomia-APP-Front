@@ -1,0 +1,13 @@
+/* expense-form.css */
+
+/* Import global styles - includes .aside-panel */
+@import '../../../../styles/components/aside-panel.css';
+
+/* Host - Full height container */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+/* Entity-specific styles (if needed) */
