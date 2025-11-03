@@ -22,3 +22,10 @@ export type {
   FormSubmitEvent,
   FormState
 } from './form-config.model'
+export type {
+  DetailFieldType,
+  DetailFieldConfig,
+  DetailSectionConfig,
+  DetailConfig,
+  DetailActionConfig
+} from './detail-config.model'

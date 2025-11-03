@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ItemCard } from '../item-card';
+import { ItemCard, CustomField } from '../item-card';
 
 /**
  * Base constraint for items that can be used in the searchable list
@@ -27,10 +27,9 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   @Input() selectedItems: TSelected[] = [];
   @Input() isLoading: boolean = false;
   
-  // Configuration options
-  @Input() showQuantity: boolean = false;
-  @Input() showPrice: boolean = false;
-  @Input() showSubtotal: boolean = false;
+  // Configuration options - Using customFields instead
+  @Input() customFields: CustomField[] = [];
+  @Input() editableFields: boolean = true;
 
   @Output() itemAdded = new EventEmitter<TAvailable>();
   @Output() itemRemoved = new EventEmitter<number>();

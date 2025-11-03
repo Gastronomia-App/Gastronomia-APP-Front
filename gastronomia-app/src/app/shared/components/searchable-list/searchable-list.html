@@ -17,9 +17,6 @@
             @for(item of filteredItems; track item.id) {
                 <div class="item" (click)="addItem(item)">
                     <span>{{ item.name }}</span>
-                    @if(showPrice && $any(item).price != null) {
-                        <span class="item-price">${{ $any(item).price | number:'1.2-2' }}</span>
-                    }
                 </div>
             }
         </div>
@@ -30,9 +27,8 @@
             @for(item of selectedItems; track item.id) {
                 <app-item-card
                     [item]="item"
-                    [showQuantity]="showQuantity"
-                    [showPrice]="showPrice"
-                    [showSubtotal]="showSubtotal"
+                    [customFields]="customFields"
+                    [editableFields]="editableFields"
                     (itemUpdated)="onQuantityChange($event)"
                     (itemRemoved)="removeItem($event)">
                 </app-item-card>
