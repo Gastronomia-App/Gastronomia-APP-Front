@@ -44,15 +44,18 @@
             @for (filter of filters(); track filter.field) {
               <div class="filter-item">
                 @if (filter.type === 'select') {
-                  <select 
-                    [value]="getFilterValue(fieldToString(filter.field)) || ''"
-                    (change)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
-                    class="filter-select">
-                    <option value="">{{ filter.label }}</option>
-                    @for (option of filter.options; track option.value) {
-                      <option [value]="option.value">{{ option.label }}</option>
-                    }
-                  </select>
+                  <div class="filter-input-wrapper">
+                    <label class="filter-label">{{ filter.label }}</label>
+                    <select 
+                      [value]="getFilterValue(fieldToString(filter.field)) || ''"
+                      (change)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
+                      class="filter-select">
+                      <option value="">Todas</option>
+                      @for (option of filter.options; track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </div>
                 }
                 
                 @if (filter.type === 'number' || filter.type === 'text' || filter.type === 'date') {
