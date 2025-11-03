@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Product group table component with integrated search and action button -->
+    <div class="table-section">
+      <app-product-group-table (onNewProductGroupClick)="openProductGroupForm()"></app-product-group-table>
+    </div>
+  </div>
+
+  @if (showProductGroupForm()) {
+    <app-product-group-form (onFormClosed)="closeProductGroupForm()"></app-product-group-form>
+  }
+
+  @if (showProductGroupDetails()) {
+    <app-product-group-detail (onDetailsClosed)="closeProductGroupDetails()"></app-product-group-detail>
+  }
+</div>

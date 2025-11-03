@@ -64,3 +64,25 @@ export function hexToHue(hex: string): number | null {
 
   return Math.round(hue);
 }
+
+/**
+ * Calculate contrast color (white or black) based on background color
+ * Uses luminance formula to determine if text should be black or white
+ * @param hexColor - Hex color string (with or without #)
+ * @returns '#000000' for light backgrounds, '#FFFFFF' for dark backgrounds
+ */
+export function getContrastColor(hexColor: string): string {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return black for light colors, white for dark colors
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+}

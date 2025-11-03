@@ -1,0 +1,20 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Audit Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-audit-table
+        (onNewAuditClick)="openAuditForm()">
+      </app-audit-table>
+    </div>
+  </div>
+
+  @if (showAuditForm()) {
+    <aside class="aside-panel">
+      <app-audit-form (onFormClosed)="closeAuditForm()"></app-audit-form>
+    </aside>
+  }
+
+  @if (showAuditDetails()) {
+    <app-audit-details (onDetailsClosed)="closeAuditDetails()"></app-audit-details>
+  }
+</div>

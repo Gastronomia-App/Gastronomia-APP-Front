@@ -1,0 +1,22 @@
+/* Category table specific styles - only component-specific overrides */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  --table-columns: 2; /* 2 data columns + 1 actions column */
+}
+
+.results-info {
+  flex-shrink: 0;
+}
+
+/* Category badge styles */
+:host ::ng-deep .category-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}

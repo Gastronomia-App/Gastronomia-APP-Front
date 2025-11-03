@@ -1,0 +1,20 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Expense Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-expense-table
+        (onNewExpenseClick)="openExpenseForm()">
+      </app-expense-table>
+    </div>
+  </div>
+
+  @if (showExpenseForm()) {
+    <aside class="aside-panel">
+      <app-expense-form (onFormClosed)="closeExpenseForm()"></app-expense-form>
+    </aside>
+  }
+
+  @if (showExpenseDetails()) {
+    <app-expense-details (onDetailsClosed)="closeExpenseDetails()"></app-expense-details>
+  }
+</div>

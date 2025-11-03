@@ -8,18 +8,51 @@ export const routes: Routes = [
     redirectTo: '/login',
     pathMatch: 'full'
   },
-    {
+  {
     path: 'login',
     component: LoginPageComponent
-    },
-    {
-    path: 'seating',
-  loadComponent: () =>
-  import('./domains/table/table-page/table-page')
-    .then(m => m.TablePage),
-  canActivate: [authGuard]
-}
- 
+  },
+  {
+    path: 'products',
+    loadComponent: () => import('./domains/products/product-page/product-page')
+    .then(m => m.ProductPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./domains/categories/category-page/category-page')
+    .then(m => m.CategoryPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'groups',
+    loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
+    .then(m => m.ProductGroupPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'customers',
+    loadComponent: () =>
+      import('./domains/customer/customer-page/customer-page')
+        .then(m => m.CustomerPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'expenses',
+    loadComponent: () =>
+      import('./domains/expenses/expenses-page/expenses-page')
+        .then(m => m.ExpensesPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'audits',
+    loadComponent: () =>
+      import('./domains/audits/audit-page/audit-page')
+        .then(m => m.AuditsPage),
+    canActivate: [authGuard]
+  }
+
+
   /*
   ,
   {

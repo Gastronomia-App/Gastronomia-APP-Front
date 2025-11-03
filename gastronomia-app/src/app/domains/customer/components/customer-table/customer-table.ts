@@ -1,15 +1,15 @@
 import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Table, BaseTable } from '../../../../shared/components/table';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { Customer, TableColumn, TableFilter } from '../../../../shared/models';
 import { CustomersService } from '../../services/customers-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Confirm } from '../../../../shared/components/confirm';
 import { CustomerFormService } from '../../services/CustomerFormService';
 
 @Component({
-  selector: 'app-customer-table', // o 'app-customer-list' si querés renombrarlo
-  imports: [CommonModule, Table, Confirm],
+  selector: 'app-customer-table',
+  imports: [CommonModule, Table, ConfirmationModalComponent],
   templateUrl: './customer-table.html',
   styleUrl: './customer-table.css',
   host: {
@@ -109,6 +109,13 @@ export class CustomerTable extends BaseTable<Customer> {
 
   protected getItemId(customer: Customer): number {
     return customer.id;
+  }
+
+  // ==================== Confirmation Modal ====================
+  
+  public get deleteConfirmationMessage(): string {
+    if (!this.itemToDelete) return '';
+    return `¿Estás seguro de eliminar el cliente "${this.itemToDelete.name}"? Esta acción no se puede deshacer.`;
   }
 
   // ===================== Eventos tabla =====================

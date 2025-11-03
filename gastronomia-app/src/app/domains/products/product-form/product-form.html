@@ -1,0 +1,19 @@
+<!-- Aside panel container -->
+<aside class="aside-panel">
+    <!-- Generic Form Component with integrated header and footer -->
+    <app-form
+        [config]="formConfig"
+        [isEditMode]="isEditMode"
+        [editingId]="editingProductId"
+        [showHeader]="true"
+        [showFooter]="true"
+        [headerTitle]="'Nuevo producto'"
+        [headerEditTitle]="'Editar producto'"
+        [cancelButtonLabel]="'Cancelar'"
+        [submitButtonLabel]="'Crear'"
+        [submitEditButtonLabel]="'Guardar'"
+        (formSubmit)="onFormSubmit($event)"
+        (formCancel)="onFormCancel()"
+        (formClose)="onClose()">
+    </app-form>
+</aside>

@@ -1,0 +1,19 @@
+<!-- audit-form.html -->
+<aside class="aside-panel">
+  <!-- Generic Form Component with integrated header and footer -->
+  <app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode"
+    [editingId]="editingAuditId"
+    [showHeader]="true"
+    [showFooter]="true"
+    [headerTitle]="'Abrir Auditoría de Caja'"
+    [headerEditTitle]="'Editar Auditoría'"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Abrir Caja'"
+    [submitEditButtonLabel]="'Guardar'"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+    (formClose)="onClose()">
+  </app-form>
+</aside>
