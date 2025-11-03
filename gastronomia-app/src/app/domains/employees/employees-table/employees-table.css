@@ -1,0 +1,22 @@
+/* Employee list specific styles - only component-specific overrides */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Override table grid for 7 columns (6 data + 1 actions) - Multiple approaches */
+:host ::ng-deep app-table .table thead tr,
+:host ::ng-deep app-table .table tbody tr {
+  grid-template-columns: 1.2fr 1.2fr 1.5fr 1fr 1fr 0.8fr 120px !important;
+}
+
+:host ::ng-deep .table thead tr,
+:host ::ng-deep .table tbody tr {
+  grid-template-columns: 1.2fr 1.2fr 1.5fr 1fr 1fr 0.8fr 120px !important;
+}
+
+.results-info {
+  flex-shrink: 0;
+}
