@@ -37,7 +37,7 @@ export class LoginComponent {
     this.error.set(undefined);
 
     this.auth.login(this.form.value as any).subscribe({
-      next: () => this.router.navigateByUrl('/seating'),
+      next: () => this.router.navigateByUrl('/tables'),
       error: (e) => {
         this.error.set(e?.error?.message ?? 'Credenciales inválidas');
         this.loading.set(false);
