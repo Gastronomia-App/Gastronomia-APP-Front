@@ -32,7 +32,8 @@ export class LoginComponent {
     this.auth.login(this.form.value as any).subscribe({
       next: () => this.router.navigateByUrl('/customers'),
       error: (e) => {
-        this.error = e?.error?.message ?? 'Credenciales inválidas';
+        // Siempre mostrar mensaje genérico por seguridad
+        this.error = 'Las credenciales ingresadas son inválidas';
         this.loading = false;
       }
     });

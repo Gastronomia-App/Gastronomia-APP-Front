@@ -32,7 +32,7 @@ export class Register {
     this.step1Form = this.fb.group({
       // Datos del negocio
       businessName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      cuit: ['', [Validators.required, Validators.pattern(/^\d{2}-\d{8}-\d{1}$/)]],
+      cuit: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       
       // Dirección
       street: ['', [Validators.required, Validators.minLength(3)]],
@@ -50,7 +50,7 @@ export class Register {
       name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
       lastName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
       dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{10,13}$/)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9,13}$/)]],
       username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
     });
   }
@@ -135,9 +135,9 @@ export class Register {
     if (field.errors['minlength']) return `Mínimo ${field.errors['minlength'].requiredLength} caracteres`;
     if (field.errors['maxlength']) return `Máximo ${field.errors['maxlength'].requiredLength} caracteres`;
     if (field.errors['pattern']) {
-      if (fieldName === 'cuit') return 'Formato: XX-XXXXXXXX-X';
+      if (fieldName === 'cuit') return 'CUIT debe tener 11 dígitos (sin guiones ni espacios)';
       if (fieldName === 'dni') return 'DNI debe tener 7 u 8 dígitos';
-      if (fieldName === 'phoneNumber') return 'Teléfono debe tener entre 10 y 13 dígitos';
+      if (fieldName === 'phoneNumber') return 'Teléfono debe tener entre 9 y 13 dígitos';
       if (fieldName === 'zipCode') return 'Código postal debe tener 4 dígitos';
     }
     return 'Campo inválido';
