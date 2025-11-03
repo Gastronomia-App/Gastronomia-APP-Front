@@ -1,7 +1,7 @@
 <app-table
-  [data]="filteredData"
-  [columns]="columns"
-  [loading]="isLoading"
+  [data]="filteredData()"
+  [columns]="columns()"
+  [loading]="isLoading()"
   [pagination]="pagination()"
   [highlightedRowId]="highlightedRowId"
   [enableInfiniteScroll]="true"

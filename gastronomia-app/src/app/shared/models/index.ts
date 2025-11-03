@@ -6,6 +6,8 @@ export type { PageResponse } from './pageable.model';
 export type { Expense } from './expense.model';
 export type { Supplier, Address } from './supplier.model';
 export type { Audit } from './audit.model';
+export type { Business } from './business.model';
+export type { Employee } from './employee.model';
 export type {
   TableColumn,
   TableAction,

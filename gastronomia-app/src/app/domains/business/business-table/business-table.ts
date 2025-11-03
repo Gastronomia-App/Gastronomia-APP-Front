@@ -200,18 +200,23 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
     this.clearSearch();
   }
 
-  override showConfirmDialog = signal<boolean>(false);
-  override confirmDialogData = signal<{
+  showConfirmDialog = signal<boolean>(false);
+  confirmDialogData = signal<{
     title: string;
     message: string;
     onConfirm: () => void;
   } | null>(null);
 
-  override onConfirmDialogConfirm() {
+  onConfirmDialogConfirm() {
     const data = this.confirmDialogData();
     if (data?.onConfirm) {
       data.onConfirm();
     }
+    this.showConfirmDialog.set(false);
+    this.confirmDialogData.set(null);
+  }
+
+  onConfirmDialogCancel() {
     this.showConfirmDialog.set(false);
     this.confirmDialogData.set(null);
   }

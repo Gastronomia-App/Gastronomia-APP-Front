@@ -19,7 +19,7 @@ import { Confirm } from "../../../shared/components/confirm";
 export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   private employeeService = inject(EmployeeService);
   private employeeFormService = inject(EmployeeFormService);
-  public destroyRef: DestroyRef = inject(DestroyRef);
+  public override destroyRef: DestroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
   onEmployeeSelected = output<Employee>();
@@ -61,7 +61,7 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   confirmDialogAction: (() => void) | null = null;
 
   // Signal para paginación
-  pagination = signal<any>({
+  override pagination = signal<any>({
     page: 1,
     pageSize: 20,
     total: 0
@@ -207,7 +207,7 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   }
 
   public setSearchTerm(term: string): void {
-    this.searchTerm = term;
+    this.searchTerm.set(term);
     this.onSearch();
   }
 
