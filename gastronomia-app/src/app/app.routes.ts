@@ -13,22 +13,47 @@ export const routes: Routes = [
     component: LoginPageComponent
   },
   {
+    path: 'inventory',
+    loadComponent: () => import('./domains/inventory/inventory-page/inventory-page')
+      .then(m => m.InventoryPage),
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'products',
+        pathMatch: 'full'
+      },
+      {
+        path: 'products',
+        loadComponent: () => import('./domains/products/product-page/product-page')
+          .then(m => m.ProductPage)
+      },
+      {
+        path: 'categories',
+        loadComponent: () => import('./domains/categories/category-page/category-page')
+          .then(m => m.CategoryPage)
+      },
+      {
+        path: 'groups',
+        loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
+          .then(m => m.ProductGroupPage)
+      }
+    ]
+  },
+  {
     path: 'products',
-    loadComponent: () => import('./domains/products/product-page/product-page')
-    .then(m => m.ProductPage),
-    canActivate: [authGuard]
+    redirectTo: '/inventory/products',
+    pathMatch: 'full'
   },
   {
     path: 'categories',
-    loadComponent: () => import('./domains/categories/category-page/category-page')
-    .then(m => m.CategoryPage),
-    canActivate: [authGuard]
+    redirectTo: '/inventory/categories',
+    pathMatch: 'full'
   },
   {
     path: 'groups',
-    loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
-    .then(m => m.ProductGroupPage),
-    canActivate: [authGuard]
+    redirectTo: '/inventory/groups',
+    pathMatch: 'full'
   },
   {
     path: 'customers',

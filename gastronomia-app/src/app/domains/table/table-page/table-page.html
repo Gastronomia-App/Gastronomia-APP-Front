@@ -1,35 +1,16 @@
-<section class="page-table-container">
-    <!-- IZQUIERDA -->
-    <div class="page-table-left">
-        <div class="page-table-sub-header">
-            <header class="sub-header">
-                <div class="sub-header-left">
-                    <button class="tab active">Salón</button>
-                </div>
+<!-- Sub-header - full width at top -->
+<app-sub-header
+  [tabs]="subHeaderTabs()"
+  [actions]="subHeaderActions()"
+  (actionClick)="onSubHeaderAction($event)">
+</app-sub-header>
 
-                <div class="sub-header-right">
-                    <div class="menu-button" (click)="toggleEditMode()" [class.exit]="editMode()"
-                        title="Configurar salón y mesas">
-                        @if (editMode()) {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="menu-exit-icon"
-                            fill="currentColor">
-                            <path d="M9 7h7a5 5 0 0 1 0 10h-6v-2h6a3 3 0 0 0 0-6H9v3L4 8l5-4v3Z" />
-                        </svg>
-
-                        } @else {
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="menu-icon"
-                            fill="currentColor">
-                            <path
-                                d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.027 7.027 0 0 0-1.69-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.61.23-1.18.55-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.7.22l2.49-1c.51.43 1.08.75 1.69.98l.38 2.65c.04.25.25.44.5.44h4c.25 0 .46-.19.5-.44l.38-2.65c.61-.23 1.18-.55 1.69-.98l2.49 1c.27.11.56.02.7-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" />
-                        </svg>
-
-                        }
-                    </div>
-                </div>
-            </header>
-        </div>
-
-        <div class="page-table-matrix">
+<!-- Main content container -->
+<div class="page-container">
+    <!-- Main content area -->
+    <div class="page-content">
+        <!-- Grid/Matrix area -->
+        <div class="table-section">
             @if (loading()) {
             <p>Cargando mesas...</p>
             } @else if (error()) {
@@ -51,64 +32,122 @@
             }
         </div>
     </div>
-    <!-- ASIDE -->
-    <aside class="page-table-aside">
+    <!-- ASIDE - always visible, content changes based on mode -->
+    <aside class="aside-panel">
         @if (editMode()) {
-        @if (draftSeating()) {
-        <app-table-form [seating]="draftSeating()!" mode="create" (closed)="onFormClosed()"></app-table-form>
-        } @else if (selectedSeating()) {
-        <app-table-form [seating]="selectedSeating()!" mode="edit" (closed)="onFormClosed()"></app-table-form>
-        } @else {
-        <div class="aside-edit-card">
-  <div class="edit-header">
-    <h3>Modo edición del salón</h3>
-    <p>Configurá la disposición, forma y tamaño de las mesas.</p>
-  </div>
+          @if (draftSeating()) {
+            <app-table-form [seating]="draftSeating()!" mode="create" (closed)="onFormClosed()"></app-table-form>
+          } @else if (selectedSeating()) {
+            <app-table-form [seating]="selectedSeating()!" mode="edit" (closed)="onFormClosed()"></app-table-form>
+          } @else {
+            <!-- Edit mode info panel -->
+            <div class="aside-panel-wrapper">
+              <div class="aside-panel-header">
+                <h2>Modo edición del salón</h2>
+              </div>
+              
+              <div class="aside-panel-container">
+                <section>
+                  <p class="text-muted">Configurá la disposición, forma y tamaño de las mesas.</p>
+                  
+                  <div class="info-section">
+                    <h3 class="section-title">Acciones disponibles</h3>
+                    <ul class="info-list">
+                      <li>
+                        <span class="icon">➕</span>
+                        <div>
+                          <strong>Agregar mesa:</strong>
+                          <span class="text-muted">clic en una celda vacía.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="icon">🖱️</span>
+                        <div>
+                          <strong>Mover mesa:</strong>
+                          <span class="text-muted">arrastrá y soltá para cambiar su posición.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="icon">⚙️</span>
+                        <div>
+                          <strong>Editar:</strong>
+                          <span class="text-muted">clic en una mesa existente.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="icon">⌫</span>
+                        <div>
+                          <strong>Eliminar:</strong>
+                          <span class="text-muted">seleccioná y presioná el botón de eliminar.</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
 
-  <ul class="edit-actions">
-    <li><span class="icon">➕</span> <strong>Agregar mesa:</strong> clic en una celda vacía.</li>
-    <li><span class="icon">🖱️</span> <strong>Mover mesa:</strong> arrastrá y soltá para cambiar su posición.</li>
-    <li><span class="icon">⚙️</span> <strong>Editar:</strong> clic en una mesa existente.</li>
-    <li><span class="icon">⌫</span> <strong>Eliminar:</strong> seleccioná y presiona al boton de eliminar.</li>
-  </ul>
+                  <div class="alert-info">
+                    <h4>Reglas del modo edición</h4>
+                    <ul>
+                      <li>No podés superponer mesas en la misma posición.</li>
+                      <li>No se pueden eliminar mesas ocupadas o en facturación.</li>
+                      <li>Las modificaciones se aplican solo después de <strong>guardar</strong>.</li>
+                      <li>Los cambios no guardados se perderán al salir del modo edición.</li>
+                      <li>No podés cambiar el número de una mesa por una mesa ya eliminada.</li>
+                    </ul>
+                  </div>
 
-  <div class="edit-rules">
-    <h4>Reglas del modo edición</h4>
-    <ul>
-      <li>No podés superponer mesas en la misma posición.</li>
-      <li>No se pueden eliminar mesas ocupadas o en facturación.</li>
-      <li>Las modificaciones se aplican solo después de <strong>guardar</strong>.</li>
-      <li>Los cambios no guardados se perderán al salir del modo edición.</li>
-      <li>No podés cambiar el numero de una mesa por una mesa ya eliminada</li>
-    </ul>
-  </div>
-
-  <div class="edit-tip">
-    <span class="emoji">💡</span>
-    <p>Usá este modo para reorganizar el salón de forma clara y ordenada.</p>
-  </div>
-</div>
-        }
-        } @else {
-        <div class="aside-info-card">
-            <div class="info-header">
-                <h3>Detalles del salón</h3>
-                <p>Panel de <strong>gestión y monitoreo</strong> de mesas.</p>
+                  <div class="tip-box">
+                    <span class="emoji">💡</span>
+                    <p>Usá este modo para reorganizar el salón de forma clara y ordenada.</p>
+                  </div>
+                </section>
+              </div>
             </div>
-
-            <ul class="info-status">
-                <li><span class="dot free"></span><strong>Mesas libres:</strong>disponibles para nuevos clientes.</li>
-                <li><span class="dot occupied"></span><strong>Mesas ocupadas:</strong> en atención o consumo activo.
-                </li>
-                <li><span class="dot billing"></span><strong>Mesas en facturación:</strong> esperando cierre de cuenta.
-                </li>
-            </ul>
-
-            <div class="info-tip">
-                <span class="emoji">💡</span>
-                <p>Entrá en <strong>modo edición</strong> para reorganizar el salón o agregar nuevas mesas.</p>
+          }
+        } @else {
+          <!-- Info mode panel -->
+          <div class="aside-panel-wrapper">
+            <div class="aside-panel-header">
+              <h2>Detalles del salón</h2>
             </div>
-        </div>
+            
+            <div class="aside-panel-container">
+              <section>
+                <p class="text-muted">Panel de <strong>gestión y monitoreo</strong> de mesas.</p>
+                
+                <div class="info-section">
+                  <h3 class="section-title">Estado de las mesas</h3>
+                  <ul class="status-list">
+                    <li>
+                      <span class="status-dot status-free"></span>
+                      <div>
+                        <strong>Mesas libres:</strong>
+                        <span class="text-muted">disponibles para nuevos clientes.</span>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="status-dot status-occupied"></span>
+                      <div>
+                        <strong>Mesas ocupadas:</strong>
+                        <span class="text-muted">en atención o consumo activo.</span>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="status-dot status-billing"></span>
+                      <div>
+                        <strong>Mesas en facturación:</strong>
+                        <span class="text-muted">esperando cierre de cuenta.</span>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="tip-box">
+                  <span class="emoji">💡</span>
+                  <p>Entrá en <strong>modo edición</strong> para reorganizar el salón o agregar nuevas mesas.</p>
+                </div>
+              </section>
+            </div>
+          </div>
         }
     </aside>
-</section>
+</div>
