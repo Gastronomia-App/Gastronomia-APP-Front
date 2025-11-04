@@ -1,0 +1,9 @@
+<!-- Sub-header - full width at top -->
+<app-sub-header
+  [tabs]="subHeaderTabs()"
+  (tabClick)="onTabClick($event)">
+</app-sub-header>
+
+<!-- Router outlet for child routes (products, categories, groups) -->
+<router-outlet></router-outlet>
+
