@@ -63,14 +63,14 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   // Signal para paginación
   override pagination = signal<any>({
     page: 1,
-    pageSize: 20,
+    pageSize: 1000,
     total: 0
   });
 
   constructor() {
     super();
 
-    this.tableService.setPageSize(20);
+    this.tableService.setPageSize(1000);
     
     // Set custom filter function for employees
     this.tableService.setFilterFunction((employee, term) => {

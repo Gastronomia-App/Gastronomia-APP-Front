@@ -50,12 +50,27 @@ export const routes: Routes = [
       import('./domains/audits/audit-page/audit-page')
         .then(m => m.AuditsPage),
     canActivate: [authGuard]
-  },{
-     path: 'tables',
-  loadComponent: () =>
-    import('./domains/table/table-page/table-page')
-      .then(m => m.TablePage),
-  canActivate: [authGuard]
+  },
+  {
+    path: 'tables',
+    loadComponent: () =>
+      import('./domains/table/table-page/table-page')
+        .then(m => m.TablePage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'employees',
+    loadComponent: () =>
+      import('./domains/employees/employees-page/employees-page')
+        .then(m => m.EmployeesPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'businesses',
+    loadComponent: () =>
+      import('./domains/business/business-page/business-page')
+        .then(m => m.BusinessPage),
+    canActivate: [authGuard]
   }
 
 

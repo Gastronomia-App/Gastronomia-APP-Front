@@ -1,98 +1,138 @@
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ============================================
+   Auth PAGE
+   Centered auth card with brand styling
+   ============================================ */
+
+
+.auth-wrap {
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--color-bg);
+  padding: var(--spacing-lg);
 }
 
-.login-card {
-  background: var(--color-surface);
-  padding: var(--spacing-xl);
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: var(--spacing-xl);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 }
 
-.login-card h2 {
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text);
-  font-size: 1.75rem;
+.card h1 {
+  font-size: var(--font-lg);
   font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-xs) 0;
+  text-align: center;
 }
 
-.login-card form {
+.card .sub {
+  font-size: var(--font-sm);
+  color: var(--color-secondary);
+  margin: 0 0 var(--spacing-xl) 0;
+  text-align: center;
+}
+
+/* Form styling */
+.form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 
-.form-group {
+.form fieldset {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  box-sizing: border-box;
 }
 
-.form-group label {
+.form fieldset * {
+  box-sizing: border-box;
+}
+
+.form label {
   font-size: var(--font-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
 }
 
-.form-control {
-  width: 100%;
-  padding: var(--spacing-sm);
+.form .input {
+  padding: var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-base);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background-color: var(--color-bg);
+  border-radius: 5px;
+  background-color: var(--color-surface);
   color: var(--color-text);
   transition: border-color var(--transition-fast);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.form-control:disabled {
-  background-color: var(--color-bg-secondary);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.error-message {
-  color: var(--color-red);
-  font-size: var(--font-sm);
-  text-align: center;
-  padding: var(--spacing-xs);
-  background-color: rgba(211, 71, 64, 0.1);
-  border-radius: 4px;
-  margin-top: var(--spacing-xs);
-}
-
-.btn-primary {
+  box-sizing: border-box;
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: 4px;
-  font-size: var(--font-base);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
+}
+
+.form .input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(48, 100, 98, 0.15);
+}
+
+/* Actions section */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
   margin-top: var(--spacing-sm);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-dark);
+.actions .btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-base);
+  font-weight: 600;
+  border-radius: 5px;
+  transition: all var(--transition-fast);
 }
 
-.btn-primary:disabled {
-  background-color: var(--color-secondary-light);
+.actions .btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.7;
+}
+
+.actions .helper {
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.actions .helper:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* Error message */
+.error {
+  background-color: rgba(211, 71, 64, 0.1);
+  border: 1px solid var(--color-red-light);
+  border-radius: 5px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-sm);
+  color: var(--color-red-dark);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-wrap {
+    padding: var(--spacing-md);
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
 }
