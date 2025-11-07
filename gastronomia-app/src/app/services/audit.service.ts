@@ -84,6 +84,13 @@ export class AuditService {
   }
 
   /**
+   * Delete an audit (sets deleted = true)
+   */
+  deleteAudit(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
+  }
+
+  /**
    * Get the currently open audit (if any)
    */
   getOpenAudit(): Observable<Audit | null> {
