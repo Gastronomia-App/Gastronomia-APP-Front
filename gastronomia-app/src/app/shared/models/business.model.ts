@@ -1,9 +1,4 @@
-export interface Address {
-  street: string;
-  city: string;
-  province: string;
-  zipCode: string;
-}
+import { Address } from './address.model';
 
 export interface Business {
   id: number;
