@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  --table-columns: 4;
+}
+
+.results-info {
+  flex-shrink: 0;
+}
+
+:host ::ng-deep td:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background-image: url("/assets/images/user-icon.png");
+  background-size: cover;
+  background-position: center;
+  vertical-align: middle;
+}
+

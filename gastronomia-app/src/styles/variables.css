@@ -28,6 +28,7 @@
   --color-text-light: #718484;
   --color-danger: var(--color-red);
   --color-border: #DCE5E0;
+  --color-desaturated: hsl(180, 60%, 80%);
 
   /*   Shadows  */
 

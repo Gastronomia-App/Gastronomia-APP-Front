@@ -68,17 +68,27 @@ export class TableDataService<T extends Record<string, any>> {
    * Load initial data
    */
   loadData(
-    dataFetcher: (page: number, size: number) => Observable<PageResponse<T>>
+    dataFetcher: (page: number, size: number) => Observable<PageResponse<T> | T[]>
   ): void {
     this.isLoadingSignal.set(true);
     this.currentPageSignal.set(0);
     
     dataFetcher(this.currentPage(), this.pageSize()).subscribe({
       next: (response) => {
-        this.allData.set(response.content);
-        this.totalPagesSignal.set(response.totalPages);
-        this.totalElementsSignal.set(response.totalElements);
-        this.hasMoreSignal.set(!response.last);
+        // Handle both PageResponse and simple array
+        if (Array.isArray(response)) {
+          // Simple array response
+          this.allData.set(response);
+          this.totalPagesSignal.set(1);
+          this.totalElementsSignal.set(response.length);
+          this.hasMoreSignal.set(false);
+        } else {
+          // PageResponse
+          this.allData.set(response.content);
+          this.totalPagesSignal.set(response.totalPages);
+          this.totalElementsSignal.set(response.totalElements);
+          this.hasMoreSignal.set(!response.last);
+        }
         this.isLoadingSignal.set(false);
         this.applyFilter();
       },
@@ -93,7 +103,7 @@ export class TableDataService<T extends Record<string, any>> {
    * Load more data (infinite scroll)
    */
   loadMore(
-    dataFetcher: (page: number, size: number) => Observable<PageResponse<T>>,
+    dataFetcher: (page: number, size: number) => Observable<PageResponse<T> | T[]>,
     event?: LoadMoreEvent
   ): void {
     const nextPage = event?.currentPage ?? this.currentPage() + 1;
@@ -107,8 +117,15 @@ export class TableDataService<T extends Record<string, any>> {
     
     dataFetcher(nextPage, this.pageSize()).subscribe({
       next: (response) => {
-        this.allData.update(current => [...current, ...response.content]);
-        this.hasMoreSignal.set(!response.last);
+        // Handle both PageResponse and simple array
+        if (Array.isArray(response)) {
+          // Simple array doesn't support pagination
+          this.hasMoreSignal.set(false);
+        } else {
+          // PageResponse
+          this.allData.update(current => [...current, ...response.content]);
+          this.hasMoreSignal.set(!response.last);
+        }
         this.isLoadingSignal.set(false);
         this.applyFilter();
       },
@@ -139,7 +156,7 @@ export class TableDataService<T extends Record<string, any>> {
    * Refresh data (reload from beginning)
    */
   refresh(
-    dataFetcher: (page: number, size: number) => Observable<PageResponse<T>>
+    dataFetcher: (page: number, size: number) => Observable<PageResponse<T> | T[]>
   ): void {
     this.allData.set([]);
     this.loadData(dataFetcher);

@@ -1,0 +1,186 @@
+/* Host container */
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg);
+  padding: var(--spacing-lg);
+}
+
+/* Aside panel centered */
+.aside-panel {
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  max-height: 90vh;
+}
+
+/* Custom header for register (más compacto) */
+.aside-panel .panel-header {
+  background: #306462;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: none;
+  flex-shrink: 0;
+}
+
+.panel-header h2 {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs);
+  color: white;
+}
+
+.subtitle {
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-lg);
+  min-height: 0;
+}
+
+/* Form structure - usa estilos globales de forms.css */
+.business-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.section-title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+/* Los inputs ya tienen estilos globales en forms.css */
+/* Los .help-text y .field-error ya están definidos en forms.css */
+
+/* Alert específico para errores de registro */
+.alert {
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  font-size: var(--font-sm);
+  margin-top: var(--spacing-md);
+}
+
+.alert-error {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.panel-footer {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+/* Step indicators */
+.step-indicators {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.step-indicator {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-sm);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  transition: all var(--transition-base);
+}
+
+.step-indicator.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+/* Footer actions */
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :host {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .aside-panel {
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    padding: var(--spacing-md);
+  }
+
+  .panel-body {
+    padding: var(--spacing-md);
+  }
+
+  .panel-footer {
+    padding: var(--spacing-md);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

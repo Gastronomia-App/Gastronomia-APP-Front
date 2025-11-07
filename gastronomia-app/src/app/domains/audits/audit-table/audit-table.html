@@ -1,0 +1,35 @@
+<app-table
+  [data]="filteredData()"
+  [columns]="columns()"
+  [loading]="isLoading()"
+  [pagination]="pagination()"
+  [highlightedRowId]="highlightedRowId"
+  [enableInfiniteScroll]="true"
+  [enableSort]="true"
+  [enableSearch]="false"
+  [enableFilters]="true"
+  [filters]="filters"
+  [enableActionButton]="true"
+  actionButtonLabel="+ Abrir Caja"
+  actionButtonIcon='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/></svg>'
+  emptyMessage="No hay auditorías disponibles"
+  (details)="onTableDetails($event)"
+  (edit)="onTableEdit($event)"
+  (delete)="onTableDelete($event)"
+  (loadMore)="onLoadMore($event)"
+  (actionButtonClick)="onNewAudit()"
+  (filtersChange)="onFiltersChange($event)"
+>
+</app-table>
+
+<app-confirmation-modal
+  [isVisible]="showDeleteConfirmation()"
+  title="Confirmar cancelación"
+  [message]="deleteConfirmationMessage"
+  confirmText="Cancelar Auditoría"
+  cancelText="Volver"
+  [isDanger]="true"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()"
+>
+</app-confirmation-modal>

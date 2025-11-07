@@ -1,0 +1,28 @@
+/* expenses-page.css */
+
+/* Import global page layout styles */
+@import '../../../../styles/components/page.css';
+
+/* Host - Full height container */
+:host {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Expense-specific overrides (if needed) */
+.table-section app-expense-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+app-expense-form,
+app-expense-details {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
