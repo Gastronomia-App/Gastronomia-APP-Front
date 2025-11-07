@@ -1,0 +1,11 @@
+<!-- Aside panel container -->
+<aside class="aside-panel">
+  <!-- Generic Detail Component with integrated header and footer -->
+  <app-detail
+    [config]="detailConfig"
+    [data]="supplier()"
+    [showHeader]="true"
+    [showFooter]="true"
+    (detailClosed)="onClose()"
+  />
+</aside>

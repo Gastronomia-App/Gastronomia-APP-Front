@@ -1,0 +1,20 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Supplier Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-supplier-table
+        (onNewSupplierClick)="openCreateSupplierForm()">
+      </app-supplier-table>
+    </div>
+  </div>
+
+  @if (showSupplierForm()) {
+    <aside class="aside-panel">
+      <app-supplier-form (onFormClosed)="closeSupplierForm()"></app-supplier-form>
+    </aside>
+  }
+
+  @if (showSupplierDetails()) {
+    <app-supplier-details (onDetailsClosed)="closeSupplierDetails()"></app-supplier-details>
+  }
+</div>

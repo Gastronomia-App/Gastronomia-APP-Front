@@ -70,6 +70,13 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'suppliers',
+    loadComponent: () =>
+      import('./domains/suppliers/suppliers-page/suppliers-page')
+        .then(m => m.SuppliersPage),
+    canActivate: [authGuard]
+  },
+  {
     path: 'audits',
     loadComponent: () =>
       import('./domains/audits/audit-page/audit-page')
