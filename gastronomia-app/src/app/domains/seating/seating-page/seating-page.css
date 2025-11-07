@@ -606,6 +606,17 @@
   }
 }
 
+
+/* seating-page.css */
+.zoom-overlay{
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  display: grid; place-items: center; z-index: 99999;
+}
+.zoom-dialog{
+  background: #fff; border-radius: 12px; padding: 20px 24px; 
+  max-width: 520px; width: 92%; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
 @media (max-width: 480px) {
   .tab-button {
     padding: var(--spacing-xs) var(--spacing-sm);

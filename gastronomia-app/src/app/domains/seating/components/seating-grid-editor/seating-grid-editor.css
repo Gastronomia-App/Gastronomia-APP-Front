@@ -21,18 +21,17 @@
   border-radius: 10px;
   border: 1px solid #dcdfe3;
   overflow: auto;
+  /* ← importante */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* grilla */
 .grid {
-  --cell-size: 140px;
   display: grid;
   padding: 4px;
   border-radius: 10px;
-  box-shadow:
-    inset 0 1px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -1px 4px rgba(0, 0, 0, 0.08);
+  grid-template-columns: repeat(var(--cols), var(--cell-size));
+  grid-template-rows: repeat(var(--rows), var(--cell-size));
 }
 
 /* cada celda */
@@ -62,9 +61,7 @@
 .grid-cell:hover {
   background: #f5faf9;
   border-color: #10a58a70;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 3px rgba(16, 165, 138, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 3px rgba(16, 165, 138, 0.15);
 }
 
 /* celda seleccionada */
@@ -92,20 +89,18 @@
   transform: scale(0.8);
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.grid-cell:hover .add-icon { opacity: 0.9; transform: scale(1); }
 
-/* ==========================================
-   🔳 MESA (SEAT) CON EFECTO 3D REALISTA
-   ========================================== */
+.grid-cell:hover .add-icon {
+  opacity: 0.9;
+  transform: scale(1);
+}
+
+/* ========================================== 🔳 MESA (SEAT) CON EFECTO 3D REALISTA ========================================== */
 .seat {
   position: absolute;
   inset: 14px;
-  
   /* Gradiente más realista simulando madera o superficie mate */
-  background: 
-    radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.15), transparent 50%),
-    linear-gradient(145deg, #a8a8a8, #8a8a8a56);
-  
+  background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.15), transparent 50%), linear-gradient(145deg, #a8a8a8, #8a8a8a56);
   border: 1px solid #5a5a5a;
   border-radius: 10px;
   color: #f2f2f2;
@@ -114,9 +109,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   /* 💡 Sistema de sombras multicapa para mayor profundidad */
   box-shadow:
     /* Luz superior izquierda (highlight) */
@@ -137,22 +130,36 @@
 .seat:hover {
   transform: translateY(-3px);
   background: linear-gradient(145deg, #bcbcbc, #8f8f8f);
-  box-shadow:
-    inset 1px 1px 3px rgba(255, 255, 255, 0.25),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.35),
-    0 6px 12px rgba(0, 0, 0, 0.45);
+  box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.25), inset -2px -2px 5px rgba(0, 0, 0, 0.35), 0 6px 12px rgba(0, 0, 0, 0.45);
 }
 
 /* formas */
-.seat.round { border-radius: 50%; }
-.seat.square { border-radius: 10px; }
+.seat.round {
+  border-radius: 50%;
+}
+
+.seat.square {
+  border-radius: 10px;
+}
 
 /* tamaños */
-.seat.small  { inset: 18px; }
-.seat.medium { inset: 12px; }
-.seat.large  { inset: 6px; }
+.seat.small {
+  inset: 18px;
+}
 
-.seat-number { font-size: 1.8rem; user-select: none; color: #fff; }
+.seat.medium {
+  inset: 12px;
+}
+
+.seat.large {
+  inset: 6px;
+}
+
+.seat-number {
+  font-size: 1.8rem;
+  user-select: none;
+  color: #fff;
+}
 
 /* preview */
 .seat.preview {
@@ -162,19 +169,41 @@
   color: #fff;
   pointer-events: none;
 }
+
 .seat.preview.draft {
   opacity: 0.55;
   animation: pulseDraft 1.2s infinite ease-in-out;
 }
+
 @keyframes pulseDraft {
-  0% { opacity: 0.45; transform: scale(1); }
-  50% { opacity: 0.7;  transform: scale(1.05); }
-  100% { opacity: 0.45; transform: scale(1); }
+  0% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
 }
 
 /* DnD */
-.seat.dragging { opacity: 0.5; transform: scale(1.05); cursor: grabbing; z-index: 1000; }
-.grid-cell.drop-target { outline: 2px dashed #0f766e; background-color: rgba(15,118,110,0.1); }
+.seat.dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+  cursor: grabbing;
+  z-index: 1000;
+}
+
+.grid-cell.drop-target {
+  outline: 2px dashed #0f766e;
+  background-color: rgba(15, 118, 110, 0.1);
+}
 
 /* Menú contextual */
 .context-menu {
@@ -187,9 +216,17 @@
   border-radius: 10px;
   animation: fadeInScale 120ms ease;
 }
+
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Botones del menú */
@@ -202,9 +239,7 @@
   height: 46px;
   border-radius: 12px;
   background: linear-gradient(180deg, #2f2f2f, #4b4b4b);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 3px 10px rgba(0,0,0,0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 3px 10px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,9 +248,10 @@
 
 .context-menu .panel:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
   background: linear-gradient(180deg, #353535, #272727);
 }
+
 .context-menu .panel:active {
   transform: translateY(0);
   opacity: .9;

@@ -15,7 +15,7 @@ import { SeatingStatusView } from '../components/seating-status-view/seating-sta
   styleUrl: './seating-page.css',
 })
 export class SeatingPage {
-   readonly zoomLevel = signal(6);
+   readonly zoomLevel = signal(6); // Nivel inicial
   private readonly seatingService = inject(SeatingsService);
 @ViewChild('gridEditor') gridEditor!: SeatingGridEditor;
   readonly seatings = signal<Seating[]>([]);
@@ -42,16 +42,20 @@ export class SeatingPage {
     },
   ]);
 
+
+  
+
+
   readonly showAsidePanel = computed<boolean>(() => true);
 
   constructor() {
     this.loadSeatings();
   }
   onZoomChange(newValue: number): void {
-    const parsed = Number(newValue);
-    if (isNaN(parsed)) return;
-    this.zoomLevel.set(Math.max(1, Math.min(20, parsed)));
-  }
+  const parsed = Number(newValue);
+  if (isNaN(parsed)) return;
+  this.zoomLevel.set(Math.max(1, Math.min(20, parsed)));
+}
   
   private loadSeatings(): void {
     this.loading.set(true);

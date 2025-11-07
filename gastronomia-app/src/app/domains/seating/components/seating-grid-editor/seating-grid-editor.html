@@ -1,58 +1,53 @@
 <div class="editor-wrapper">
-  <div class="grid-scroll">
+  <div class="grid-scroll" #gridScrollRef>
     <div
       class="grid"
-      [style.gridTemplateColumns]="'repeat(' + cols() + ', var(--cell-size))'"
-      [style.gridTemplateRows]="'repeat(' + rows() + ', var(--cell-size))'">
+      [style.--cols]="cols()"
+      [style.--rows]="rows()">
 
       @for (r of [].constructor(rows()); track $index; let row = $index) {
-      @for (c of [].constructor(cols()); track $index; let col = $index) {
-
-      <div
-        class="grid-cell"
-        #cellRef
-        [class.selected]="isCellSelected(row, col)"
-        (mouseenter)="hoverCell(row, col)"
-        (mouseleave)="hoverCell(null, null)"
-        (dragover)="onDragOverCell(row, col, $event)"
-        (dragleave)="onDragLeaveCell()"
-        (drop)="onDrop(row, col)"
-        (click)="onCellClick(row, col, $event, cellRef)">
-
-        @if (getSeatingAt(row, col)) {
-          <!-- Mesa real -->
+        @for (c of [].constructor(cols()); track $index; let col = $index) {
           <div
-            class="seat {{ getSeatClasses(getSeatingAt(row, col)!) }}"
-            [class.selected]="isSelected(getSeatingAt(row, col)!)"
-            draggable="true"
-            (dragstart)="onDragStart(getSeatingAt(row, col)!, $event)"
-            (dragend)="onDragEnd()"
-            (click)="onSeatClick(getSeatingAt(row, col)!, $event, cellRef)">
-            <span class="seat-number">{{ getSeatingAt(row, col)!.number }}</span>
-          </div>
+            class="grid-cell"
+            #cellRef
+            [class.selected]="isCellSelected(row, col)"
+            (mouseenter)="hoverCell(row, col)"
+            (mouseleave)="hoverCell(null, null)"
+            (dragover)="onDragOverCell(row, col, $event)"
+            (dragleave)="onDragLeaveCell()"
+            (drop)="onDrop(row, col)"
+            (click)="onCellClick(row, col, $event, cellRef)">
 
-        } @else if (draftSeat() && draftSeat()!.posY === row + 1 && draftSeat()!.posX === col + 1) {
-          <!-- Borrador -->
-          <div class="seat preview draft {{ getSeatClasses(draftSeat()!) }}">
-            <span class="seat-number">{{ draftSeat()!.number }}</span>
-          </div>
+            @if (getSeatingAt(row, col)) {
+              <div
+                class="seat {{ getSeatClasses(getSeatingAt(row, col)!) }}"
+                [class.selected]="isSelected(getSeatingAt(row, col)!)"
+                draggable="true"
+                (dragstart)="onDragStart(getSeatingAt(row, col)!, $event)"
+                (dragend)="onDragEnd()"
+                (click)="onSeatClick(getSeatingAt(row, col)!, $event, cellRef)">
+                <span class="seat-number">{{ getSeatingAt(row, col)!.number }}</span>
+              </div>
 
-        } @else if (draggedSeat && hoverTarget()?.row === row && hoverTarget()?.col === col) {
-          <!-- Fantasma de arrastre -->
-          <div class="seat preview {{ getSeatClasses(draggedSeat) }}">
-            <span class="seat-number">{{ draggedSeat.number }}</span>
-          </div>
+            } @else if (draftSeat() && draftSeat()!.posY === row + 1 && draftSeat()!.posX === col + 1) {
+              <div class="seat preview draft {{ getSeatClasses(draftSeat()!) }}">
+                <span class="seat-number">{{ draftSeat()!.number }}</span>
+              </div>
 
-        } @else if (!draggedSeat) {
-          <div class="empty" (click)="onCellClick(row, col, $event, cellRef)">
-            @if (isHovered(row, col)) { <span class="add-icon">+</span> }
+            } @else if (draggedSeat && hoverTarget()?.row === row && hoverTarget()?.col === col) {
+              <div class="seat preview {{ getSeatClasses(draggedSeat) }}">
+                <span class="seat-number">{{ draggedSeat.number }}</span>
+              </div>
+
+            } @else if (!draggedSeat) {
+              <div class="empty" (click)="onCellClick(row, col, $event, cellRef)">
+                @if (isHovered(row, col)) { <span class="add-icon">+</span> }
+              </div>
+            } @else {
+              <div class="empty"></div>
+            }
           </div>
-        } @else {
-          <div class="empty"></div>
         }
-      </div>
-
-      }
       }
     </div>
 
@@ -64,7 +59,6 @@
         (click)="$event.stopPropagation()"
         (mousedown)="$event.stopPropagation()">
 
-        <!-- Forma -->
         <button class="panel" (click)="toggleShape()" aria-label="Cambiar forma">
           <div class="icon">
             @if (menuShape() === 'ROUND') {
@@ -79,7 +73,6 @@
           </div>
         </button>
 
-        <!-- Tamaño -->
         <button class="panel" (click)="cycleSize()" aria-label="Cambiar tamaño">
           <div class="icon">
             @if (menuSize() === 'SMALL') {
