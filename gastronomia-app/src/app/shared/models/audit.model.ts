@@ -10,6 +10,7 @@ export interface Audit {
     auditStatus: 'IN_PROGRESS' | 'FINALIZED' | 'CANCELED';
     totalExpensed: number;
     total: number;
+    realCash?: number | null;
     balanceGap?: number | null;
     deleted?: boolean;
 }
