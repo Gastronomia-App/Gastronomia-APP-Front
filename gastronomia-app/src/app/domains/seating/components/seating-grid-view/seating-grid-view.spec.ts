@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TableGridEditor } from './table-grid-editor';
+import { SeatingGridView } from './seating-grid-view';
 
-describe('TableGridEditor', () => {
-  let component: TableGridEditor;
-  let fixture: ComponentFixture<TableGridEditor>;
+describe('SeatingGridView', () => {
+  let component: SeatingGridView;
+  let fixture: ComponentFixture<SeatingGridView>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableGridEditor]
+      imports: [SeatingGridView]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TableGridEditor);
+    fixture = TestBed.createComponent(SeatingGridView);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

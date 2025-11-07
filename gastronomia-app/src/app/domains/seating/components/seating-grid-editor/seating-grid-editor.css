@@ -29,15 +29,10 @@
   --cell-size: 140px;
   display: grid;
   padding: 4px;
-  background-color: var(--color-secondary-light);
   border-radius: 10px;
-  border: 1px solid #d1d5da;
   box-shadow:
     inset 0 1px 3px rgba(255, 255, 255, 0.5),
     inset 0 -1px 4px rgba(0, 0, 0, 0.08);
-
-
-    
 }
 
 /* cada celda */
@@ -45,7 +40,7 @@
   position: relative;
   background: #fdfefe;
   border-bottom: none;
-  border: 0.5px dashed #969696; /* 👈 guiones en lugar de líneas sólidas */
+  border: 0.5px dashed #969696;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -99,23 +94,53 @@
 }
 .grid-cell:hover .add-icon { opacity: 0.9; transform: scale(1); }
 
-/* seats */
+/* ==========================================
+   🔳 MESA (SEAT) CON EFECTO 3D REALISTA
+   ========================================== */
 .seat {
   position: absolute;
   inset: 14px;
-  background: rgb(161, 161, 161);
-  border: 1px solid #636363;
+  
+  /* Gradiente más realista simulando madera o superficie mate */
+  background: 
+    radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.15), transparent 50%),
+    linear-gradient(145deg, #a8a8a8, #8a8a8a56);
+  
+  border: 1px solid #5a5a5a;
   border-radius: 10px;
   color: #f2f2f2;
   font-weight: 700;
+  font-size: 0.9em;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 💡 Sistema de sombras multicapa para mayor profundidad */
+  box-shadow:
+    /* Luz superior izquierda (highlight) */
+    inset 3px 3px 6px rgba(255, 255, 255, 0.2),
+    /* Sombra inferior derecha (profundidad interna) */
+    inset -3px -3px 8px rgba(0, 0, 0, 0.4),
+    /* Borde suave interno */
+    inset 0 0 2px rgba(0, 0, 0, 0.2),
+    /* Sombra base externa (contacto con superficie) */
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    /* Sombra difusa externa (ambiente) */
+    0 6px 12px rgba(0, 0, 0, 0.2),
+    /* Sombra de contacto muy sutil */
+    0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+/* efecto de "flotación" al pasar el mouse */
 .seat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 3px rgba(255,255,255,0.2);
+  transform: translateY(-3px);
+  background: linear-gradient(145deg, #bcbcbc, #8f8f8f);
+  box-shadow:
+    inset 1px 1px 3px rgba(255, 255, 255, 0.25),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.35),
+    0 6px 12px rgba(0, 0, 0, 0.45);
 }
 
 /* formas */
@@ -151,29 +176,29 @@
 .seat.dragging { opacity: 0.5; transform: scale(1.05); cursor: grabbing; z-index: 1000; }
 .grid-cell.drop-target { outline: 2px dashed #0f766e; background-color: rgba(15,118,110,0.1); }
 
-/* ===== Menú contextual ===== */
+/* Menú contextual */
 .context-menu {
-  position: fixed;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 9999;
   display: flex;
   gap: 10px;
   padding: 8px;
   border-radius: 10px;
-  color: #fff;
-  z-index: 9999;
   animation: fadeInScale 120ms ease;
 }
 @keyframes fadeInScale {
   from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* Botones dentro del menú */
+/* Botones del menú */
 .context-menu .panel {
   appearance: none;
   border: none;
   outline: none;
   cursor: pointer;
-  width: 46px; /* un poco más amplio para centrar visualmente */
+  width: 46px;
   height: 46px;
   border-radius: 12px;
   background: linear-gradient(180deg, #2f2f2f, #4b4b4b);
@@ -203,6 +228,6 @@
   display: block;
   stroke-linecap: round;
   stroke-linejoin: round;
-  margin: 0 auto;        /* asegura centrado absoluto */
-  transform: translateY(1px); /* corrige ligero desfase visual vertical */
+  margin: 0 auto;
+  transform: translateY(1px);
 }

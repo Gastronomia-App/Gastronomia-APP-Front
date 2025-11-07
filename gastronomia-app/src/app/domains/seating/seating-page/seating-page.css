@@ -9,6 +9,26 @@
   width: 100%;
   overflow: hidden;
 }
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.zoom-control input[type='range'] {
+  flex: 1;
+  accent-color: #f97316;
+}
+.zoom-control label {
+  font-weight: 600;
+  color: #374151;
+}
+.zoom-control span {
+  width: 2rem;
+  text-align: center;
+  font-weight: 600;
+}
 
 /* Sub-header at top - uses component styles */
 
@@ -37,7 +57,7 @@
 }
 
 /* Table section - Flexible area for grid */
-.table-section {
+.seating-section {
   flex: 1;
   overflow: hidden;
   background: var(--color-surface);
@@ -47,7 +67,6 @@
   flex-direction: column;
   min-height: 0;
 }
-
 /* ==========================================
    ASIDE PANEL CONTENT STYLES
    ========================================== */
@@ -507,6 +526,24 @@
 /* ==========================================
    RESPONSIVE DESIGN
    ========================================== */
+
+/* Seating-specific overrides: avoid tall empty space in aside
+   without touching the global aside-panel.css */
+.seating-aside {
+  height: auto;
+  max-height: 100%;
+  align-self: flex-start;
+}
+
+/* Prevent the direct child (form host) from stretching */
+.seating-aside > app-seating-form {
+  flex: initial;
+}
+
+/* If there is an info wrapper (when not in edit mode), prevent stretching as well */
+.seating-aside > .aside-panel-wrapper {
+  height: auto;
+}
 
 @media (max-width: 1200px) {
   .page-container {

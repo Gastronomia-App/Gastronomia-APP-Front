@@ -2,12 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../enviroments/environment';
 import { Observable } from 'rxjs';
-import { Seating, SeatingCreateRequest, SeatingUpdateRequest } from '../../../shared/models/seating';
+import {
+  Seating,
+  SeatingCreateRequest,
+  SeatingUpdateRequest
+} from '../../../shared/models/seating';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TablesService {
+export class SeatingsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/seating`;
 

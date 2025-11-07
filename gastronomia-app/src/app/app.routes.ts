@@ -77,10 +77,10 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'tables',
+    path: 'seatings',
     loadComponent: () =>
-      import('./domains/table/table-page/table-page')
-        .then(m => m.TablePage),
+      import('./domains/seating/seating-page/seating-page')
+        .then(m => m.SeatingPage),
     canActivate: [authGuard]
   },
   {

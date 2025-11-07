@@ -1,4 +1,3 @@
-
 :host {
   display: flex;
   height: 100%;
@@ -14,7 +13,6 @@
 :host ::ng-deep footer.aside-panel-footer {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 
 .delete-bar {
   display: flex;
@@ -36,7 +34,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: #fff; 
+  background: #fff;
 }
 
 .btn-delete {
@@ -50,21 +48,19 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-  border-radius: 0 0 12px 12px; /* 🔹 asegura continuidad del borde */
+  border-radius: 0 0 12px 12px;
 }
-/* Hover */
+
 .btn-delete:hover {
   background-color: #b71c1c;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-/* Active */
 .btn-delete:active {
   transform: scale(0.99);
   background-color: #a21313;
 }
 
-/* Focus */
 .btn-delete:focus {
   outline: 2px solid #f5c4c4;
   outline-offset: -2px;

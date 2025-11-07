@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TablePage } from './table-page';
+import { SeatingStatusView } from './seating-status-view';
 
-describe('TablePage', () => {
-  let component: TablePage;
-  let fixture: ComponentFixture<TablePage>;
+describe('TableGrid', () => {
+  let component: SeatingStatusView;
+  let fixture: ComponentFixture<SeatingStatusView>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TablePage]
+      imports: [SeatingStatusView]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TablePage);
+    fixture = TestBed.createComponent(SeatingStatusView);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

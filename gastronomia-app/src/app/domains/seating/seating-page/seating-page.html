@@ -1,0 +1,135 @@
+<!-- Sub-header - full width at top -->
+<app-sub-header
+  [tabs]="subHeaderTabs()"
+  [actions]="subHeaderActions()"
+  (actionClick)="onSubHeaderAction($event)">
+</app-sub-header>
+
+<div class="page-container">
+  <div class="page-content">
+    <div class="seating-section">
+      @if (loading()) {
+        <p>Cargando ubicaciones...</p>
+      } @else if (error()) {
+        <p class="error">{{ error() }}</p>
+      } @else {
+        @if (!editMode()) {
+          @if (seatings().length > 0) {
+            <app-seating-status-view
+              [seatings]="seatings()"
+              (select)="onSelectSeating($event)">
+            </app-seating-status-view>
+          } @else {
+            <p>No hay ubicaciones registradas. Entrá en <strong>modo edición</strong> para crear la primera.</p>
+          }
+        } @else {
+          <!-- Editor: siempre visible en modo edición -->
+          <app-seating-grid-editor
+  #gridEditor
+  [zoomLevel]="zoomLevel()"
+  [seatingsInput]="seatings()"
+  [draftSeat]="draftSeating()"
+  [editedSeat]="selectedSeating()"
+  (draftRequested)="onDraftRequested($event)"
+  (draftClear)="draftSeating.set(null)"
+  (editRequested)="onEditFromGrid($event)"
+  (moveRequested)="onMoveRequested($event)"
+  (shapeSizeRequested)="onShapeSizeRequested($event)"
+  (editingCancelled)="onEditingCancelled()"
+  (liveChange)="onFormChanged($event)">
+</app-seating-grid-editor>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- ASIDE -->
+  <aside class="aside-panel seating-aside">
+    @if (editMode()) {
+      @if (draftSeating()) {
+        <app-seating-form
+          [seating]="draftSeating()!"
+          mode="create"
+          (closed)="onFormClosed()"
+          (changed)="onFormChanged($event)">
+        </app-seating-form>
+      } @else if (selectedSeating()) {
+        <app-seating-form
+          [seating]="selectedSeating()!"
+          mode="edit"
+          (closed)="onFormClosed()"
+          (changed)="onFormChanged($event)">
+        </app-seating-form>
+      } @else {
+        <div class="aside-panel-wrapper">
+          <div class="aside-panel-header">
+            <h2>Modo edición del salón</h2>
+          </div>
+          <div class="aside-panel-container">
+            <section>
+              <p class="text-muted">Configurá la disposición, forma y tamaño de las ubicaciones.</p>
+              <div class="info-section">
+                <div class="zoom-control">
+  <label for="zoomRange">Nivel de Zoom</label>
+  <input
+    id="zoomRange"
+    type="range"
+    min="1"
+    max="20"
+    [value]="zoomLevel()"
+    (input)="onZoomChange($any($event.target).value)"
+  />
+  <span>{{ zoomLevel() }}</span>
+</div>
+                <h3 class="section-title">Acciones disponibles</h3>
+                <ul class="info-list">
+                  <li><span class="icon">➕</span><div><strong>Agregar:</strong><span class="text-muted"> clic en una celda vacía.</span></div></li>
+                  <li><span class="icon">🖱️</span><div><strong>Mover:</strong><span class="text-muted"> arrastrá y soltá para cambiar posición.</span></div></li>
+                  <li><span class="icon">⚙️</span><div><strong>Editar:</strong><span class="text-muted"> clic en una ubicación existente.</span></div></li>
+                  <li><span class="icon">⌫</span><div><strong>Eliminar:</strong><span class="text-muted"> seleccioná y presioná eliminar.</span></div></li>
+                </ul>
+              </div>
+              <div class="alert-info">
+                <h4>Reglas del modo edición</h4>
+                <ul>
+                  <li>No podés superponer ubicaciones en la misma celda.</li>
+                  <li>No se pueden eliminar ubicaciones ocupadas o en facturación.</li>
+                  <li>Los cambios se aplican solo al <strong>guardar</strong>.</li>
+                  <li>Los cambios no guardados se pierden al salir del modo edición.</li>
+                </ul>
+              </div>
+              <div class="tip-box">
+                <span class="emoji">💡</span>
+                <p>Usá este modo para reorganizar el salón de forma clara y ordenada.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="aside-panel-wrapper">
+        <div class="aside-panel-header">
+          <h2>Detalles del salón</h2>
+        </div>
+        <div class="aside-panel-container">
+          <section>
+            <p class="text-muted">Panel de <strong>gestión y monitoreo</strong> de ubicaciones.</p>
+            <div class="info-section">
+              <h3 class="section-title">Estado de las ubicaciones</h3>
+              <ul class="status-list">
+                <li><span class="status-dot status-free"></span><div><strong>Libres:</strong><span class="text-muted"> disponibles para nuevos clientes.</span></div></li>
+                <li><span class="status-dot status-occupied"></span><div><strong>Ocupadas:</strong><span class="text-muted"> en atención o consumo activo.</span></div></li>
+                <li><span class="status-dot status-billing"></span><div><strong>En facturación:</strong><span class="text-muted"> esperando cierre de cuenta.</span></div></li>
+              </ul>
+            </div>
+            <div class="tip-box">
+              <span class="emoji">💡</span>
+              <p>Entrá en <strong>modo edición</strong> para reorganizar el salón o agregar nuevas ubicaciones.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+  </aside>
+</div>
+

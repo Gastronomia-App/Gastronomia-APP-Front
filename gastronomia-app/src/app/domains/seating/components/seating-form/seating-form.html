@@ -6,35 +6,33 @@
       [initialData]="seating()!"
       [showHeader]="true"
       [showFooter]="true"
-      [headerTitle]="mode() === 'create' ? 'Nueva mesa' : 'Editar mesa'"
-      [submitButtonLabel]="mode() === 'create' ? 'Crear mesa' : 'Guardar'"
+      [headerTitle]="mode() === 'create' ? 'Nueva ubicación' : 'Editar ubicación'"
+      [submitButtonLabel]="mode() === 'create' ? 'Crear ubicación' : 'Guardar'"
       (formSubmit)="onSubmit($event)"
       (formCancel)="onCancel()"
-      (formClose)="onClose()"
-    ></app-form>
+      (formClose)="onClose()">
+    </app-form>
 
     @if (mode() === 'edit') {
       <div class="delete-bar">
         <button type="button" class="btn-delete" (click)="showConfirm.set(true)">
-          Eliminar mesa
+          Eliminar ubicación
         </button>
       </div>
     }
 
     @if (showConfirm()) {
       <app-confirm
-        [title]="'Eliminar mesa'"
-        [message]="'¿Estás seguro de eliminar la mesa N°' + seating()?.number + '?'"
+        [title]="'Eliminar ubicación'"
+        [message]="'¿Estás seguro de eliminar la ubicación N°' + seating()?.number + '?'"
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         variant="danger"
         (onConfirm)="onDeleteConfirmed()"
-        (onCancel)="showConfirm.set(false)"
-      />
+        (onCancel)="showConfirm.set(false)" />
     }
   }
 
-  <!-- 🔹 Alert genérica -->
   @if (showAlert()) {
     <app-alert
       [title]="alertTitle()"
@@ -42,7 +40,6 @@
       [details]="alertDetails()"
       confirmLabel="Aceptar"
       detailsLabel="Detalles"
-      (onConfirm)="showAlert.set(false)"
-    />
+      (onConfirm)="showAlert.set(false)" />
   }
 </div>

@@ -39,8 +39,8 @@
 .sub-header-right {
   display: flex;
   gap: var(--spacing-sm);
-  align-items: center;
-  padding: var(--spacing-sm) 0; /* Add vertical padding only here */
+  align-items: stretch; /* match left so pills can stretch */
+  padding: 0; /* let children control their own vertical spacing */
 }
 
 /* Tab button */
@@ -106,20 +106,31 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  /* Align vertically with raised tabs */
+  margin-top: -8px;
+}
+
+/* When actions should look like tabs, allow consumer to pass class "tab-button".
+   We override only what's needed so the right side doesn't change layout height. */
+.sub-header-right .btn-action.tab-button {
+  width: auto;
+  height: auto;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 0 0 8px 8px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sub-header-right .btn-action.tab-button:hover {
+  background-color: var(--color-primary-lighter);
+  transform: translateY(-1px);
 }
 
 .btn-action:hover {
   background-color: var(--color-primary-light);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.btn-action.btn-exit {
-  background-color: var(--color-secondary-dark);
-}
-
-.btn-action.btn-exit:hover {
-  background-color: var(--color-secondary);
 }
 
 .btn-action svg {
