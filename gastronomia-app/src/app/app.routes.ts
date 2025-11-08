@@ -1,79 +1,60 @@
+// app.routes.ts
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './domains/auth';
+import { LoginComponent } from './domains/auth/login/login';
 import { authGuard } from './core/guards/auth.guard';
+import { HomePage } from './domains/homepage/homepage';
 
 export const routes: Routes = [
   {
-    path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
+    path: '', // ✅ homepage principal
+    component: HomePage,
   },
   {
     path: 'login',
-    component: LoginPageComponent
+    component: LoginComponent,
   },
   {
     path: 'products',
-    loadComponent: () => import('./domains/products/product-page/product-page')
-    .then(m => m.ProductPage),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./domains/products/product-page/product-page').then(
+        (m) => m.ProductPage
+      ),
+    canActivate: [authGuard],
   },
   {
     path: 'categories',
-    loadComponent: () => import('./domains/categories/category-page/category-page')
-    .then(m => m.CategoryPage),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./domains/categories/category-page/category-page').then(
+        (m) => m.CategoryPage
+      ),
+    canActivate: [authGuard],
   },
   {
     path: 'groups',
-    loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
-    .then(m => m.ProductGroupPage),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import(
+        './domains/product-groups/product-group-page/product-group-page'
+      ).then((m) => m.ProductGroupPage),
+    canActivate: [authGuard],
   },
   {
     path: 'customers',
     loadComponent: () =>
-      import('./domains/customer/customer-page/customer-page')
-        .then(m => m.CustomerPage),
-    canActivate: [authGuard]
+      import('./domains/customer/customer-page/customer-page').then(
+        (m) => m.CustomerPage
+      ),
+    canActivate: [authGuard],
   },
   {
     path: 'expenses',
     loadComponent: () =>
-      import('./domains/expenses/expenses-page/expenses-page')
-        .then(m => m.ExpensesPage),
-    canActivate: [authGuard]
-  }
-
-  /*
-  ,
-  {
-    path: 'home',
-    loadComponent: () => import('./domains/home/home-page').then(m => m.HomePage)
+      import('./domains/expenses/expenses-page/expenses-page').then(
+        (m) => m.ExpensesPage
+      ),
+    canActivate: [authGuard],
   },
   {
-    path: 'expenses',
-    loadComponent: () => import('./domains/expenses/expenses-page').then(m => m.ExpensesPage)
+    path: '**', // cualquier ruta no encontrada
+    redirectTo: '', // redirige al homepage
   },
-  {
-    path: 'suppliers',
-    loadComponent: () => import('./domains/suppliers/suppliers-page').then(m => m.SuppliersPage)
-  },
-  {
-    path: 'products',
-    loadComponent: () => import('./domains/products/products-page').then(m => m.ProductsPage)
-  },
-  {
-    path: 'customers',
-    loadComponent: () => import('./domains/customers/customers-page').then(m => m.CustomersPage)
-  },
-  {
-    path: 'employees',
-    loadComponent: () => import('./domains/employees/employees-page').then(m => m.EmployeesPage)
-  },
-  {
-    path: '**',
-    redirectTo: '/home'
-  }
-    */
 ];

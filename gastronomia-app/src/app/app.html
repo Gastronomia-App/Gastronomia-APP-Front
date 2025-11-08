@@ -1,7 +1,9 @@
-<app-header></app-header>
+@if(!isHomePage()) {
+  <app-header></app-header>
+}
 
-<main>
-  <div class="content-area">
+<main [class.homepage-main]="isHomePage()">
+  <div class="content-area" [class.homepage-content]="isHomePage()">
     <router-outlet></router-outlet>
   </div>
 </main>
