@@ -1,7 +1,8 @@
 import { Component, signal, inject, computed, DestroyRef } from '@angular/core';
-import { RouterLink, RouterLinkActive } from "@angular/router";
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from "@angular/router";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { HasRoleDirective } from '../../directives/has-role.directive';
@@ -15,11 +16,14 @@ import { UserRole } from '../../models/auth.model';
 })
 export class Header {
   private authService = inject(AuthService);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
   UserRole = UserRole;
 
   isMobileMenuOpen = signal(false);
+  isLandingPage = signal(false);
+  isScrolled = signal(false);
 
   employeeName = this.authService.employeeName;
   
@@ -61,11 +65,77 @@ export class Header {
   });
 
   constructor() {
+    // Detectar si es landing page (homepage o login)
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((event: NavigationEnd) => {
+        const path = event.urlAfterRedirects;
+        const isLanding = path === '/' || path === '/login';
+        this.isLandingPage.set(isLanding);
+        this.toggleBodyClass(isLanding);
+      });
+
+    // Verificar ruta inicial
+    const currentPath = this.router.url;
+    const isInitiallyLanding = currentPath === '/' || currentPath === '/login';
+    this.isLandingPage.set(isInitiallyLanding);
+    this.toggleBodyClass(isInitiallyLanding);
+
+    // Reloj en tiempo real
     interval(1000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.currentDateTime.set(new Date());
       });
+
+    // Detectar scroll para landing page
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', this.handleScroll.bind(this));
+    }
+  }
+
+  private toggleBodyClass(isLanding: boolean): void {
+    if (typeof document !== 'undefined') {
+      if (isLanding) {
+        document.body.classList.add('homepage-active');
+      } else {
+        document.body.classList.remove('homepage-active');
+      }
+    }
+  }
+
+  private handleScroll(): void {
+    if (typeof window !== 'undefined') {
+      this.isScrolled.set(window.scrollY > 50);
+    }
+  }
+
+  scrollToSection(sectionId: string): void {
+    // Si estamos en login, navegar al homepage primero
+    const currentPath = this.router.url;
+    if (currentPath === '/login') {
+      this.router.navigate(['/']).then(() => {
+        setTimeout(() => {
+          if (typeof document !== 'undefined') {
+            const element = document.getElementById(sectionId);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        }, 100);
+      });
+    } else {
+      // Ya estamos en homepage, hacer scroll directo
+      if (typeof document !== 'undefined') {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
   }
 
   toggleMobileMenu(): void {

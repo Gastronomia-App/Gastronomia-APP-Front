@@ -79,7 +79,7 @@ export class BusinessPage implements OnInit {
   onConfirmSave(): void {
     if (!this.myBusiness() || !this.pendingFormData) return;
 
-    const businessId = this.myBusiness()!.id;
+    const businessId = this.myBusiness()!.id!;
     
     this.businessService.updateBusiness(businessId, this.pendingFormData).subscribe({
       next: (updated) => {
@@ -120,7 +120,7 @@ export class BusinessPage implements OnInit {
   onConfirmDelete(): void {
     if (!this.myBusiness() || !this.isDeleteConfirmed()) return;
 
-    const businessId = this.myBusiness()!.id;
+    const businessId = this.myBusiness()!.id!;
     
     this.businessService.deleteBusiness(businessId).subscribe({
       next: () => {

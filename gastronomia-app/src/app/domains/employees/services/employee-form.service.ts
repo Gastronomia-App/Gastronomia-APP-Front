@@ -29,12 +29,12 @@ export class EmployeeFormService {
 
   editEmployee(employee: Employee): void {
     this.editEmployeeSubject.next(employee);
-    this.activeEmployeeIdSubject.next(employee.id);
+    this.activeEmployeeIdSubject.next(employee.id ?? null);
   }
 
   openEditForm(employee: Employee): void {
     this.editEmployeeSubject.next(employee);
-    this.activeEmployeeIdSubject.next(employee.id);
+    this.activeEmployeeIdSubject.next(employee.id ?? null);
   }
 
   viewEmployeeDetails(employee: Employee): void {

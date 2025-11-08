@@ -32,7 +32,7 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
     this.subscriptions.add(
       this.employeeFormService.editEmployee$.subscribe((employee) => {
         this.showEmployeeDetails.set(false);
-        this.currentEmployeeId = employee.id;
+        this.currentEmployeeId = employee.id ?? null;
         this.pendingEmployee = employee;
         this.showEmployeeForm.set(true);
       })
@@ -45,8 +45,8 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
           this.closeEmployeeDetails();
         } else {
           this.showEmployeeForm.set(false);
-          this.currentEmployeeId = employee.id;
-          this.employeeFormService.setActiveEmployeeId(employee.id);
+          this.currentEmployeeId = employee.id ?? null;
+          this.employeeFormService.setActiveEmployeeId(employee.id ?? null);
           this.pendingDetailsEmployee = employee;
           this.showEmployeeDetails.set(true);
         }

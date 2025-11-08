@@ -75,11 +75,11 @@ export class SupplierForm implements OnInit {
             name: 'cuit',
             label: 'CUIT',
             type: 'text',
-            placeholder: 'XX-XXXXXXXX-X',
+            placeholder: '12345678901',
             required: false,
-            validators: [Validators.pattern(/^\d{2}-\d{8}-\d{1}$/)],
+            validators: [Validators.pattern(/^\d{11}$/)],
             fullWidth: false,
-            helpText: 'Formato: XX-XXXXXXXX-X'
+            helpText: 'Formato: 11 dígitos sin guiones'
           }
         ]
       },

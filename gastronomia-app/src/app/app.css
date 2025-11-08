@@ -17,16 +17,6 @@ main {
     min-height: 0;
 }
 
-main.homepage-main {
-    overflow: auto;
-    height: 100vh;
-    min-height: 100vh;
-    scroll-snap-type: y proximity;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    scroll-padding-top: 0;
-}
-
 main .content-area {
     flex: 1;
     min-width: 0;
@@ -36,11 +26,6 @@ main .content-area {
     height: 100%;
 }
 
-main .content-area.homepage-content {
-    overflow: visible;
-    height: auto;
-}
-
 /* Ensure router-outlet children get full height */
 main .content-area > * {
     flex: 1;
@@ -48,7 +33,3 @@ main .content-area > * {
     min-height: 0;
 }
 
-main .content-area.homepage-content > * {
-    height: auto;
-    min-height: auto;
-}

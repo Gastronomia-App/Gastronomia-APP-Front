@@ -3,11 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
-import { Validators } from '@angular/forms';
-import { Form } from '../../shared/components/form/form';
-import { FormConfig, FormSubmitEvent } from '../../shared/models';
-import { BusinessRegistrationRequest } from '../../shared/models/business.model';
 import { Footer } from "../../shared/components/footer/footer";
+import { LoginComponent } from '../auth/login/login';
 
 interface Feature {
   icon: string;
@@ -24,7 +21,7 @@ interface Benefit {
 @Component({
   selector: 'app-home',
   standalone: true, 
-  imports: [RouterModule, CommonModule, Form, Footer], 
+  imports: [RouterModule, CommonModule, LoginComponent, Footer], 
   templateUrl: './homepage.html',
   styleUrls: ['./homepage.css'],
 })
@@ -124,125 +121,6 @@ export class HomePage implements OnInit, AfterViewInit {
     },
   ];
 
-  // Form configuration for business registration
-  businessFormConfig: FormConfig<BusinessRegistrationRequest> = {
-    title: 'Registrá tu Negocio',
-    sections: [
-      {
-        title: 'Datos del Negocio',
-        fields: [
-          {
-            name: 'name',
-            label: 'Nombre del Negocio',
-            type: 'text',
-            placeholder: 'Ej: Restaurante El Buen Sabor',
-            required: true,
-            validators: [Validators.required, Validators.minLength(3)],
-            fullWidth: true
-          },
-          {
-            name: 'email',
-            label: 'Email del Negocio',
-            type: 'email',
-            placeholder: 'contacto@negocio.com',
-            required: true,
-            validators: [Validators.required, Validators.email],
-            fullWidth: false
-          },
-          {
-            name: 'phoneNumber',
-            label: 'Teléfono',
-            type: 'text',
-            placeholder: '+54 11 1234-5678',
-            required: true,
-            validators: [Validators.required],
-            fullWidth: false
-          },
-          {
-            name: 'address',
-            label: 'Dirección',
-            type: 'text',
-            placeholder: 'Calle 123, Ciudad',
-            required: true,
-            validators: [Validators.required],
-            fullWidth: true
-          },
-          {
-            name: 'description',
-            label: 'Descripción (opcional)',
-            type: 'textarea',
-            placeholder: 'Breve descripción de tu negocio',
-            required: false,
-            rows: 3,
-            maxLength: 300,
-            fullWidth: true
-          }
-        ]
-      },
-      {
-        title: 'Datos del Propietario',
-        fields: [
-          {
-            name: 'ownerName',
-            label: 'Nombre',
-            type: 'text',
-            placeholder: 'Juan',
-            required: true,
-            validators: [Validators.required],
-            fullWidth: false
-          },
-          {
-            name: 'ownerLastName',
-            label: 'Apellido',
-            type: 'text',
-            placeholder: 'Pérez',
-            required: true,
-            validators: [Validators.required],
-            fullWidth: false
-          },
-          {
-            name: 'ownerEmail',
-            label: 'Email Personal',
-            type: 'email',
-            placeholder: 'juan@email.com',
-            required: true,
-            validators: [Validators.required, Validators.email],
-            fullWidth: false
-          },
-          {
-            name: 'ownerPhone',
-            label: 'Teléfono Personal',
-            type: 'text',
-            placeholder: '+54 11 9876-5432',
-            required: true,
-            validators: [Validators.required],
-            fullWidth: false
-          },
-          {
-            name: 'ownerUsername',
-            label: 'Usuario',
-            type: 'text',
-            placeholder: 'juanperez',
-            required: true,
-            validators: [Validators.required, Validators.minLength(4)],
-            fullWidth: false,
-            helpText: 'Mínimo 4 caracteres'
-          },
-          {
-            name: 'ownerPassword',
-            label: 'Contraseña',
-            type: 'password',
-            placeholder: '••••••••',
-            required: true,
-            validators: [Validators.required, Validators.minLength(6)],
-            fullWidth: false,
-            helpText: 'Mínimo 6 caracteres'
-          }
-        ]
-      }
-    ]
-  };
-
   ngOnInit() {
     // Forzar scroll al inicio al cargar la página
     window.scrollTo(0, 0);
@@ -299,15 +177,5 @@ export class HomePage implements OnInit, AfterViewInit {
         inline: 'nearest'
       });
     }
-  }
-
-  onBusinessRegister(event: FormSubmitEvent<BusinessRegistrationRequest>): void {
-    console.log('Business registration data:', event.data);
-    // TODO: Implementar llamada al servicio para registrar el negocio
-    alert('¡Registro exitoso! Por favor revisa tu email para confirmar tu cuenta.');
-  }
-
-  onFormCancel(): void {
-    console.log('Form cancelled/cleared');
   }
 }

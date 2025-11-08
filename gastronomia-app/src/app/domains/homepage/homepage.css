@@ -398,7 +398,8 @@ body {
    BENEFITS SECTION
    =============================== */
 .benefits-section {
-  padding: 80px 2.5rem;
+  position: relative;
+  padding: 100px 2.5rem;
   background: linear-gradient(135deg, var(--color-primary-lightest) 0%, var(--color-bg) 100%);
   min-height: 100vh;
   max-height: 100vh;
@@ -408,6 +409,24 @@ body {
   /* Scroll snap */
   scroll-snap-align: start;
   scroll-snap-stop: always;
+}
+
+.benefits-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/assets/images/homepage-background.png') center/cover;
+  opacity: 0.05;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.benefits-section > * {
+  position: relative;
+  z-index: 1;
 }
 
 .benefits-grid {
@@ -525,11 +544,27 @@ body {
 }
 
 .register-form-container {
-  background: var(--color-bg);
-  padding: 2.5rem;
-  border-radius: 20px;
-  box-shadow: var(--shadow-medium);
-  border: 1px solid var(--color-border);
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Override auth-wrap styles for homepage integration */
+.register-form-container ::ng-deep .auth-wrap {
+  min-height: auto;
+  padding: 0;
+  background: none;
+  align-items: flex-start;
+}
+
+.register-form-container ::ng-deep .auth-wrap::before {
+  display: none;
+}
+
+.register-form-container ::ng-deep .card {
+  max-width: 100%;
+  width: 100%;
 }
 
 /* ===============================
@@ -677,6 +712,10 @@ body {
 
   .register-form-container {
     padding: 1.5rem;
+  }
+
+  .register-form-container ::ng-deep .form-grid {
+    grid-template-columns: 1fr;
   }
 
   .register-title {

@@ -29,12 +29,12 @@ export class BusinessFormService {
 
   editBusiness(business: Business): void {
     this.editBusinessSubject.next(business);
-    this.activeBusinessIdSubject.next(business.id);
+    this.activeBusinessIdSubject.next(business.id ?? null);
   }
 
   openEditForm(business: Business): void {
     this.editBusinessSubject.next(business);
-    this.activeBusinessIdSubject.next(business.id);
+    this.activeBusinessIdSubject.next(business.id ?? null);
   }
 
   viewBusinessDetails(business: Business): void {

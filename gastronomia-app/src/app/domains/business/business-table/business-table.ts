@@ -148,7 +148,7 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
   }
 
   protected getItemId(business: Business): number {
-    return business.id;
+    return business.id!;
   }
 
   protected onEditItem(business: Business): void {

@@ -51,7 +51,7 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
       ],
       filterFn: (employee, value) => {
         if (!value || value === '') return true;
-        return employee.deleted.toString() === value;
+        return (employee.deleted ?? false).toString() === value;
       }
     }
   ];
@@ -158,12 +158,16 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
     return this.employeeService.deleteEmployee(id);
   }
 
+  protected getItemDisplayName(employee: Employee): string {
+    return `${employee.name} ${employee.lastName}`;
+  }
+
   protected getItemName(employee: Employee): string {
     return `${employee.name} ${employee.lastName}`;
   }
 
   protected getItemId(employee: Employee): number {
-    return employee.id;
+    return employee.id!;
   }
 
   protected onEditItem(employee: Employee): void {
