@@ -1,0 +1,46 @@
+.header-dropdown-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Ítems de menú: lista plana visible */
+.header-dropdown-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: #1f2933; /* texto oscuro */
+  text-align: left;
+  font-size: var(--font-sm);
+  font-weight: 400;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  line-height: normal;
+  box-sizing: border-box;
+}
+
+/* Asegurar que el primer ítem no tenga margen extra */
+.header-dropdown-item:first-child {
+  margin-top: 0;
+  padding-top: 0.6rem;
+}
+
+/* Hover gris suave */
+.header-dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ítem de peligro ("Cerrar sesión"): solo texto rojo */
+.header-dropdown-item.danger {
+  color: var(--color-danger);
+  background-color: transparent;
+}
+
+.header-dropdown-item.danger:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}

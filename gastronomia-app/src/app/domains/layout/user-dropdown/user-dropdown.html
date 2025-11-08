@@ -1,0 +1,30 @@
+<ul class="header-dropdown-menu">
+  <!-- Mi perfil: visible para OWNER y ADMIN -->
+  <li
+    class="header-dropdown-item"
+    *appHasRole="[UserRole.OWNER, UserRole.ADMIN]"
+    (click)="irAMiPerfil()"
+    role="button"
+  >
+    Mi perfil
+  </li>
+
+  <!-- Mi negocio: visible solo para OWNER -->
+  <li
+    class="header-dropdown-item"
+    *appHasRole="[UserRole.OWNER]"
+    (click)="irAMiNegocio()"
+    role="button"
+  >
+    Mi negocio
+  </li>
+
+  <!-- Cerrar sesión: visible para todos -->
+  <li
+    class="header-dropdown-item danger"
+    (click)="cerrarSesion()"
+    role="button"
+  >
+    Cerrar sesión
+  </li>
+</ul>

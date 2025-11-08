@@ -7,10 +7,21 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { HasRoleDirective } from '../../directives/has-role.directive';
 import { UserRole } from '../../models/auth.model';
+import { HeaderDropdownComponent } from '../header-dropdown/header-dropdown';
+import { UserDropdownComponent } from '../../../domains/layout/user-dropdown/user-dropdown';
+import { NotificationDropdownComponent } from '../../../domains/layout/notification-dropdown/notification-dropdown';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive, CommonModule, HasRoleDirective],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    CommonModule,
+    HasRoleDirective,
+    HeaderDropdownComponent,
+    UserDropdownComponent,
+    NotificationDropdownComponent,
+  ],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })

@@ -1,0 +1,17 @@
+<div class="header-dropdown" [class.open]="isOpen">
+  <div
+    class="header-dropdown-trigger"
+    (click)="toggle()"
+  >
+    <ng-content select="[dropdown-trigger]"></ng-content>
+  </div>
+
+  <div
+    class="header-dropdown-panel"
+    *ngIf="isOpen"
+    [class.align-right]="align === 'right'"
+    [class.align-left]="align === 'left'"
+  >
+    <ng-content select="[dropdown-panel]"></ng-content>
+  </div>
+</div>
