@@ -66,11 +66,37 @@ export const routes: Routes = [
     canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
+    path: 'cash-flow',
+    loadComponent: () => import('./domains/cash-flow/cash-flow-page/cash-flow-page')
+      .then(m => m.CashFlowPage),
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
+    children: [
+      {
+        path: '',
+        redirectTo: 'expenses',
+        pathMatch: 'full'
+      },
+      {
+        path: 'expenses',
+        loadComponent: () => import('./domains/expenses/expenses-page/expenses-page')
+          .then(m => m.ExpensesPage)
+      },
+      {
+        path: 'audits',
+        loadComponent: () => import('./domains/audits/audit-page/audit-page')
+          .then(m => m.AuditsPage)
+      }
+    ]
+  },
+  {
     path: 'expenses',
-    loadComponent: () =>
-      import('./domains/expenses/expenses-page/expenses-page')
-        .then(m => m.ExpensesPage),
-    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
+    redirectTo: '/cash-flow/expenses',
+    pathMatch: 'full'
+  },
+  {
+    path: 'audits',
+    redirectTo: '/cash-flow/audits',
+    pathMatch: 'full'
   },
   {
     path: 'suppliers',
@@ -78,13 +104,6 @@ export const routes: Routes = [
       import('./domains/suppliers/suppliers-page/suppliers-page')
         .then(m => m.SuppliersPage),
     canActivate: [authGuard]
-  },
-  {
-    path: 'audits',
-    loadComponent: () =>
-      import('./domains/audits/audit-page/audit-page')
-        .then(m => m.AuditsPage),
-    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'tables',
