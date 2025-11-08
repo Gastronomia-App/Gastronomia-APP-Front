@@ -115,6 +115,56 @@ export class AuthService {
     this.businessSignal.set(null);
   }
 
+  /**
+   * Registra un nuevo negocio con su dueño
+   */
+  register(business: Business): Observable<AuthSession> {
+    return this.http.post<LoginResponse>(this.businessBase, business).pipe(
+      map(response => {
+        try {
+          const claims = jwtDecode<JwtClaims>(response.token);
+          
+          if (this.isTokenExpired(claims)) {
+            throw new Error('El token recibido ya está expirado');
+          }
+
+          return { token: response.token, claims };
+        } catch (error) {
+          throw new Error('Token inválido recibido del servidor');
+        }
+      }),
+      tap(session => {
+        // Guardar sesión primero para que el interceptor tenga el token
+        this.saveSession(session);
+      }),
+      switchMap(session => {
+        const headers = { Authorization: `Bearer ${session.token}` };
+        
+        // Cargar datos del empleado actual y del negocio en paralelo
+        return forkJoin({
+          employee: this.http.get<Employee>(`${this.base}/me`, { headers }),
+          business: this.http.get<Business>(`${this.businessBase}/${session.claims.businessId}`, { headers })
+        }).pipe(
+          tap(({ employee, business }) => {
+            console.log('✅ AuthService - Registro exitoso - Empleado:', employee);
+            console.log('✅ AuthService - Registro exitoso - Negocio:', business);
+            
+            this.saveEmployee(employee);
+            this.saveBusiness(business);
+          }),
+          map(() => session)
+        );
+      }),
+      tap(() => {
+        console.log('✅ AuthService - Registro completado');
+      }),
+      catchError(error => {
+        console.error('❌ AuthService - Error en registro:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   // --------- Helpers de autenticación ---------
 
   /**

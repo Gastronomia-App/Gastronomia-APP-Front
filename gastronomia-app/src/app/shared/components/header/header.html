@@ -1,3 +1,28 @@
+@if (isLandingPage()) {
+<!-- Landing Page Header -->
+<header class="homepage-header" [class.scrolled]="isScrolled()">
+  <div class="header-content">
+    <img
+      src="assets/images/gastronomia-logo-black.png"
+      alt="Logo"
+      class="logo"
+      (click)="scrollToSection('hero')"
+    />
+
+    <nav class="nav-menu">
+      <a (click)="scrollToSection('features')" class="nav-link">Funcionalidades</a>
+      <a (click)="scrollToSection('benefits')" class="nav-link">Ventajas</a>
+      <a (click)="scrollToSection('register')" class="nav-link">Registrarse</a>
+    </nav>
+
+    <div class="auth-buttons">
+      <button class="btn-secondary" [routerLink]="['/login']">Iniciar Sesión</button>
+      <button class="btn-primary" (click)="scrollToSection('register')">Comenzar Gratis</button>
+    </div>
+  </div>
+</header>
+} @else {
+<!-- App Header -->
 <header class="header">
     <!-- Hamburger Menu Button (Mobile) -->
     <button class="hamburger-btn" (click)="toggleMobileMenu()"
@@ -182,4 +207,5 @@
         </div>
     </nav>
 </div>
+}
 }

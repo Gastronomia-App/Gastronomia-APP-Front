@@ -12,3 +12,38 @@
    ============================================ */
 
 @import './styles/main.css';
+
+/* ============================================
+   HOMEPAGE/LANDING PAGE BODY STYLES
+   Applied when body has .homepage-active class
+   ============================================ */
+body.homepage-active {
+  overflow: hidden;
+}
+
+body.homepage-active app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.homepage-active main {
+  overflow: auto !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 0;
+}
+
+body.homepage-active main .content-area {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+body.homepage-active main .content-area > * {
+  height: auto !important;
+  min-height: auto !important;
+}

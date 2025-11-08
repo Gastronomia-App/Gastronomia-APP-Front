@@ -227,7 +227,7 @@ export class EmployeeForm implements OnInit {
   
   loadEmployee(employee: Employee): void {
     this.isEditMode = true;
-    this.editingEmployeeId = employee.id;
+    this.editingEmployeeId = employee.id ?? null;
 
     console.log('🔍 Loading employee for edit:', employee);
 

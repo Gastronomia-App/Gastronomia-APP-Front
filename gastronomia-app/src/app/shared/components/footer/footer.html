@@ -1,10 +1,10 @@
-<footer>
+<footer [class.homepage-footer]="isHomepage()">
     <div class="container">
 
         <div class="top">
             <div class="logo">
                    <a href="/">
-                       <img src="assets/images/gastronomia-logo-black.png" alt="Logo Gastronomía API">
+                       <img src="assets/images/gastronomia-logo-black.png" alt="Logo Gastronomía API" [class.inverted]="isHomepage()">
                    </a>
             </div>
 
@@ -25,9 +25,15 @@
 
             <div class="help">
                 <h6>Recursos</h6>
-                <p><a href="">Preguntas Frecuentes</a></p>
-                <p><a href="">Términos y Condiciones</a></p>
-                <p><a href="">Política de Privacidad</a></p>
+                @if (isHomepage()) {
+                    <p><a (click)="onSectionClick('features')">Funcionalidades</a></p>
+                    <p><a (click)="onSectionClick('benefits')">Ventajas</a></p>
+                    <p><a [routerLink]="['/login']">Iniciar Sesión</a></p>
+                } @else {
+                    <p><a href="">Preguntas Frecuentes</a></p>
+                    <p><a href="">Términos y Condiciones</a></p>
+                    <p><a href="">Política de Privacidad</a></p>
+                }
             </div>
 
             <div class="location">
@@ -59,7 +65,7 @@
         <div class="bottom">
             
             <div class="rights">
-                <p>© 2025 Gastronomía API. Todos los derechos reservados.</p>
+                <p>© 2025 Gastronomía App. Todos los derechos reservados.</p>
             </div>
 
             <div class="country">

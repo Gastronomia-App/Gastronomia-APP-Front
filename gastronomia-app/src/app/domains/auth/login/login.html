@@ -1,7 +1,7 @@
 <div class="auth-wrap">
   <div class="card">
-    <h1>Iniciar Sesión</h1>
-    <p class="sub">Ingresá tus credenciales para acceder</p>
+    <h1>{{ mode === 'login' ? 'Iniciar Sesión' : 'Registrar Negocio' }}</h1>
+    <p class="sub">{{ mode === 'login' ? 'Ingresá tus credenciales para acceder' : 'Completá los datos para registrar tu negocio' }}</p>
     
     <!-- Error Message -->
     @if (error()) {
@@ -11,29 +11,248 @@
     }
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form">
-      <!-- Username Field -->
-      <fieldset>
-        <label for="username">Usuario</label>
-        <input
-          id="username"
-          type="text"
-          formControlName="username"
-          placeholder="Ingresá tu usuario"
-          class="input"
-        />
-      </fieldset>
+      
+      <!-- LOGIN MODE -->
+      @if (mode === 'login') {
+        <!-- Username Field -->
+        <fieldset>
+          <label for="username">Usuario</label>
+          <input
+            id="username"
+            type="text"
+            formControlName="username"
+            placeholder="Ingresá tu usuario"
+            class="input"
+          />
+          @if (hasError('username')) {
+            <span class="field-error">{{ getErrorMessage('username') }}</span>
+          }
+        </fieldset>
 
-      <!-- Password Field -->
-      <fieldset>
-        <label for="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="Ingresá tu contraseña"
-          class="input"
-        />
-      </fieldset>
+        <!-- Password Field -->
+        <fieldset>
+          <label for="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Ingresá tu contraseña"
+            class="input"
+          />
+          @if (hasError('password')) {
+            <span class="field-error">{{ getErrorMessage('password') }}</span>
+          }
+        </fieldset>
+      }
+
+      <!-- REGISTER MODE -->
+      @if (mode === 'register') {
+        <!-- Sección: Datos del Negocio -->
+        <div class="form-section">
+          <h3 class="section-title">Datos del Negocio</h3>
+          
+          <fieldset>
+            <label for="businessName">Nombre del Negocio</label>
+            <input
+              id="businessName"
+              type="text"
+              formControlName="businessName"
+              placeholder="Ej: Café Central"
+              class="input"
+            />
+            @if (hasError('businessName')) {
+              <span class="field-error">{{ getErrorMessage('businessName') }}</span>
+            }
+          </fieldset>
+
+          <fieldset>
+            <label for="cuit">CUIT</label>
+            <input
+              id="cuit"
+              type="text"
+              formControlName="cuit"
+              placeholder="12345678901"
+              class="input"
+            />
+            @if (hasError('cuit')) {
+              <span class="field-error">{{ getErrorMessage('cuit') }}</span>
+            }
+          </fieldset>
+        </div>
+
+        <!-- Sección: Dirección -->
+        <div class="form-section">
+          <h3 class="section-title">Dirección</h3>
+          
+          <div class="form-grid">
+            <fieldset>
+              <label for="street">Calle</label>
+              <input
+                id="street"
+                type="text"
+                formControlName="street"
+                placeholder="Calle y número"
+                class="input"
+              />
+              @if (hasError('street')) {
+                <span class="field-error">{{ getErrorMessage('street') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="city">Ciudad</label>
+              <input
+                id="city"
+                type="text"
+                formControlName="city"
+                placeholder="Ciudad"
+                class="input"
+              />
+              @if (hasError('city')) {
+                <span class="field-error">{{ getErrorMessage('city') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="province">Provincia</label>
+              <input
+                id="province"
+                type="text"
+                formControlName="province"
+                placeholder="Provincia"
+                class="input"
+              />
+              @if (hasError('province')) {
+                <span class="field-error">{{ getErrorMessage('province') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="zipCode">Código Postal</label>
+              <input
+                id="zipCode"
+                type="text"
+                formControlName="zipCode"
+                placeholder="Código postal"
+                class="input"
+              />
+              @if (hasError('zipCode')) {
+                <span class="field-error">{{ getErrorMessage('zipCode') }}</span>
+              }
+            </fieldset>
+          </div>
+        </div>
+
+        <!-- Sección: Datos del Dueño -->
+        <div class="form-section">
+          <h3 class="section-title">Datos del Dueño</h3>
+          
+          <div class="form-grid">
+            <fieldset>
+              <label for="name">Nombre</label>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="Nombre"
+                class="input"
+              />
+              @if (hasError('name')) {
+                <span class="field-error">{{ getErrorMessage('name') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="lastName">Apellido</label>
+              <input
+                id="lastName"
+                type="text"
+                formControlName="lastName"
+                placeholder="Apellido"
+                class="input"
+              />
+              @if (hasError('lastName')) {
+                <span class="field-error">{{ getErrorMessage('lastName') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="dni">DNI</label>
+              <input
+                id="dni"
+                type="text"
+                formControlName="dni"
+                placeholder="12345678"
+                class="input"
+              />
+              @if (hasError('dni')) {
+                <span class="field-error">{{ getErrorMessage('dni') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="ejemplo@email.com"
+                class="input"
+              />
+              @if (hasError('email')) {
+                <span class="field-error">{{ getErrorMessage('email') }}</span>
+              }
+            </fieldset>
+
+            <fieldset>
+              <label for="phoneNumber">Teléfono</label>
+              <input
+                id="phoneNumber"
+                type="text"
+                formControlName="phoneNumber"
+                placeholder="541123456789"
+                class="input"
+              />
+              @if (hasError('phoneNumber')) {
+                <span class="field-error">{{ getErrorMessage('phoneNumber') }}</span>
+              }
+            </fieldset>
+          </div>
+        </div>
+
+        <!-- Sección: Credenciales -->
+        <div class="form-section">
+          <h3 class="section-title">Credenciales de Acceso</h3>
+          
+          <fieldset>
+            <label for="username">Usuario</label>
+            <input
+              id="username"
+              type="text"
+              formControlName="username"
+              placeholder="usuario123"
+              class="input"
+            />
+            @if (hasError('username')) {
+              <span class="field-error">{{ getErrorMessage('username') }}</span>
+            }
+          </fieldset>
+
+          <fieldset>
+            <label for="password">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="Mínimo 8 caracteres"
+              class="input"
+            />
+            @if (hasError('password')) {
+              <span class="field-error">{{ getErrorMessage('password') }}</span>
+            }
+          </fieldset>
+        </div>
+      }
 
       <!-- Actions -->
       <div class="actions">
@@ -43,9 +262,9 @@
           [disabled]="form.invalid || loading()"
         >
           @if (loading()) {
-            Iniciando sesión...
+            {{ mode === 'login' ? 'Iniciando sesión...' : 'Registrando...' }}
           } @else {
-            Iniciar Sesión
+            {{ mode === 'login' ? 'Iniciar Sesión' : 'Registrar Negocio' }}
           }
         </button>
       </div>

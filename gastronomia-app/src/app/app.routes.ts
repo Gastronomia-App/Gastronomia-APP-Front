@@ -1,18 +1,19 @@
+﻿// app.routes.ts
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './domains/auth';
+import { LoginComponent } from './domains/auth/login/login';
 import { authGuard } from './core/guards/auth.guard';
+import { HomePage } from './domains/homepage/homepage';
 import { roleGuard } from './core/guards';
 import { UserRole } from './shared/models/auth.model';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
+    component: HomePage,
   },
   {
     path: 'login',
-    component: LoginPageComponent
+    component: LoginComponent,
   },
   {
     path: 'inventory',
@@ -108,39 +109,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/tables'
+    redirectTo: ''
   }
-
-
-  /*
-  ,
-  {
-    path: 'home',
-    loadComponent: () => import('./domains/home/home-page').then(m => m.HomePage)
-  },
-  {
-    path: 'expenses',
-    loadComponent: () => import('./domains/expenses/expenses-page').then(m => m.ExpensesPage)
-  },
-  {
-    path: 'suppliers',
-    loadComponent: () => import('./domains/suppliers/suppliers-page').then(m => m.SuppliersPage)
-  },
-  {
-    path: 'products',
-    loadComponent: () => import('./domains/products/products-page').then(m => m.ProductsPage)
-  },
-  {
-    path: 'customers',
-    loadComponent: () => import('./domains/customers/customers-page').then(m => m.CustomersPage)
-  },
-  {
-    path: 'employees',
-    loadComponent: () => import('./domains/employees/employees-page').then(m => m.EmployeesPage)
-  },
-  {
-    path: '**',
-    redirectTo: '/home'
-  }
-    */
 ];

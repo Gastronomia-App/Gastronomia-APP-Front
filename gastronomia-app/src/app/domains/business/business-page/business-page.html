@@ -29,7 +29,7 @@
     <div class="business-form-container">
       <app-business-form 
         [isEditMode]="isEditMode()"
-        [editingBusinessId]="myBusiness()!.id"
+        [editingBusinessId]="myBusiness()!.id ?? null"
         [businessData]="myBusiness()"
         (formSubmit)="onFormSubmit($event)"
         (formCancel)="onCancelEdit()">
