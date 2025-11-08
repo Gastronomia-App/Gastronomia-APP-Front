@@ -158,7 +158,7 @@ export class ExpenseForm implements OnInit {
     const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
     if (supplierField) {
       supplierField.options = this.suppliers().map(s => ({
-        label: s.tradeName || s.legalName,
+        label: s.tradeName || s.legalName || 'Sin nombre',
         value: s.id
       }));
     }
