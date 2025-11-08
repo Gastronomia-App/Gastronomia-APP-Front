@@ -44,15 +44,18 @@
             @for (filter of filters(); track filter.field) {
               <div class="filter-item">
                 @if (filter.type === 'select') {
-                  <select 
-                    [value]="getFilterValue(fieldToString(filter.field)) || ''"
-                    (change)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
-                    class="filter-select">
-                    <option value="">{{ filter.label }}</option>
-                    @for (option of filter.options; track option.value) {
-                      <option [value]="option.value">{{ option.label }}</option>
-                    }
-                  </select>
+                  <div class="filter-input-wrapper">
+                    <label class="filter-label">{{ filter.label }}</label>
+                    <select 
+                      [value]="getFilterValue(fieldToString(filter.field)) || ''"
+                      (change)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
+                      class="filter-select">
+                      <option value="">Todas</option>
+                      @for (option of filter.options; track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </div>
                 }
                 
                 @if (filter.type === 'number' || filter.type === 'text' || filter.type === 'date') {
@@ -122,7 +125,7 @@
       <tbody #tableBody>
         <!-- Empty State -->
         @if (displayedData().length === 0 && !loading()) {
-          <tr>
+          <tr class="empty-state-row">
             <td [attr.colspan]="totalColumns()" class="empty-state">
               {{ emptyMessage() }}
             </td>
@@ -134,6 +137,7 @@
           <tr 
             (click)="onRowClick(row, idx)"
             [class.active-row]="isRowHighlighted(row)"
+            [class]="getRowClass(row)"
             class="data-row">
             
             @for (column of columns(); track column.field) {

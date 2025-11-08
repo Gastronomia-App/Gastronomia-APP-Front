@@ -1,0 +1,5 @@
+/* Host - Full width container */
+:host {
+  display: block;
+  width: 100%;
+}

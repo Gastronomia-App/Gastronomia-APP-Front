@@ -1,0 +1,33 @@
+<div class="sub-header">
+    <!-- Left section with tabs -->
+    @if (showLeftActions() && tabs().length > 0) {
+    <div class="sub-header-left">
+        @for (tab of tabs(); track tab.id) {
+            <!-- Router-based tab button -->
+            <button [routerLink]="tab.route" routerLinkActive="active" class="tab-button" (click)="onTabClick(tab.id)">
+                {{ tab.label }}
+                @if (tab.count !== undefined && tab.count !== null) {
+                <span class="tab-count">{{ tab.count }}</span>
+                }
+            </button>
+        }
+    </div>
+    }
+
+    <!-- Right section with actions -->
+    @if (showRightActions() && actions().length > 0) {
+    <div class="sub-header-right">
+        @for (action of actions(); track action.action) {
+        <button [class]="'btn-action ' + (action.class || '')" (click)="onActionClick(action.action)"
+            [title]="action.label || ''">
+            @if (action.icon) {
+            <span [innerHTML]="action.icon"></span>
+            }
+            @if (action.label && !action.icon) {
+            {{ action.label }}
+            }
+        </button>
+        }
+    </div>
+    }
+</div>

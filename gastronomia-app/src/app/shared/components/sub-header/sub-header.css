@@ -1,0 +1,192 @@
+/* ============================================
+   SUB-HEADER COMPONENT
+   Reusable sub-header with tabs and actions
+   ============================================ */
+
+:host {
+  display: flex; /* Changed from block to flex */
+  width: 100%;
+  flex-shrink: 0;
+  /* Remove any margin/padding that could cause white gap */
+  margin: -8px 0 0 0; /* Negative margin to overlap header border */
+  padding: 0 var(--spacing-md); /* Subtle horizontal padding for visual separation */
+  line-height: 0; /* Remove any line-height spacing */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  background-color: transparent; /* Transparent to show page background */
+  padding: 0;
+  min-height: 48px;
+  gap: var(--spacing-md);
+  border-style: none;
+  position: relative;
+  width: 100%; /* Full width of host */
+}
+
+/* Left section with tabs */
+.sub-header-left {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: stretch; /* Changed to stretch for full height tabs */
+  flex: 1;
+}
+
+/* Right section with actions */
+.sub-header-right {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  padding: var(--spacing-sm) 0; /* Add vertical padding only here */
+}
+
+/* Tab button */
+.tab-button {
+  margin: -8px 0 0 0; /* Negative margin to overlap header border */
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+  position: relative;
+  text-decoration: none; /* Remove underline from links */
+}
+
+.tab-button:hover {
+  background-color: var(--color-primary-lighter);
+  transform: translateY(-1px);
+}
+
+.tab-button.active {
+  background-color: var(--color-primary-lighter);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  /* Extend upward to connect with header */
+  margin-top: -8px; /* Pull up to connect with header border */
+  border-bottom-right-radius: 8px; /* Rounded bottom corners when active */
+  border-bottom-left-radius: 8px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+/* Tab count badge */
+.tab-count {
+  background-color: var(--color-primary-dark);
+  color: var(--color-white);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Action button */
+.btn-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--color-primary-lighter);
+  color: var(--color-white);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-action:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-action.btn-exit {
+  background-color: var(--color-secondary-dark);
+}
+
+.btn-action.btn-exit:hover {
+  background-color: var(--color-secondary);
+}
+
+.btn-action svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  fill: currentColor;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+  :host {
+    padding: 0 var(--spacing-xs); /* Minimal padding on tablets */
+  }
+
+  .sub-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .tab-button,
+  a.tab-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-sm);
+  }
+
+  .btn-action {
+    width: 32px;
+    height: 32px;
+  }
+
+  .btn-action svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    padding: 0; /* No padding on small mobile for full width */
+  }
+
+  .sub-header {
+    flex-wrap: wrap;
+  }
+
+  .sub-header-left {
+    flex: 1 1 100%;
+    overflow-x: auto;
+  }
+
+  .tab-button,
+  a.tab-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-xs);
+  }
+
+  .btn-action {
+    width: 28px;
+    height: 28px;
+  }
+
+  .btn-action svg {
+    width: 16px;
+    height: 16px;
+  }
+}

@@ -4,8 +4,11 @@ export type { Category } from './category.model';
 export type { Customer, CustomerFilter } from './customer.model';
 export type { PageResponse } from './pageable.model';
 export type { Expense } from './expense.model';
-export type { Supplier, Address } from './supplier.model';
-export type { Business, BusinessRegistrationRequest } from './business.model';
+export type { Supplier } from './supplier.model';
+export type { Address } from './address.model';
+export type { Audit } from './audit.model';
+export type { Business } from './business.model';
+export type { Employee } from './employee.model';
 export type {
   TableColumn,
   TableAction,

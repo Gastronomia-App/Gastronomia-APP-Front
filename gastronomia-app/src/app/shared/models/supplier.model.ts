@@ -1,18 +1,12 @@
-// Frontend model (used in UI)
+import { Address } from './address.model';
+
 export interface Supplier {
     id: number;
-    legalName: string;
+    legalName: string | null;
     tradeName: string;
-    cuit: string;
-    phoneNumber: string;
-    email: string;
-    address?: Address;
+    cuit: string | null;
+    phoneNumber: string | null;
+    email: string | null;
+    address: Address | null;
     deleted: boolean;
-}
-
-export interface Address {
-    street: string;
-    city: string;
-    provice: string;
-    zipCode: string;
 }

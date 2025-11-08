@@ -1,23 +1,14 @@
+import { Address } from './address.model';
+import { Employee } from './employee.model';
+
 export interface Business {
   id?: number;
   name: string;
-  address: string;
-  phoneNumber: string;
-  email: string;
+  cuit: string;
+  address: Partial<Address>;
+  phoneNumber?: string;
+  email?: string;
   description?: string;
   deleted?: boolean;
-}
-
-export interface BusinessRegistrationRequest {
-  name: string;
-  address: string;
-  phoneNumber: string;
-  email: string;
-  description?: string;
-  ownerName: string;
-  ownerLastName: string;
-  ownerEmail: string;
-  ownerPhone: string;
-  ownerUsername: string;
-  ownerPassword: string;
+  owner?: Partial<Employee>;
 }

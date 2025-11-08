@@ -47,6 +47,7 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   enableInfiniteScroll = input<boolean>(true);
   highlightedRowId = input<number | string | null>(null);
   rowIdentifier = input<keyof T>('id' as keyof T);
+  rowClassFn = input<((item: T) => string) | null>(null);
   
   // Search & Filter inputs
   enableSearch = input<boolean>(true);
@@ -453,6 +454,14 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
     const identifier = this.rowIdentifier();
     const highlightedId = this.highlightedRowId();
     return highlightedId !== null && row[identifier] === highlightedId;
+  }
+
+  /**
+   * Get custom row class if provided
+   */
+  getRowClass(row: T): string {
+    const customClassFn = this.rowClassFn();
+    return customClassFn ? customClassFn(row) : '';
   }
 
   /**
