@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginPageComponent } from './domains/auth';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards';
+import { UserRole } from './shared/models/auth.model';
 
 export const routes: Routes = [
   {
@@ -16,7 +18,7 @@ export const routes: Routes = [
     path: 'inventory',
     loadComponent: () => import('./domains/inventory/inventory-page/inventory-page')
       .then(m => m.InventoryPage),
-    canActivate: [authGuard],
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
     children: [
       {
         path: '',
@@ -60,14 +62,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./domains/customer/customer-page/customer-page')
         .then(m => m.CustomerPage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'expenses',
     loadComponent: () =>
       import('./domains/expenses/expenses-page/expenses-page')
         .then(m => m.ExpensesPage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'suppliers',
@@ -81,28 +83,32 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./domains/audits/audit-page/audit-page')
         .then(m => m.AuditsPage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'tables',
     loadComponent: () =>
       import('./domains/table/table-page/table-page')
         .then(m => m.TablePage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.WAITER, UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'employees',
     loadComponent: () =>
       import('./domains/employees/employees-page/employees-page')
         .then(m => m.EmployeesPage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
   },
   {
     path: 'businesses',
     loadComponent: () =>
       import('./domains/business/business-page/business-page')
         .then(m => m.BusinessPage),
-    canActivate: [authGuard]
+    canActivate: [roleGuard([UserRole.OWNER])]
+  },
+  {
+    path: '**',
+    redirectTo: '/tables'
   }
 
 
