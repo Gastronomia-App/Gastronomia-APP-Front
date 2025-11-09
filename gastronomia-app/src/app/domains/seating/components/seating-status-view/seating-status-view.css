@@ -113,12 +113,24 @@
 /* ===== ESTADOS ===== */
 .st-free {
   background: #4caf50;
+  box-shadow:
+    0 4px 0 #7d9c6b,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
 }
 .st-occupied {
   background: #f44336;
+  box-shadow:
+    0 4px 0 #a35a5a,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
 }
 .st-billing {
   background: #ff9800;
+  box-shadow:
+    0 4px 0 #947f57,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
 }
 
 /* ===== DIFERENCIAS DE TAMAÑO ===== */
@@ -139,6 +151,7 @@
 .free-section {
   border-left: 6px solid #4caf50;
   border-right: 6px solid #4caf50;
+
 }
 .occupied-section {
   border-left: 6px solid #f44336;

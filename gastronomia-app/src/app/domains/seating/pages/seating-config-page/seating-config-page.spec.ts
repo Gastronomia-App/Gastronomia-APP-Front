@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SeatingPage } from './seating-page';
+import { SeatingConfigPage } from './seating-config-page';
 
-describe('SeatingPage', () => {
-  let component: SeatingPage;
-  let fixture: ComponentFixture<SeatingPage>;
+describe('SeatingConfigPage', () => {
+  let component: SeatingConfigPage;
+  let fixture: ComponentFixture<SeatingConfigPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SeatingPage]
+      imports: [SeatingConfigPage]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SeatingPage);
+    fixture = TestBed.createComponent(SeatingConfigPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

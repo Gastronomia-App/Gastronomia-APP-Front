@@ -15,11 +15,14 @@ import {
   effect,
   inject,
   input,
-  signal
+  signal,
+  DestroyRef
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SeatingsService } from '../../services/seating-service';
 import { Seating } from '../../../../shared/models/seating';
+import { fromEvent, Subject, throttleTime } from 'rxjs';
+import { ZoomStateService } from '../../services/zoom-state-service';
 
 type Shape = 'ROUND' | 'SQUARE';
 type Size = 'SMALL' | 'MEDIUM' | 'LARGE';
@@ -32,6 +35,10 @@ type Size = 'SMALL' | 'MEDIUM' | 'LARGE';
   styleUrl: './seating-grid-editor.css'
 })
 export class SeatingGridEditor implements OnInit, OnDestroy {
+
+  // =========================================================
+  // 🔧 DEPENDENCIAS Y CONSTRUCTOR
+  // =========================================================
   private readonly seatingsService = inject(SeatingsService);
   private readonly renderer = inject(Renderer2);
 
@@ -39,17 +46,21 @@ export class SeatingGridEditor implements OnInit, OnDestroy {
     this.loadSeatings();
   }
 
-  /** Template refs */
+  // =========================================================
+  // 🧩 TEMPLATE REFS
+  // =========================================================
   @ViewChild('gridScrollRef', { static: true }) gridScrollRef!: ElementRef<HTMLElement>;
   @ViewChildren('cellRef') cells!: QueryList<ElementRef<HTMLElement>>;
 
-  /** Inputs */
-  zoomLevel = input<number>(10);
+  // =========================================================
+  // 🧠 INPUTS Y OUTPUTS
+  // =========================================================
+  private readonly zoomState = inject(ZoomStateService);
+zoomLevel = this.zoomState.zoomLevel;
   seatingsInput = input<Seating[]>([]);
   draftSeat = input<Seating | null>(null);
   editedSeat = input<Seating | null>(null);
 
-  /** Outputs */
   @Output() editingCancelled = new EventEmitter<void>();
   @Output() draftClear = new EventEmitter<void>();
   @Output() liveChange = new EventEmitter<Partial<Seating>>();
@@ -57,12 +68,17 @@ export class SeatingGridEditor implements OnInit, OnDestroy {
   @Output() editRequested = new EventEmitter<Seating>();
   @Output() draftRequested = new EventEmitter<{ row: number; col: number; shape: Shape; size: Size }>();
   @Output() shapeSizeRequested = new EventEmitter<{ id: number; shape: Shape; size: Size }>();
-readonly zoomEffect = effect(() => {
-  const zoom = this.zoomLevel();
-  const gridContainer = this.gridScrollRef?.nativeElement;
-  if (gridContainer) this.updateGridSize(gridContainer);
-});
-  /** State */
+  @Output() deleteRequested = new EventEmitter<number>();
+
+  readonly zoomEffect = effect(() => {
+    const gridContainer = this.gridScrollRef?.nativeElement;
+    if (gridContainer) this.updateGridSize(gridContainer);
+  });
+
+  // =========================================================
+  // 📦 ESTADO REACTIVO PRINCIPAL
+  // =========================================================
+  readonly seatingsLocal = signal<Seating[]>([]);
   draggedSeat: Seating | null = null;
   readonly rows = signal(40);
   readonly cols = signal(20);
@@ -81,18 +97,62 @@ readonly zoomEffect = effect(() => {
 
   private resizeObserver?: ResizeObserver;
 
+  // =========================================================
+  // 🔄 CICLO DE VIDA
+  // =========================================================
+  private readonly resize$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
   ngOnInit(): void {
   const gridContainer = this.gridScrollRef.nativeElement;
 
-  // Observa cambios en tamaño del contenedor
-  this.resizeObserver = new ResizeObserver(() => this.updateGridSize(gridContainer));
+  // 🔁 Observador de tamaño existente
+  this.resizeObserver = new ResizeObserver(() => this.resize$.next());
   this.resizeObserver.observe(gridContainer);
+
+  this.resize$
+    .pipe(
+      throttleTime(120, undefined, { leading: true, trailing: true }),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe({
+      next: () => this.updateGridSize(gridContainer),
+      error: (err) => console.error('❌ Error en ResizeObserver:', err),
+    });
+
+  // 🧭 NUEVO: Escuchar desplazamientos del grid y guardarlos en ZoomStateService
+  fromEvent(gridContainer, 'scroll')
+  .pipe(
+    throttleTime(120, undefined, { leading: true, trailing: true }),
+    takeUntilDestroyed(this.destroyRef)
+  )
+  .subscribe(() => {
+    this.zoomState.setScroll(gridContainer.scrollLeft, gridContainer.scrollTop);
+  });
+}
+
+ngAfterViewInit(): void {
+  const el = this.gridScrollRef.nativeElement;
+  let attempts = 0;
+
+  const restoreScroll = () => {
+    if (el.scrollWidth > 0 && el.scrollHeight > 0) {
+      el.scrollLeft = this.zoomState.scrollLeft();
+      el.scrollTop = this.zoomState.scrollTop();
+    } else if (attempts < 10) {
+      attempts++;
+      requestAnimationFrame(restoreScroll);
+    }
+  };
+
+  restoreScroll();
 }
 
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
   }
 
+  // =========================================================
+  // 🔹 CARGA DE DATOS
   // =========================================================
   private loadSeatings(): void {
     if (this.seatingsInput().length > 0) return;
@@ -103,7 +163,7 @@ readonly zoomEffect = effect(() => {
       .subscribe({
         next: (data) => {
           const maxY = data.length ? Math.max(...data.map(s => s.posY ?? 0)) : 0;
-          this.rows.set(Math.max(10, maxY + 1));
+          this.rows.set(Math.max(10, maxY));
         },
         error: () => console.error('❌ Error al cargar ubicaciones del salón')
       });
@@ -113,6 +173,8 @@ readonly zoomEffect = effect(() => {
     return this.seatingsInput();
   }
 
+  // =========================================================
+  // 🧭 UTILIDADES DE POSICIÓN Y ESTADO
   // =========================================================
   getSeatingAt(row: number, col: number): Seating | null {
     return this.seatings.find(s => s.posY === row + 1 && s.posX === col + 1) ?? null;
@@ -137,16 +199,20 @@ readonly zoomEffect = effect(() => {
   }
 
   // =========================================================
+  // 🖱️ DRAG & DROP
+  // =========================================================
   onDragStart(seat: Seating, event: DragEvent): void {
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', seat.id.toString());
       event.dataTransfer.effectAllowed = 'move';
     }
+
     this.draggedSeat = seat;
     this.renderer.addClass(this.document.body, 'dragging-mode');
     this.showMenu.set(false);
+
+    // 🚫 Ocultar mesa de muestra al comenzar a mover una mesa
     this.draftClear.emit();
-    this.editingCancelled.emit();
   }
 
   onDragOverCell(row: number, col: number, event: DragEvent): void {
@@ -158,19 +224,77 @@ readonly zoomEffect = effect(() => {
     this.hoverTarget.set(null);
   }
 
+  /** ✅ Intercambio dinámico de mesas (drag & drop completo) */
   onDrop(row: number, col: number): void {
     if (!this.draggedSeat) return;
-    const seat = this.draggedSeat;
+
+    const dragged = this.draggedSeat;
     this.draggedSeat = null;
     this.renderer.removeClass(this.document.body, 'dragging-mode');
 
     const targetSeat = this.getSeatingAt(row, col);
-    if (targetSeat) return;
 
-    this.moveRequested.emit({ id: seat.id, newPosX: col + 1, newPosY: row + 1 });
+    if (targetSeat) {
+      // 🧠 Intercambio local inmediato
+      const tempX = dragged.posX;
+      const tempY = dragged.posY;
+      dragged.posX = targetSeat.posX;
+      dragged.posY = targetSeat.posY;
+      targetSeat.posX = tempX;
+      targetSeat.posY = tempY;
+
+      // 👇 Forzamos refresco de vista inmediato
+      const seatings = [...this.seatingsLocal()];
+      this.seatingsLocal.set(seatings);
+
+      // ✨ Efecto visual de intercambio (bump suave)
+      const draggedEl = this.getSeatElementById(dragged.id);
+      const targetEl = this.getSeatElementById(targetSeat.id);
+      [draggedEl, targetEl].forEach(el => {
+        if (!el) return;
+        el.classList.add('swapping');
+        setTimeout(() => el.classList.remove('swapping'), 200);
+      });
+
+      // 🔄 Persistir ambas actualizaciones
+      const updateDragged = this.seatingsService.movePosition(dragged.id, {
+        posX: dragged.posX,
+        posY: dragged.posY,
+      });
+
+      const updateTarget = this.seatingsService.movePosition(targetSeat.id, {
+        posX: targetSeat.posX,
+        posY: targetSeat.posY,
+      });
+
+      updateDragged.subscribe({
+        next: () => this.liveChange.emit(),
+        error: (err) => console.error('❌ Error al actualizar posición (dragged):', err),
+      });
+
+      updateTarget.subscribe({
+        next: () => this.liveChange.emit(),
+        error: (err) => console.error('❌ Error al actualizar posición (target):', err),
+      });
+    } else {
+      // ✅ Movimiento normal si la celda está vacía
+      this.moveRequested.emit({
+        id: dragged.id,
+        newPosX: col + 1,
+        newPosY: row + 1,
+      });
+    }
+
+    // 🧹 Limpieza visual
+    this.selected.set(null);
     this.hoverTarget.set(null);
+    this.showMenu.set(false);
   }
 
+
+  private getSeatElementById(id: number): HTMLElement | null {
+    return document.querySelector(`.seat[data-id="${id}"]`);
+  }
   onDragEnd(): void {
     this.draggedSeat = null;
     this.hoverTarget.set(null);
@@ -178,6 +302,8 @@ readonly zoomEffect = effect(() => {
     this.showMenu.set(false);
   }
 
+  // =========================================================
+  // 🧩 INTERACCIÓN CON CELDAS Y MENÚ CONTEXTUAL
   // =========================================================
   onSeatClick(seat: Seating, event: MouseEvent, cellEl: HTMLElement): void {
     if (this.draggedSeat) return;
@@ -230,17 +356,25 @@ readonly zoomEffect = effect(() => {
   }
 
   // =========================================================
+  // 🧭 GESTIÓN GLOBAL DE CLICS Y EVENTOS FUERA DEL GRID
+  // =========================================================
   @HostListener('document:click', ['$event'])
   onGlobalClick(ev: MouseEvent): void {
     const target = ev.target as HTMLElement;
     const insideMenu = target.closest('.context-menu');
     const insideGrid = target.closest('.grid');
     const insideForm = target.closest('.aside-panel-wrapper') || target.closest('.form-wrapper');
-    if (insideMenu || insideForm || insideGrid) return;
-    this.showMenu.set(false);
-    this.selected.set(null);
+
+    // Si clickeó fuera del grid, menú y panel lateral → limpiar todo
+    if (!insideMenu && !insideGrid && !insideForm) {
+      this.showMenu.set(false);
+      this.selected.set(null);
+      this.draftClear.emit(); // 👈 ESTA LÍNEA ES CLAVE
+    }
   }
 
+  // =========================================================
+  // 🌀 CAMBIO DE FORMA Y TAMAÑO
   // =========================================================
   toggleShape(): void {
     const next = this.menuShape() === 'SQUARE' ? 'ROUND' : 'SQUARE';
@@ -280,27 +414,51 @@ readonly zoomEffect = effect(() => {
   }
 
   // =========================================================
+  // 📏 AJUSTE DINÁMICO DE GRID Y ZOOM
+  // =========================================================
   updateGridSize(container: HTMLElement): void {
-    if (!container) return;
-    const totalCols = this.cols();
-    const zoom = this.zoomLevel();
-    const minColsVisible = 4;
-    const maxColsVisible = 20;
+  if (!container) return;
 
-    const visibleCols = Math.max(
-      minColsVisible,
-      maxColsVisible - (zoom - 1) * ((maxColsVisible - minColsVisible) / 19)
-    );
+  const totalCols = this.cols();
+  const totalRows = this.rows();
+  const zoom = this.zoomLevel();
+  const width = container.clientWidth;
 
-    const paddingX = 16;
-    const width = container.clientWidth - paddingX;
-    const cellWidth = width / visibleCols;
-    const cellSize = Math.min(cellWidth, cellWidth);
+  const zoomMap: Record<number, number> = {
+    1: 1,
+    2: 1.33,
+    3: 1.66,
+    4: 2.015,
+    5: 2.85
+  };
 
-    container.style.setProperty('--cell-size', `${cellSize}px`);
+  const zoomFactor = zoomMap[zoom] ?? 1;
+  const baseCell = width / totalCols;
+  let cellSize = baseCell * zoomFactor;
+
+  // 🔧 Normaliza el tamaño (sin valores impares)
+  cellSize =
+    Math.floor(cellSize) % 2 === 0
+      ? Math.floor(cellSize)
+      : Math.floor(cellSize) - 1;
+
+  // 🎨 Variables CSS
+  container.style.setProperty('--cell-size', `${cellSize}px`);
+  container.style.setProperty('--cols', totalCols.toString());
+  container.style.setProperty('--rows', totalRows.toString());
+  container.style.setProperty('--zoom', zoom.toString());
+}
+
+  // =========================================================
+  // 🎨 UTILIDADES VISUALES Y ACCIONES
+  // =========================================================
+  getSeatClasses(seat: Seating): string {
+    return `${seat.shape.toLowerCase()} ${seat.size.toLowerCase()}`;
   }
 
-  getSeatClasses(seat: Seating): string {
-  return `${seat.shape.toLowerCase()} ${seat.size.toLowerCase()}`;
-}
+  onDeleteSeat(): void {
+    const id = this.menuSeatId();
+    if (id != null) this.deleteRequested.emit(id);
+    this.showMenu.set(false);
+  }
 }

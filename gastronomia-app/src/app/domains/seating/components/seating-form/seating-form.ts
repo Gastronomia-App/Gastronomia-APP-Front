@@ -29,7 +29,7 @@ import { SeatingsService } from '../../services/seating-service';
 @Component({
   selector: 'app-seating-form',
   standalone: true,
-  imports: [CommonModule, Form, Confirm, AlertComponent],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './seating-form.html',
   styleUrl: './seating-form.css',
 })

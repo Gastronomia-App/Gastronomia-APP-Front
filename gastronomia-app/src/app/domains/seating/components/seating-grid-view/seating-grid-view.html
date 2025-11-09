@@ -1,1 +1,21 @@
-<p>seating-grid-view works!</p>
+<div class="editor-wrapper">
+  <div class="grid-scroll" #gridScrollRef>
+    <div class="grid-container">
+      <div class="grid" [style.--cols]="cols()" [style.--rows]="rows()">
+        @for (r of [].constructor(rows()); track $index; let row = $index) {
+          @for (c of [].constructor(cols()); track $index; let col = $index) {
+            <div class="grid-cell">
+              @if (getSeatingAt(row, col)) {
+                <div class="seat {{ getSeatClasses(getSeatingAt(row, col)!) }}">
+                  <span class="seat-number">{{ getSeatingAt(row, col)!.number }}</span>
+                </div>
+              } @else {
+                <div class="empty"></div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

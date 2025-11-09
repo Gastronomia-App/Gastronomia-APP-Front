@@ -1,0 +1,34 @@
+<div class="page-container">
+  <div class="page-content">
+    @if (loading()) {
+      <p>Cargando salón...</p>
+    } @else if (error()) {
+      <p class="error">{{ error() }}</p>
+    } @else {
+      <app-seating-grid-view
+        [seatingsInput]="seatings()">
+      </app-seating-grid-view>
+    }
+  </div>
+
+  <aside class="aside-panel seating-aside">
+    <div class="aside-panel-wrapper">
+      <div class="aside-panel-header">
+        <h2>Vista del salón</h2>
+      </div>
+
+      <div class="aside-panel-container">
+        <section>
+          <p class="text-muted">
+            Aquí podés visualizar la disposición actual del salón en tiempo real.
+          </p>
+
+          <div class="tip-box">
+            <span class="emoji">💡</span>
+            <p>Este modo está diseñado para visualizar el estado general del salón en tiempo real.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </aside>
+</div>

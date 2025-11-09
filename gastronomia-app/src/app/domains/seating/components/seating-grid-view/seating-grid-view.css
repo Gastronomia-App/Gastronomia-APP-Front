@@ -1,0 +1,164 @@
+/* =========================================================
+   📦 BASE GENERAL DEL COMPONENTE
+   ========================================================= */
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* =========================================================
+   🧱 LAYOUT GENERAL Y CONTENEDORES
+   ========================================================= */
+.editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+}
+
+.grid-scroll {
+  flex: 1;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #b0b0b0 #e9e9e9;
+}
+
+.grid-container {
+  display: inline-block;
+  padding: 7px;
+  border-radius: 10px;
+  border: 2px solid #bcbcbc; /* 👈 borde visible */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: fit-content;
+  height: fit-content;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   🔲 GRILLA Y CELDAS
+   ========================================================= */
+.grid {
+  display: grid;
+  border-radius: 10px;
+  grid-template-columns: repeat(var(--cols), var(--cell-size));
+  grid-template-rows: repeat(var(--rows), var(--cell-size));
+}
+
+.grid-cell {
+  position: relative;
+  outline: 0.5px solid transparent; /* mantiene el grosor visual sin mostrar color */
+  border: none; /* elimina el borde visible */
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+/* hover */
+.grid-cell:hover {
+  border-color: #10a58a70;
+  
+}
+
+
+
+/* =========================================================
+   🪑 MESA (SEAT)
+   ========================================================= */
+.seat {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9em;
+  border-radius: 10px;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+
+  /* 🧱 Luz superior + sombra inferior */
+  background: #6cd98d;
+  box-shadow:
+    0 4px 0 #4db86a,       /* 👇 sombra sólida inferior simulando altura */
+    0 6px 8px rgba(0, 0, 0, 0.25), /* sombra difusa */
+    inset 0 2px 3px rgba(255, 255, 255, 0.35); /* brillo superior */
+}
+
+/* hover con más relieve */
+.seat:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 6px 0 #4db86a,
+    0 8px 10px rgba(0, 0, 0, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+}
+/* =========================================================
+   🟢 FORMAS Y TAMAÑOS
+   ========================================================= */
+.seat.round {
+  border-radius: 50%;
+}
+
+.seat.square {
+  border-radius: 10px;
+}
+
+.seat.small { inset: 18px; }
+.seat.medium { inset: 12px; }
+.seat.large { inset: 6px; }
+
+/* =========================================================
+   🔢 NÚMERO CENTRAL DE LA MESA
+   ========================================================= */
+.seat-number {
+  user-select: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: calc(1.2rem * (1 + (var(--zoom) - 1) * 0.2));
+  transition: font-size 0.2s ease;
+}
+
+/* =========================================================
+   🟦 CELDAS VACÍAS
+   ========================================================= */
+.empty {
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================================================
+   🎨 ESTADOS VISUALES DE LAS MESAS
+   ========================================================= */
+/* 🟢 LIBRE — Verde claro suave */
+/* 🟢 LIBRE — Verde con más cuerpo y profundidad */
+/* 🟢 LIBRE */
+.seat.st-free {
+  background: #6cd98d;
+  box-shadow:
+    0 4px 0 #4db86a,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+}
+
+/* 🔴 OCUPADA */
+.seat.st-occupied {
+  background: #eb6b63;
+  box-shadow:
+    0 4px 0 #c64b42,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+}
+
+/* 🟠 FACTURACIÓN */
+.seat.st-billing {
+  background: #f7b84d;
+  box-shadow:
+    0 4px 0 #d69834,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+}

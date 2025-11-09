@@ -1,0 +1,16 @@
+<div class="page-container">
+  <div class="page-content">
+    @if (loading()) {
+      <p>Cargando ubicaciones...</p>
+    } @else if (error()) {
+      <p class="error">{{ error() }}</p>
+    } @else if (seatings().length > 0) {
+      <app-seating-status-view
+        [seatings]="seatings()"
+        (select)="onSelectSeating($event)">
+      </app-seating-status-view>
+    } @else {
+      <p>No hay ubicaciones registradas en el salón.</p>
+    }
+  </div>
+</div>

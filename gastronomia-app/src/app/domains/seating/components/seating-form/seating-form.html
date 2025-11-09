@@ -12,25 +12,6 @@
       (formCancel)="onCancel()"
       (formClose)="onClose()">
     </app-form>
-
-    @if (mode() === 'edit') {
-      <div class="delete-bar">
-        <button type="button" class="btn-delete" (click)="showConfirm.set(true)">
-          Eliminar ubicación
-        </button>
-      </div>
-    }
-
-    @if (showConfirm()) {
-      <app-confirm
-        [title]="'Eliminar ubicación'"
-        [message]="'¿Estás seguro de eliminar la ubicación N°' + seating()?.number + '?'"
-        confirmLabel="Eliminar"
-        cancelLabel="Cancelar"
-        variant="danger"
-        (onConfirm)="onDeleteConfirmed()"
-        (onCancel)="showConfirm.set(false)" />
-    }
   }
 
   @if (showAlert()) {

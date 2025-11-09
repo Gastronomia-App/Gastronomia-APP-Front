@@ -1,34 +1,74 @@
+/* =========================================================
+   📦 BASE GENERAL DEL COMPONENTE
+   ========================================================= */
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100%; /* 👈 asegura que el host ocupe el alto total */
+  overflow: hidden;
 }
+
+/* Opcional: para Firefox */
+.grid-container {
+  scrollbar-width: thin;
+  scrollbar-color: #999 #f2f2f2;
+}
+
+.grid-container {
+  display: inline-block;
+  padding: 7px;
+  background: #fcfcfc;
+  border: 1px solid #aaaaaa;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: fit-content;
+  height: fit-content;
+  margin: 0; /* centra la grilla */
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   🧱 LAYOUT GENERAL Y CONTENEDORES
+   ========================================================= */
 
 /* wrapper general */
 .editor-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   height: 100%;
   box-sizing: border-box;
-  padding: 0.75rem;
+  padding: 0rem;
+  border-radius: 8px;
+}
+.seat {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Efecto "bump" cuando una mesa cambia de posición */
+.seat.swapping {
+  transform: scale(1.15);
+}
+/* Compatibilidad con Firefox */
+.grid-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #b0b0b0 #e9e9e9;
+}
 /* contenedor scrolleable */
 .grid-scroll {
   flex: 1;
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #dcdfe3;
   overflow: auto;
-  /* ← importante */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
 }
 
-/* grilla */
+/* =========================================================
+   🔲 GRILLA Y CELDAS
+   ========================================================= */
+
+/* estructura de la grilla */
 .grid {
   display: grid;
-  padding: 4px;
   border-radius: 10px;
   grid-template-columns: repeat(var(--cols), var(--cell-size));
   grid-template-rows: repeat(var(--rows), var(--cell-size));
@@ -42,8 +82,14 @@
   border: 0.5px dashed #969696;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
-
-/* 🔵 círculo en intersecciones */
+.grid-scroll,
+.grid-container,
+.grid-cell,
+.selection-box {
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* 🔵 puntos decorativos entre celdas */
 .grid-cell::after {
   content: '';
   position: absolute;
@@ -58,10 +104,12 @@
   opacity: 0.4;
 }
 
+/* hover sobre celda */
 .grid-cell:hover {
   background: #f5faf9;
   border-color: #10a58a70;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 3px rgba(16, 165, 138, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+              inset 0 -1px 3px rgba(16, 165, 138, 0.15);
 }
 
 /* celda seleccionada */
@@ -71,7 +119,7 @@
   z-index: 2;
 }
 
-/* casilla vacía */
+/* celda vacía */
 .empty {
   width: 100%;
   height: 100%;
@@ -80,7 +128,7 @@
   justify-content: center;
 }
 
-/* símbolo + */
+/* símbolo "+" de añadir */
 .add-icon {
   font-size: 2.2rem;
   font-weight: 700;
@@ -95,73 +143,101 @@
   transform: scale(1);
 }
 
-/* ========================================== 🔳 MESA (SEAT) CON EFECTO 3D REALISTA ========================================== */
+/* =========================================================
+   🪑 MESA (SEAT) — DISEÑO, ANIMACIONES Y ESTADOS
+   ========================================================= */
+
 .seat {
   position: absolute;
   inset: 14px;
-  /* Gradiente más realista simulando madera o superficie mate */
-  background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.15), transparent 50%), linear-gradient(145deg, #a8a8a8, #8a8a8a56);
-  border: 1px solid #5a5a5a;
-  border-radius: 10px;
-  color: #f2f2f2;
-  font-weight: 700;
-  font-size: 0.9em;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  /* 💡 Sistema de sombras multicapa para mayor profundidad */
+  color: #f2f2f2;
+  font-weight: 700;
+  font-size: 0.9em;
+
+  /* apariencia base */
+  background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.15), transparent 50%),
+              linear-gradient(145deg, #a8a8a8, #8a8a8a56);
+  border: 1px solid #5a5a5a;
+  border-radius: 10px;
+
+  /* sombras multicapa */
   box-shadow:
-    /* Luz superior izquierda (highlight) */
-    inset 3px 3px 6px rgba(255, 255, 255, 0.2),
-    /* Sombra inferior derecha (profundidad interna) */
-    inset -3px -3px 8px rgba(0, 0, 0, 0.4),
-    /* Borde suave interno */
-    inset 0 0 2px rgba(0, 0, 0, 0.2),
-    /* Sombra base externa (contacto con superficie) */
-    0 2px 4px rgba(0, 0, 0, 0.3),
-    /* Sombra difusa externa (ambiente) */
-    0 6px 12px rgba(0, 0, 0, 0.2),
-    /* Sombra de contacto muy sutil */
-    0 1px 2px rgba(0, 0, 0, 0.5);
+    0 4px 0 #5c5c5b,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+
+  /* transiciones suaves */
+  transition:
+    border-radius 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    inset 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* efecto de "flotación" al pasar el mouse */
+/* flotación hover */
 .seat:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px) scale(1.04);
   background: linear-gradient(145deg, #bcbcbc, #8f8f8f);
-  box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.25), inset -2px -2px 5px rgba(0, 0, 0, 0.35), 0 6px 12px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 4px 0 #5c5c5b,
+    0 6px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
 }
 
-/* formas */
+/* =========================================================
+   🟢 FORMAS — REDONDA / CUADRADA CON ANIMACIÓN MORPH
+   ========================================================= */
 .seat.round {
   border-radius: 50%;
+  animation: morphRound 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .seat.square {
   border-radius: 10px;
+  animation: morphSquare 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* tamaños */
-.seat.small {
-  inset: 18px;
+@keyframes morphRound {
+  from { border-radius: 10px; transform: scale(0.9) rotate(-4deg); }
+  to { border-radius: 50%; transform: scale(1) rotate(0deg); }
 }
 
-.seat.medium {
-  inset: 12px;
+@keyframes morphSquare {
+  from { border-radius: 50%; transform: scale(0.9) rotate(4deg); }
+  to { border-radius: 10px; transform: scale(1) rotate(0deg); }
 }
 
-.seat.large {
-  inset: 6px;
+/* =========================================================
+   📏 TAMAÑOS CON EFECTO DE REBOTE
+   ========================================================= */
+.seat.small { inset: 18px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
+.seat.medium { inset: 12px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
+.seat.large { inset: 6px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
+
+@keyframes resizeSeat {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
+/* =========================================================
+   🔢 NÚMERO CENTRAL DE LA MESA
+   ========================================================= */
 .seat-number {
-  font-size: 1.8rem;
   user-select: none;
   color: #fff;
+  font-weight: 600;
+  font-size: calc(1.2rem * (1 + (var(--zoom) - 1) * 0.2));
+  transition: font-size 0.2s ease;
+  transform: scale(calc(1 + (var(--zoom, 1) - 1) * 0.05));
 }
 
-/* preview */
+/* =========================================================
+   👻 PREVIEW (DRAFT Y SOMBRAS DURANTE DRAG)
+   ========================================================= */
 .seat.preview {
   opacity: 0.4;
   background: #808080;
@@ -176,23 +252,23 @@
 }
 
 @keyframes pulseDraft {
-  0% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
-
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
+  0% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+  100% { opacity: 0.45; transform: scale(1); }
 }
 
-/* DnD */
+/* =========================================================
+   ✨ ANIMACIÓN DE INTERCAMBIO ENTRE MESAS
+   ========================================================= */
+.seat.moving {
+  transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+}
+
+
+/* =========================================================
+   🖱️ DRAG & DROP — INTERACCIONES VISUALES
+   ========================================================= */
 .seat.dragging {
   opacity: 0.5;
   transform: scale(1.05);
@@ -205,7 +281,9 @@
   background-color: rgba(15, 118, 110, 0.1);
 }
 
-/* Menú contextual */
+/* =========================================================
+   ⚙️ MENÚ CONTEXTUAL DE OPCIONES
+   ========================================================= */
 .context-menu {
   position: absolute;
   transform: translateX(-50%);
@@ -218,32 +296,25 @@
 }
 
 @keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* Botones del menú */
+/* botones base del menú */
 .context-menu .panel {
   appearance: none;
   border: none;
   outline: none;
   cursor: pointer;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: calc(46px * (0.85 + (var(--zoom, 1) - 1) * 0.18));
+  height: calc(46px * (0.85 + (var(--zoom, 1) - 1) * 0.18));
+  border-radius: calc(12px * (0.85 + (var(--zoom, 1) - 1) * 0.18));
   background: linear-gradient(180deg, #2f2f2f, #4b4b4b);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 3px 10px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, opacity 120ms ease;
+  transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
 }
 
 .context-menu .panel:hover {
@@ -254,16 +325,52 @@
 
 .context-menu .panel:active {
   transform: translateY(0);
-  opacity: .9;
+  opacity: 0.9;
 }
 
-/* Icono SVG */
+/* íconos SVG dentro del menú */
 .svg-icon {
-  width: 40px;
-  height: 40px;
+  width: calc(40px * (0.85 + (var(--zoom, 1) - 1) * 0.15));
+  height: calc(40px * (0.85 + (var(--zoom, 1) - 1) * 0.15));
   display: block;
   stroke-linecap: round;
   stroke-linejoin: round;
   margin: 0 auto;
   transform: translateY(1px);
+  transition: width 0.2s ease, height 0.2s ease;
 }
+
+/* botón eliminar */
+.context-menu .panel.delete {
+  background: linear-gradient(180deg, #8f2828, #c93b3b);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 3px 10px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, opacity 120ms ease;
+}
+
+.context-menu .panel.delete:hover {
+  background: linear-gradient(180deg, #7e2626, #881a1a);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.12);
+}
+
+.context-menu .panel.delete:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+.delete-icon {
+  width: calc(30px * (0.85 + (var(--zoom, 1) - 1) * 0.15));
+  height: calc(30px * (0.85 + (var(--zoom, 1) - 1) * 0.15));
+  display: block;
+  margin: auto;
+  transform: translateY(1px);
+  transition: width 0.2s ease, height 0.2s ease;
+  color: #fff;
+  fill: currentColor;
+  stroke: none; /* 🔸 Evita el halo o borde oscuro */
+}
+

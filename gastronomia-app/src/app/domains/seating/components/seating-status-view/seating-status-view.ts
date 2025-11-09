@@ -26,4 +26,7 @@ export class SeatingStatusView {  // 👈 Nombre debe coincidir con el import
   onSelect(seating: Seating): void {
     this.select.emit(seating);
   }
+
+
+  
 }
