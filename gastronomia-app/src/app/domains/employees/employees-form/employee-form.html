@@ -12,6 +12,7 @@
     [cancelButtonLabel]="'Cancelar'"
     [submitButtonLabel]="'Crear'"
     [submitEditButtonLabel]="'Guardar'"
+    [hideSubmitButton]="isReadOnlyForAdmin"
     (formSubmit)="onFormSubmit($event)"
     (formCancel)="onFormCancel()"
     (formClose)="onClose()">

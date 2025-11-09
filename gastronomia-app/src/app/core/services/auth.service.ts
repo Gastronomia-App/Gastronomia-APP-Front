@@ -84,20 +84,14 @@ export class AuthService {
           business: this.http.get<Business>(`${this.businessBase}/${session.claims.businessId}`, { headers })
         }).pipe(
           tap(({ employee, business }) => {
-            console.log('✅ AuthService - Empleado:', employee);
-            console.log('✅ AuthService - Negocio:', business);
-            
             this.saveEmployee(employee);
             this.saveBusiness(business);
           }),
           map(() => session)
         );
       }),
-      tap(() => {
-        console.log('✅ AuthService - Login completado');
-      }),
       catchError(error => {
-        console.error('❌ AuthService - Error en login:', error);
+        console.error('Error en login:', error);
         return throwError(() => error);
       })
     );
@@ -146,20 +140,14 @@ export class AuthService {
           business: this.http.get<Business>(`${this.businessBase}/${session.claims.businessId}`, { headers })
         }).pipe(
           tap(({ employee, business }) => {
-            console.log('✅ AuthService - Registro exitoso - Empleado:', employee);
-            console.log('✅ AuthService - Registro exitoso - Negocio:', business);
-            
             this.saveEmployee(employee);
             this.saveBusiness(business);
           }),
           map(() => session)
         );
       }),
-      tap(() => {
-        console.log('✅ AuthService - Registro completado');
-      }),
       catchError(error => {
-        console.error('❌ AuthService - Error en registro:', error);
+        console.error('Error en registro:', error);
         return throwError(() => error);
       })
     );
@@ -178,7 +166,14 @@ export class AuthService {
    * Verifica si el usuario tiene un rol específico
    */
   hasRole(role: UserRole): boolean {
-    return this.role() === role;
+    const userRole = this.role();
+    if (!userRole) return false;
+    
+    // Comparar con y sin prefijo ROLE_
+    const roleWithoutPrefix = role.replace('ROLE_', '');
+    const userRoleWithoutPrefix = userRole.replace('ROLE_', '');
+    
+    return userRole === role || userRoleWithoutPrefix === roleWithoutPrefix;
   }
 
   /**
@@ -186,7 +181,16 @@ export class AuthService {
    */
   hasAnyRole(roles: UserRole[]): boolean {
     const userRole = this.role();
-    return userRole ? roles.includes(userRole as UserRole) : false;
+    if (!userRole) return false;
+    
+    // Normalizar el rol del usuario (sin prefijo ROLE_)
+    const userRoleWithoutPrefix = userRole.replace('ROLE_', '');
+    
+    // Verificar si alguno de los roles requeridos coincide
+    return roles.some(requiredRole => {
+      const requiredRoleWithoutPrefix = requiredRole.replace('ROLE_', '');
+      return userRole === requiredRole || userRoleWithoutPrefix === requiredRoleWithoutPrefix;
+    });
   }
 
   /**

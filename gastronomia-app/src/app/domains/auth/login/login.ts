@@ -98,7 +98,6 @@ export class LoginComponent {
         this.router.navigateByUrl('/tables');
       },
       error: (error) => {
-        console.error('❌ Error en login:', error);
         this.error.set(
           error?.error?.message ?? 
           error?.message ?? 
@@ -139,7 +138,6 @@ export class LoginComponent {
         this.router.navigateByUrl('/tables');
       },
       error: (error) => {
-        console.error('❌ Error en registro:', error);
         this.error.set(
           error?.error?.message ?? 
           error?.message ?? 

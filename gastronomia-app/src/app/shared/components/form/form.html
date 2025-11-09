@@ -192,18 +192,20 @@
       <button type="button" class="btn secondary" (click)="onCancel()">
         {{ cancelButtonLabel() }}
       </button>
-      <button 
-        type="button" 
-        class="btn primary"
-        [disabled]="formState().isSubmitting"
-        (click)="onSubmit()"
-      >
-        @if (formState().isSubmitting) {
-          <span>Guardando...</span>
-        } @else {
-          <span>{{ submitLabel() }}</span>
-        }
-      </button>
+      @if (!hideSubmitButton()) {
+        <button 
+          type="button" 
+          class="btn primary"
+          [disabled]="formState().isSubmitting"
+          (click)="onSubmit()"
+        >
+          @if (formState().isSubmitting) {
+            <span>Guardando...</span>
+          } @else {
+            <span>{{ submitLabel() }}</span>
+          }
+        </button>
+      }
     </footer>
   }
 </div>

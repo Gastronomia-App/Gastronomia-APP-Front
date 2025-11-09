@@ -106,13 +106,11 @@ export class Register {
 
     this.businessService.createBusiness(businessRequest).subscribe({
       next: (response) => {
-        console.log('✅ POST /api/businesses - Response:', response);
         this.isSubmitting.set(false);
         // Redirigir al login después de crear el negocio
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        console.error('❌ POST /api/businesses - Error:', error);
         this.isSubmitting.set(false);
         this.errorMessage.set(error.error?.message || 'Error al crear el negocio. Por favor, intenta nuevamente.');
       }

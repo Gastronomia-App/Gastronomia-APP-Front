@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -13,12 +13,10 @@ import { UserRole } from '../../../shared/models/auth.model';
   styleUrls: ['./user-dropdown.css'],
 })
 export class UserDropdownComponent {
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  
   UserRole = UserRole;
-
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-  ) {}
 
   irAMiPerfil(): void {
     this.router.navigate(['/employees']);

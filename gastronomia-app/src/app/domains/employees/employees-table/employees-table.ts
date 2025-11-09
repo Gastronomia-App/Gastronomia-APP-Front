@@ -6,6 +6,7 @@ import { Employee, TableColumn, TableFilter } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Confirm } from "../../../shared/components/confirm";
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-employees-table',
@@ -19,6 +20,7 @@ import { Confirm } from "../../../shared/components/confirm";
 export class EmployeesTable extends BaseTable<Employee> implements OnInit {
   private employeeService = inject(EmployeeService);
   private employeeFormService = inject(EmployeeFormService);
+  private authService = inject(AuthService);
   public override destroyRef: DestroyRef = inject(DestroyRef);
 
   // Output events para comunicación con el padre
@@ -170,7 +172,26 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
     return employee.id!;
   }
 
+  /**
+   * Override onEditItem para validar permisos antes de abrir formulario de edición
+   * Un ADMIN no puede editar empleados OWNER ni ADMIN
+   */
   protected onEditItem(employee: Employee): void {
+    const loggedRole = this.authService.role();
+    const employeeRole = employee.role;
+    
+    // Normalizar roles (quitar prefijo ROLE_)
+    const normalizeRole = (role: string | null) => role?.replace('ROLE_', '') || '';
+    const loggedRoleNormalized = normalizeRole(loggedRole);
+    const employeeRoleNormalized = normalizeRole(employeeRole);
+    
+    // Si el logueado es ADMIN y el empleado es OWNER o ADMIN, no puede editar
+    if (loggedRoleNormalized === 'ADMIN' && 
+        (employeeRoleNormalized === 'OWNER' || employeeRoleNormalized === 'ADMIN')) {
+      return;
+    }
+    
+    // Si tiene permisos, abrir formulario de edición
     this.employeeFormService.editEmployee(employee);
   }
 
