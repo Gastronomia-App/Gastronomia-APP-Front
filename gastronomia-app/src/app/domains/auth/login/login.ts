@@ -25,18 +25,60 @@ export class LoginComponent {
   // Signals para estado reactivo
   loading = signal(false);
   error = signal<string | undefined>(undefined);
+  successMessage = signal<string | undefined>(undefined);
+  businessNameSuffix = signal<string>('');
 
   // FormGroup tipado
   form: FormGroup;
 
   constructor() {
     this.form = this.createForm();
+    
+    // Verificar si viene con credenciales desde el registro
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras?.state || window.history.state;
+    
+    if (state && state['username']) {
+      console.log('🔑 LoginComponent - Credenciales recibidas desde registro');
+      console.log('👤 LoginComponent - Username a cargar:', state['username']);
+      
+      // Pre-cargar el formulario con el username (no la password)
+      setTimeout(() => {
+        this.form.patchValue({
+          username: state['username']
+        });
+        
+        if (state['message']) {
+          this.successMessage.set(state['message']);
+        }
+      }, 0);
+    }
   }
 
   ngOnInit(): void {
     // Recrear el formulario si el modo cambia
-    this.form = this.createForm();
+    if (this.mode === 'register') {
+      this.form = this.createForm();
+      
+      // Escuchar cambios en businessName para actualizar el sufijo
+      this.form.get('businessName')?.valueChanges.subscribe((value: string) => {
+        const sanitized = this.sanitizeBusinessName(value);
+        this.businessNameSuffix.set(sanitized ? `@${sanitized}` : '');
+      });
+    }
   }
+
+  // Sanitizar el nombre del negocio para usarlo como sufijo
+  private sanitizeBusinessName(name: string): string {
+  if (!name) return '';
+  
+  return name
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') 
+    .replace(/\s+/g, '_') 
+    .replace(/[^a-z0-9_]/g, '') 
+    .substring(0, 20); 
+}
 
   private createForm(): FormGroup {
     if (this.mode === 'login') {
@@ -111,6 +153,9 @@ export class LoginComponent {
   private submitRegister(): void {
     const values = this.form.value;
     
+    // Construir username completo con sufijo
+    const fullUsername = values.username + this.businessNameSuffix();
+    
     const business: Business = {
       name: values.businessName,
       cuit: values.cuit,
@@ -132,12 +177,28 @@ export class LoginComponent {
       }
     };
 
+    console.log('📤 LoginComponent - Enviando datos de registro:', business);
+    console.log('👤 LoginComponent - Username completo:', fullUsername);
+
     this.authService.register(business).subscribe({
-      next: (session) => {
+      next: (createdBusiness) => {
         this.loading.set(false);
-        this.router.navigateByUrl('/tables');
+        console.log('✅ LoginComponent - Negocio creado:', createdBusiness);
+        console.log('👤 LoginComponent - Owner:', createdBusiness.owner);
+        
+        const username = createdBusiness.owner?.username;
+        
+        console.log('🔑 LoginComponent - Username para login:', { username });
+        
+        this.router.navigate(['/login'], {
+          state: {
+            username,
+            message: '¡Registro exitoso! Iniciá sesión con tus credenciales.'
+          }
+        });
       },
       error: (error) => {
+        console.error('❌ LoginComponent - Error en registro:', error);
         this.error.set(
           error?.error?.message ?? 
           error?.message ?? 

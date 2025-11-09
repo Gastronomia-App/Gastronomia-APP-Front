@@ -3,6 +3,13 @@
     <h1>{{ mode === 'login' ? 'Iniciar Sesión' : 'Registrar Negocio' }}</h1>
     <p class="sub">{{ mode === 'login' ? 'Ingresá tus credenciales para acceder' : 'Completá los datos para registrar tu negocio' }}</p>
     
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="success">
+        {{ successMessage() }}
+      </div>
+    }
+    
     <!-- Error Message -->
     @if (error()) {
       <div class="error">
@@ -226,15 +233,23 @@
           
           <fieldset>
             <label for="username">Usuario</label>
-            <input
-              id="username"
-              type="text"
-              formControlName="username"
-              placeholder="usuario123"
-              class="input"
-            />
+            <div class="username-input-container">
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                placeholder="usuario123"
+                class="input username-input"
+              />
+              @if (businessNameSuffix()) {
+                <span class="username-suffix">{{ businessNameSuffix() }}</span>
+              }
+            </div>
             @if (hasError('username')) {
               <span class="field-error">{{ getErrorMessage('username') }}</span>
+            }
+            @if (businessNameSuffix()) {
+              <span class="help-text">Tu nombre de usuario será: {{ form.get('username')?.value || 'usuario' }}{{ businessNameSuffix() }}</span>
             }
           </fieldset>
 

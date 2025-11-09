@@ -111,43 +111,19 @@ export class AuthService {
 
   /**
    * Registra un nuevo negocio con su dueño
+   * Devuelve el Business creado (sin autenticar automáticamente)
    */
-  register(business: Business): Observable<AuthSession> {
-    return this.http.post<LoginResponse>(this.businessBase, business).pipe(
-      map(response => {
-        try {
-          const claims = jwtDecode<JwtClaims>(response.token);
-          
-          if (this.isTokenExpired(claims)) {
-            throw new Error('El token recibido ya está expirado');
-          }
-
-          return { token: response.token, claims };
-        } catch (error) {
-          throw new Error('Token inválido recibido del servidor');
-        }
-      }),
-      tap(session => {
-        // Guardar sesión primero para que el interceptor tenga el token
-        this.saveSession(session);
-      }),
-      switchMap(session => {
-        const headers = { Authorization: `Bearer ${session.token}` };
-        
-        // Cargar datos del empleado actual y del negocio en paralelo
-        return forkJoin({
-          employee: this.http.get<Employee>(`${this.base}/me`, { headers }),
-          business: this.http.get<Business>(`${this.businessBase}/${session.claims.businessId}`, { headers })
-        }).pipe(
-          tap(({ employee, business }) => {
-            this.saveEmployee(employee);
-            this.saveBusiness(business);
-          }),
-          map(() => session)
-        );
+  register(business: Business): Observable<Business> {
+    console.log('📤 AuthService - Enviando registro de negocio:', JSON.stringify(business, null, 2));
+    
+    return this.http.post<Business>(this.businessBase, business).pipe(
+      tap(createdBusiness => {
+        console.log('✅ AuthService - Negocio creado exitosamente:', JSON.stringify(createdBusiness, null, 2));
+        console.log('👤 AuthService - Owner del negocio creado:', createdBusiness.owner);
       }),
       catchError(error => {
-        console.error('Error en registro:', error);
+        console.error('❌ AuthService - Error en registro:', error);
+        console.error('❌ Error completo:', JSON.stringify(error, null, 2));
         return throwError(() => error);
       })
     );
