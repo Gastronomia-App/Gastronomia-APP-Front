@@ -9,6 +9,8 @@ export type { Address } from './address.model';
 export type { Audit } from './audit.model';
 export type { Business } from './business.model';
 export type { Employee } from './employee.model';
+export type { Item } from './item.model';
+export type { Order } from './order.model';
 export type {
   TableColumn,
   TableAction,
