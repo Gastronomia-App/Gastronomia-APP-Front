@@ -137,7 +137,7 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (session) => {
         this.loading.set(false);
-        this.router.navigateByUrl('/tables');
+        this.router.navigateByUrl('/seatings');
       },
       error: (error) => {
         this.error.set(

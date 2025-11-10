@@ -1,0 +1,69 @@
+<div class="seatings-container">
+
+  <!-- 🔹 Sección: Libres -->
+  <div class="seatings-section free-section">
+    <div class="section-header">
+      <h3>Mesas Libres</h3>
+      <span class="badge-count">{{ freeSeatings().length }}</span>
+    </div>
+
+    <div class="seatings-row scrollable">
+      @for (seating of freeSeatings(); track seating.id) {
+        <div
+          class="seating-item"
+          [ngClass]="[seating.shape.toLowerCase(), seating.size.toLowerCase()]"
+          (click)="onSelect(seating)"
+        >
+          <div class="seating-inner st-free">
+            {{ seating.number }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 🔹 Sección: Ocupadas -->
+  <div class="seatings-section occupied-section">
+    <div class="section-header">
+      <h3>Mesas Ocupadas</h3>
+      <span class="badge-count">{{ occupiedSeatings().length }}</span>
+    </div>
+
+    <div class="seatings-row scrollable">
+      @for (seating of occupiedSeatings(); track seating.id) {
+        <div
+          class="seating-item"
+          [ngClass]="[seating.shape.toLowerCase(), seating.size.toLowerCase()]"
+          (click)="onSelect(seating)"
+        >
+          <div class="seating-inner st-occupied">
+            {{ seating.number }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 🔹 Sección: En facturación -->
+  <div class="seatings-section billing-section">
+    <div class="section-header">
+      <h3>Mesas en Facturación</h3>
+      <span class="badge-count">{{ billingSeatings().length }}</span>
+    </div>
+
+    <div class="seatings-row scrollable">
+      @for (seating of billingSeatings(); track seating.id) {
+        <div
+          class="seating-item"
+          [ngClass]="[seating.shape.toLowerCase(), seating.size.toLowerCase()]"
+          (click)="onSelect(seating)"
+        >
+          <div class="seating-inner st-billing">
+            {{ seating.number }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

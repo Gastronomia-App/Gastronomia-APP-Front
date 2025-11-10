@@ -106,12 +106,37 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'tables',
-    loadComponent: () =>
-      import('./domains/table/table-page/table-page')
-        .then(m => m.TablePage),
-    canActivate: [roleGuard([UserRole.WAITER, UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
-  },
+  path: 'seatings',
+  loadComponent: () =>
+    import('./domains/seating/seating-root-page/seating-root-page')
+      .then(m => m.SeatingRootPage),
+  canActivate: [authGuard],
+  children: [
+    {
+      path: '',
+      redirectTo: 'status',
+      pathMatch: 'full'
+    },
+    {
+      path: 'status',
+      loadComponent: () =>
+        import('./domains/seating/pages/seating-status-page/seating-status-page')
+          .then(m => m.SeatingStatusPage)
+    },
+    {
+      path: 'view',
+      loadComponent: () =>
+        import('./domains/seating/pages/seating-view-page/seating-view-page')
+          .then(m => m.SeatingViewPage)
+    },
+    {
+      path: 'config',
+      loadComponent: () =>
+        import('./domains/seating/pages/seating-config-page/seating-config-page')
+          .then(m => m.SeatingConfigPage)
+    }
+  ]
+},
   {
     path: 'employees',
     loadComponent: () =>

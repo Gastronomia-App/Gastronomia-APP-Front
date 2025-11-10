@@ -1,0 +1,163 @@
+/* ============================================
+   📦 PAGE STRUCTURE
+   ============================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.page-content {
+  gap: 0;
+}
+.page-container {
+  flex: 1;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ============================================
+   🪑 SEATING SECTION
+   ============================================ */
+.seating-section {
+  flex: 1;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-light);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ============================================
+   🎚️ ZOOM CONTROL
+   ============================================ */
+.zoom-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.zoom-control label {
+  font-weight: 600;
+  color: var(--color-text, #374151);
+}
+
+.zoom-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.zoom-buttons button {
+  background: var(--color-primary, #10b981);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.zoom-buttons button:hover:not(:disabled) {
+  background: var(--color-primary-dark, #0e9e75);
+  transform: scale(1.05);
+}
+
+.zoom-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoom-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 2rem;
+  text-align: center;
+  color: var(--color-text, #111827);
+}
+
+/* ============================================
+   💬 INFO & TIPS (ASIDE)
+   ============================================ */
+.seating-aside {
+  height: auto;
+  max-height: 100%;
+  align-self: flex-start;
+}
+
+.tip-box {
+  background: rgba(109, 187, 161, 0.08);
+  border-left: 4px solid var(--color-primary, #10b981);
+  padding: var(--spacing-md, 1rem);
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.tip-box .emoji {
+  font-size: 1.2rem;
+}
+
+.tip-box p {
+  font-size: var(--font-sm, 0.9rem);
+  color: var(--color-text, #374151);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   📱 RESPONSIVE
+   ============================================ */
+@media (max-width: 1200px) {
+  .page-container {
+    flex-direction: column;
+  }
+
+  .seating-aside {
+    width: 100%;
+    max-height: 50%;
+  }
+
+  .page-content {
+    min-height: 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    gap: 0.75rem;
+  }
+
+  .seating-aside {
+    display: none;
+  }
+
+  .page-content {
+    width: 100%;
+  }
+}
