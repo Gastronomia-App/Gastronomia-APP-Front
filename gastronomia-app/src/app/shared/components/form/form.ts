@@ -67,6 +67,7 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
   cancelButtonLabel = input<string>('Cancelar');
   submitButtonLabel = input<string>();
   submitEditButtonLabel = input<string>();
+  hideSubmitButton = input<boolean>(false);  // Ocultar botón de guardar/actualizar
 
   // Outputs
   formSubmit = output<FormSubmitEvent<T>>();
@@ -279,7 +280,7 @@ export class Form<T extends Record<string, any>> implements OnInit, AfterViewIni
     this.formState.update(state => ({ ...state, isSubmitting: true }));
 
     const submitEvent: FormSubmitEvent<T> = {
-      data: this.form.value as T,
+      data: this.form.getRawValue() as T, // getRawValue() incluye campos deshabilitados
       isEditMode: this.isEditMode(),
       editingId: this.editingId() || undefined
     };

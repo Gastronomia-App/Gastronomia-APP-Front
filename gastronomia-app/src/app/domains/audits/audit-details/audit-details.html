@@ -64,11 +64,11 @@
               @let difference = realCash() - (audit()?.total || 0);
               @let absDifference = difference < 0 ? -difference : difference;
               @if (difference === 0) {
-                <p class="difference-zero">✅ Sin diferencias</p>
+                <p class="difference-zero">Sin diferencias</p>
               } @else if (difference > 0) {
-                <p class="difference-positive">⚠️ Exceso: {{ difference | currency:'ARS':'symbol-narrow':'1.2-2':'es-AR' }}</p>
+                <p class="difference-positive">Exceso: {{ difference | currency:'ARS':'symbol-narrow':'1.2-2':'es-AR' }}</p>
               } @else {
-                <p class="difference-negative">⚠️ Faltante: {{ absDifference | currency:'ARS':'symbol-narrow':'1.2-2':'es-AR' }}</p>
+                <p class="difference-negative">Faltante: {{ absDifference | currency:'ARS':'symbol-narrow':'1.2-2':'es-AR' }}</p>
               }
             </div>
           }

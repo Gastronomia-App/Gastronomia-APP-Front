@@ -44,6 +44,26 @@ export class AuditTable extends BaseTable<Audit> {
       }
     },
     {
+      label: 'Diferencia',
+      field: 'balanceGap',
+      type: 'select',
+      options: [
+        { label: 'Positiva (Exceso)', value: 'positive' },
+        { label: 'Negativa (Faltante)', value: 'negative' }
+      ],
+      filterFn: (audit, value) => {
+        if (!value) return true;
+        if (audit.balanceGap == null) return false;
+        
+        if (value === 'positive') {
+          return audit.balanceGap > 0;
+        } else if (value === 'negative') {
+          return audit.balanceGap < 0;
+        }
+        return true;
+      }
+    },
+    {
       label: 'Fecha Desde',
       field: 'startDate',
       type: 'date',
@@ -73,6 +93,23 @@ export class AuditTable extends BaseTable<Audit> {
     const idMatch = audit.id.toString().includes(searchTerm);
     
     return idMatch;
+  };
+
+  /**
+   * Custom row class function - Highlight IN_PROGRESS audits and strike through deleted ones
+   */
+  public auditRowClass = (audit: Audit): string => {
+    const classes: string[] = [];
+    
+    if (audit.auditStatus === 'IN_PROGRESS') {
+      classes.push('audit-in-progress');
+    }
+    
+    if (audit.deleted) {
+      classes.push('audit-deleted');
+    }
+    
+    return classes.join(' ');
   };
 
   // ==================== Constructor ====================
@@ -132,23 +169,35 @@ export class AuditTable extends BaseTable<Audit> {
         sortable: true,
         align: 'center',
         formatter: (value: string) => {
-          if (value === 'IN_PROGRESS') return '🟢 En Progreso';
-          if (value === 'FINALIZED') return '🔴 Finalizada';
-          if (value === 'CANCELED') return '⚫ Cancelada';
+          if (value === 'IN_PROGRESS') return 'En Progreso';
+          if (value === 'FINALIZED') return 'Finalizada';
+          if (value === 'CANCELED') return 'Cancelada';
           return value || '-';
         }
       },
       {
-        header: 'Total',
-        field: 'total',
+        header: 'Diferencia de Saldo',
+        field: 'balanceGap',
         sortable: true,
         align: 'right',
-        formatter: (value: number) => {
+        formatter: (value: number | null) => {
           if (value == null) return '-';
-          return new Intl.NumberFormat('es-AR', {
+          
+          // Format the balance gap with sign
+          const formatted = new Intl.NumberFormat('es-AR', {
             style: 'currency',
-            currency: 'ARS'
+            currency: 'ARS',
+            signDisplay: 'always'
           }).format(value);
+          
+          // Apply color based on value
+          if (value > 0) {
+            return `<span class="text-positive">${formatted}</span>`;
+          } else if (value < 0) {
+            return `<span class="text-negative">${formatted}</span>`;
+          }
+          
+          return formatted;
         }
       }
     ];
@@ -188,7 +237,7 @@ export class AuditTable extends BaseTable<Audit> {
   }
 
   protected deleteItem(id: number) {
-    return this.auditService.cancelAudit(id);
+    return this.auditService.deleteAudit(id);
   }
 
   protected getItemName(audit: Audit): string {
@@ -221,7 +270,7 @@ export class AuditTable extends BaseTable<Audit> {
   
   public get deleteConfirmationMessage(): string {
     if (!this.itemToDelete) return '';
-    return `¿Estás seguro de cancelar la auditoría "${this.itemToDelete.name}"? Esta acción no se puede deshacer.`;
+    return `¿Estás seguro de eliminar la auditoría "${this.itemToDelete.name}"? Esta auditoría será marcada como eliminada.`;
   }
 
   // ==================== Custom Subscriptions ====================

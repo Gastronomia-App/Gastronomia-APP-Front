@@ -17,13 +17,13 @@
     <!-- Right section with actions -->
     @if (showRightActions() && actions().length > 0) {
     <div class="sub-header-right">
-        @for (action of safeActions(); track action.action) {
-        <button [class]="'tab-button ' + (action.class || '')" (click)="onActionClick(action.action)"
+        @for (action of actions(); track action.action) {
+        <button [class]="'btn-action ' + (action.class || '')" (click)="onActionClick(action.action)"
             [title]="action.label || ''">
-            @if (action.iconSafe) {
-            <span [innerHTML]="action.iconSafe"></span>
+            @if (action.icon) {
+            <span [innerHTML]="action.icon"></span>
             }
-            @if (action.label && !action.iconSafe) {
+            @if (action.label && !action.icon) {
             {{ action.label }}
             }
         </button>

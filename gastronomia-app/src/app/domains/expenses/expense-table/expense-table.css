@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  --table-columns: 3; /* 3 data columns + 1 actions column */
 }
 
 .results-info {

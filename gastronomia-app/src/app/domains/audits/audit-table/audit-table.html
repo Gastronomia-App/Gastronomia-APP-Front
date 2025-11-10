@@ -4,6 +4,7 @@
   [loading]="isLoading()"
   [pagination]="pagination()"
   [highlightedRowId]="highlightedRowId"
+  [rowClassFn]="auditRowClass"
   [enableInfiniteScroll]="true"
   [enableSort]="true"
   [enableSearch]="false"
@@ -24,10 +25,10 @@
 
 <app-confirmation-modal
   [isVisible]="showDeleteConfirmation()"
-  title="Confirmar cancelación"
+  title="Confirmar eliminación"
   [message]="deleteConfirmationMessage"
-  confirmText="Cancelar Auditoría"
-  cancelText="Volver"
+  confirmText="Eliminar"
+  cancelText="Cancelar"
   [isDanger]="true"
   (confirm)="onConfirmDelete()"
   (cancel)="onCancelDelete()"

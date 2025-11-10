@@ -1,5 +1,5 @@
 footer {
-  background-color: var(--color-surface);
+  background-color: var(--color-primary-darker);
   color: var(--color-text);
   font-family: 'Inter', Arial, sans-serif;
   font-size: var(--font-base);
@@ -8,10 +8,24 @@ footer {
   padding-bottom: 40px;
 }
 
+/* Estilos específicos para homepage - fondo oscuro */
+footer.homepage-footer {
+  background: var(--color-panel);
+  color: white;
+  padding: 3rem 2.5rem 1.5rem;
+  scroll-snap-align: start;
+  border-top: none;
+}
+
 footer .container {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 50px;
+}
+
+footer.homepage-footer .container {
+  max-width: 1400px;
+  padding: 0;
 }
 
 footer .top {
@@ -32,6 +46,15 @@ footer .logo img {
   margin-bottom: -5px;
 }
 
+footer.homepage-footer .logo img {
+  height: 40px;
+  margin-bottom: 1rem;
+}
+
+footer.homepage-footer .logo img.inverted {
+  filter: brightness(0) invert(1);
+}
+
 footer .logo img:hover {
   transform: scale(1.05);
 }
@@ -42,10 +65,19 @@ footer hr {
   margin: 15px 0 25px 0;
 }
 
+footer.homepage-footer hr {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
 footer .content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--spacing-xl);
+}
+
+footer.homepage-footer .content {
+  gap: 3rem;
+  margin-bottom: 2rem;
 }
 
 footer h6 {
@@ -55,12 +87,25 @@ footer h6 {
   font-size: 1rem;
 }
 
+footer.homepage-footer h6 {
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  color: var(--color-primary-lighter);
+}
+
 footer p,
 footer li {
   margin: 6px 0;
   color: var(--color-text);
   line-height: 1.6;
   font-size: var(--font-base);
+}
+
+footer.homepage-footer p,
+footer.homepage-footer li {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-sm);
+  margin-bottom: 0.5rem;
 }
 
 footer ul {
@@ -82,9 +127,18 @@ footer .contact ul li a {
   transition: color var(--transition-fast);
 }
 
+footer.homepage-footer .contact ul li a {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: normal;
+}
+
 footer .contact ul li a:hover {
   color: var(--color-primary-darker); 
   text-decoration: underline;
+}
+
+footer.homepage-footer .contact ul li a:hover {
+  color: var(--color-primary-lighter);
 }
 
 footer .contact p {
@@ -101,14 +155,31 @@ footer .bottom {
   margin-top: 40px;
 }
 
+footer.homepage-footer .bottom {
+  padding-top: 2rem;
+  border-top-color: rgba(255, 255, 255, 0.1);
+  padding-bottom: 0;
+  margin-top: 0;
+}
+
 footer .rights p {
   font-size: var(--font-base);
   color: var(--color-secondary-dark);
 }
 
+footer.homepage-footer .rights p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--font-xs);
+}
+
 footer .country p {
   font-size: var(--font-base);
   color: var(--color-secondary);
+}
+
+footer.homepage-footer .country p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--font-xs);
 }
 
 footer a {
@@ -117,7 +188,31 @@ footer a {
   transition: color var(--transition-fast);
 }
 
+footer.homepage-footer a {
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
 footer a:hover {
   color: var(--color-primary);
   text-decoration: underline;
+}
+
+footer.homepage-footer a:hover {
+  color: var(--color-primary-lighter);
+}
+
+footer.homepage-footer .help a {
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+/* ===============================
+   RESPONSIVE
+   =============================== */
+@media (max-width: 640px) {
+  footer.homepage-footer .content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }

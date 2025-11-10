@@ -1,13 +1,14 @@
-export interface Address {
-  street: string;
-  city: string;
-  province: string;
-  zipCode: string;
-}
+import { Address } from './address.model';
+import { Employee } from './employee.model';
 
 export interface Business {
-  id: number;
+  id?: number;
   name: string;
   cuit: string;
-  address: Address;
+  address: Partial<Address>;
+  phoneNumber?: string;
+  email?: string;
+  description?: string;
+  deleted?: boolean;
+  owner?: Partial<Employee>;
 }

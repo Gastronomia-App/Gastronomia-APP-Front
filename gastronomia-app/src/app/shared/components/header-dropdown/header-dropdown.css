@@ -1,0 +1,31 @@
+.header-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.header-dropdown-trigger {
+  display: block;
+  cursor: pointer;
+}
+
+/* Panel flotante */
+.header-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  min-width: 220px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 1100;
+  font-size: var(--font-sm);
+  padding: 0;
+  overflow: hidden;
+}
+
+.header-dropdown-panel.align-right {
+  right: 0;
+}
+
+.header-dropdown-panel.align-left {
+  left: 0;
+}

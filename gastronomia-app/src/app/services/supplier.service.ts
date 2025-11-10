@@ -72,7 +72,7 @@ export class SupplierService {
       address: supplier.address || null
     };
 
-    return this.http.put<Supplier>(`${this.apiUrl}/${id}`, requestBody);
+    return this.http.patch<Supplier>(`${this.apiUrl}/${id}`, requestBody);
   }
 
   deleteSupplier(id: number): Observable<void> {

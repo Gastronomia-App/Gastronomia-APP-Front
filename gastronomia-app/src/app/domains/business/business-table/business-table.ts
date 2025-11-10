@@ -45,9 +45,9 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
       return (
         business.name.toLowerCase().includes(searchTerm) ||
         business.cuit.toLowerCase().includes(searchTerm) ||
-        business.address.street.toLowerCase().includes(searchTerm) ||
-        business.address.city.toLowerCase().includes(searchTerm) ||
-        business.address.province.toLowerCase().includes(searchTerm)
+        (business.address.street?.toLowerCase().includes(searchTerm) || false) ||
+        (business.address.city?.toLowerCase().includes(searchTerm) || false) ||
+        (business.address.province?.toLowerCase().includes(searchTerm) || false)
       );
     });
   }
@@ -79,8 +79,8 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
         field: 'city',
         type: 'select',
         options: cities.map(city => ({
-          value: city,
-          label: city
+          value: city || '',
+          label: city || ''
         })),
         filterFn: (business, value) => {
           if (!value || value === '') return true;
@@ -118,13 +118,13 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
         header: 'Dirección',
         sortable: false,
         formatter: (value: any, business: Business) => 
-          `${business.address.street}, ${business.address.city}, ${business.address.province}`
+          `${business.address.street || ''}, ${business.address.city || ''}, ${business.address.province || ''}`
       },
       {
         field: 'city',
         header: 'Ciudad',
         sortable: true,
-        formatter: (value: any, business: Business) => business.address.city
+        formatter: (value: any, business: Business) => business.address.city || ''
       }
     ];
   }
@@ -148,7 +148,7 @@ export class BusinessTable extends BaseTable<Business> implements OnInit {
   }
 
   protected getItemId(business: Business): number {
-    return business.id;
+    return business.id!;
   }
 
   protected onEditItem(business: Business): void {

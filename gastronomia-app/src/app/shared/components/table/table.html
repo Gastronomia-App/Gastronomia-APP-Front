@@ -137,6 +137,7 @@
           <tr 
             (click)="onRowClick(row, idx)"
             [class.active-row]="isRowHighlighted(row)"
+            [class]="getRowClass(row)"
             class="data-row">
             
             @for (column of columns(); track column.field) {

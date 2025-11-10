@@ -166,14 +166,35 @@
 .difference-zero {
   color: #22c55e;
   background-color: rgba(34, 197, 94, 0.1);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
 }
 
 .difference-positive {
   color: #f59e0b;
   background-color: rgba(245, 158, 11, 0.1);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
 }
 
 .difference-negative {
   color: #ef4444;
   background-color: rgba(239, 68, 68, 0.1);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+}
+
+/* Balance Gap Styles for Detail View */
+::ng-deep .balance-positive .detail-value {
+  color: #22c55e !important;
+  font-weight: 600;
+}
+
+::ng-deep .balance-negative .detail-value {
+  color: #ef4444 !important;
+  font-weight: 600;
+}
+
+::ng-deep .balance-neutral .detail-value {
+  font-weight: 600;
 }

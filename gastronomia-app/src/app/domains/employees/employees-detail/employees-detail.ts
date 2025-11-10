@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Detail } from '../../../shared/components/detail/detail';
 import { EmployeeFormService } from '../services/employee-form.service';
 import { Employee, DetailConfig } from '../../../shared/models';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-employees-detail',
@@ -15,6 +17,7 @@ import { Employee, DetailConfig } from '../../../shared/models';
 })
 export class EmployeesDetail {
   private employeeFormService = inject(EmployeeFormService);
+  private authService = inject(AuthService);
   
   onDetailsClosed = output<void>();
   
@@ -82,11 +85,6 @@ export class EmployeesDetail {
         title: 'Información de acceso',
         fields: [
           {
-            name: 'username',
-            label: 'Usuario',
-            type: 'text'
-          },
-          {
             name: 'role',
             label: 'Rol',
             type: 'text',
@@ -114,10 +112,39 @@ export class EmployeesDetail {
       {
         label: 'Editar',
         type: 'primary',
-        handler: () => this.onEdit()
+        handler: () => this.onEdit(),
+        condition: () => this.canEditEmployee()
       }
     ]
   };
+
+  /**
+   * Verifica si el usuario actual puede editar al empleado mostrado
+   * Un ADMIN no puede editar empleados OWNER ni ADMIN
+   */
+  private canEditEmployee(): boolean {
+    const currentEmployee = this.employee();
+    if (!currentEmployee) return false;
+    
+    const loggedRole = this.authService.role();
+    const employeeRole = currentEmployee.role;
+    
+    // Normalizar roles (quitar prefijo ROLE_)
+    const normalizeRole = (role: string | null) => role?.replace('ROLE_', '') || '';
+    const loggedRoleNormalized = normalizeRole(loggedRole);
+    const employeeRoleNormalized = normalizeRole(employeeRole);
+    
+    // Si el logueado es ADMIN
+    if (loggedRoleNormalized === 'ADMIN') {
+      // No puede editar OWNER ni ADMIN
+      if (employeeRoleNormalized === 'OWNER' || employeeRoleNormalized === 'ADMIN') {
+        return false;
+      }
+    }
+    
+    // En cualquier otro caso, puede editar
+    return true;
+  }
 
   loadEmployee(employee: Employee): void {
     this.employee.set(employee);

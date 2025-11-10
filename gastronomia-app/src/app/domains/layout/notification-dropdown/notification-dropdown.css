@@ -1,0 +1,7 @@
+.header-dropdown-empty {
+  padding: 1rem;
+  font-size: var(--font-sm);
+  color: #4b5563; /* gris oscuro legible */
+  text-align: center;
+  background-color: var(--color-white);
+}

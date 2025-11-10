@@ -93,6 +93,16 @@ export class AuditDetails {
     }).format(currentAudit.total);
   });
 
+  formattedRealCash = computed(() => {
+    const currentAudit = this.audit();
+    if (currentAudit?.realCash == null) return '-';
+    
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(currentAudit.realCash);
+  });
+
   formattedBalanceGap = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.balanceGap == null) return '-';
@@ -101,18 +111,28 @@ export class AuditDetails {
     const formatted = new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
-    }).format(Math.abs(value));
+    }).format(value);
     
-    if (value > 0) return `+${formatted} (Exceso)`;
-    if (value < 0) return `-${formatted} (Faltante)`;
+    if (value > 0) return `+${formatted}`;
+    if (value < 0) return formatted;
     return formatted;
+  });
+
+  balanceGapClass = computed(() => {
+    const currentAudit = this.audit();
+    if (currentAudit?.balanceGap == null) return '';
+    
+    const value = currentAudit.balanceGap;
+    if (value > 0) return 'balance-positive';
+    if (value < 0) return 'balance-negative';
+    return 'balance-neutral';
   });
 
   auditStatus = computed(() => {
     const currentAudit = this.audit();
-    if (currentAudit?.auditStatus === 'IN_PROGRESS') return '🟢 En Progreso';
-    if (currentAudit?.auditStatus === 'FINALIZED') return '🔴 Finalizada';
-    if (currentAudit?.auditStatus === 'CANCELED') return '⚫ Cancelada';
+    if (currentAudit?.auditStatus === 'IN_PROGRESS') return 'En Progreso';
+    if (currentAudit?.auditStatus === 'FINALIZED') return 'Finalizada';
+    if (currentAudit?.auditStatus === 'CANCELED') return 'Cancelada';
     return currentAudit?.auditStatus || '-';
   });
 
@@ -179,10 +199,18 @@ export class AuditDetails {
             formatter: () => this.formattedTotal()
           },
           {
+            name: 'realCash',
+            label: 'Saldo Real',
+            type: 'text',
+            formatter: () => this.formattedRealCash(),
+            condition: (audit: Audit) => audit.realCash != null
+          },
+          {
             name: 'balanceGap',
             label: 'Diferencia',
             type: 'text',
-            formatter: () => this.formattedBalanceGap()
+            formatter: () => this.formattedBalanceGap(),
+            cssClass: this.balanceGapClass()
           }
         ]
       }
@@ -251,15 +279,11 @@ export class AuditDetails {
           this.audit.set(canceledAudit);
           this.auditFormService.notifyAuditUpdated(canceledAudit);
           
-          alert('✅ Auditoría cancelada correctamente.');
-          
           // Optionally close the details panel
           this.onClose();
         },
         error: (error) => {
           console.error('Error canceling audit:', error);
-          const errorMsg = error.error?.message || error.message || 'Error desconocido';
-          alert(`Error al cancelar la auditoría: ${errorMsg}`);
         }
       });
   }
@@ -272,7 +296,7 @@ export class AuditDetails {
     
     // Validation
     if (realCashValue == null || realCashValue < 0) {
-      alert('El efectivo final no puede estar vacío y debe ser mayor o igual a 0.');
+      console.error('El efectivo final no puede estar vacío y debe ser mayor o igual a 0.');
       return;
     }
 
@@ -285,20 +309,11 @@ export class AuditDetails {
           this.audit.set(finalizedAudit);
           this.auditFormService.notifyAuditFinalized(finalizedAudit);
           
-          // Show result message
-          const gap = finalizedAudit.balanceGap || 0;
-          if (gap === 0) {
-            alert('✅ Caja cerrada correctamente. No hay diferencias.');
-          } else if (gap > 0) {
-            alert(`⚠️ Caja cerrada con exceso de ${this.formatCurrency(gap)}`);
-          } else {
-            alert(`⚠️ Caja cerrada con faltante de ${this.formatCurrency(Math.abs(gap))}`);
-          }
+          // Close the details panel after successful finalization
+          this.onClose();
         },
         error: (error) => {
           console.error('Error finalizing audit:', error);
-          const errorMsg = error.error?.message || error.message || 'Error desconocido';
-          alert(`Error al finalizar la auditoría: ${errorMsg}`);
         }
       });
   }

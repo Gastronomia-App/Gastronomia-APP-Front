@@ -1,7 +1,7 @@
 import { Role } from './role.enum';
 
 export interface Employee {
-  id: number;
+  id?: number;
   name: string;
   lastName: string;
   dni: string;
@@ -9,6 +9,7 @@ export interface Employee {
   phoneNumber: string;
   role: Role | string;
   username: string;
-  deleted: boolean;
+  password?: string;
+  deleted?: boolean;
 }
 
