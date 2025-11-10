@@ -1,5 +1,5 @@
 <div class="page-container">
-  <div class="page-content">
+  <div class="page-content" #scrollContainer>
     @if (loading()) {
       <p>Cargando salón...</p>
     } @else if (error()) {
@@ -20,11 +20,11 @@
       <div class="aside-panel-container">
         <section>
           <p class="text-muted">
-            Aquí podés visualizar la disposición actual del salón en tiempo real.
+            Acá podés visualizar la disposición actual del salón en tiempo real.
           </p>
 
           <div class="tip-box">
-            <span class="emoji">💡</span>
+            <span class="emoji">馃挕</span>
             <p>Este modo está diseñado para visualizar el estado general del salón en tiempo real.</p>
           </div>
         </section>

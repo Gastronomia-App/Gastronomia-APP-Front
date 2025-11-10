@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, effect, ElementRef, EnvironmentInjector, inject, runInInjectionContext, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeatingGridView } from '../../components/seating-grid-view/seating-grid-view';
 import { SeatingsService } from '../../services/seating-service';
@@ -18,22 +18,28 @@ export class SeatingViewPage implements AfterViewInit {
   readonly seatings = signal<Seating[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-
+private readonly envInjector = inject(EnvironmentInjector);
   constructor() {
     this.loadSeatings();
   }
 
-  @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('scrollContainer', { static: false })
+scrollContainer?: ElementRef<HTMLDivElement>;
+
   private zoomState = inject(ZoomStateService);
   
 readonly zoomLevel = this.zoomState.zoomLevel;
-  ngAfterViewInit() {
-    const el = this.scrollContainer.nativeElement;
+  ngAfterViewInit(): void {
+  if (!this.scrollContainer) return;
+  const el = this.scrollContainer.nativeElement;
+
+  runInInjectionContext(this.envInjector, () => {
     effect(() => {
       el.scrollLeft = this.zoomState.scrollLeft();
       el.scrollTop = this.zoomState.scrollTop();
     });
-  }
+  });
+}
 
 
   private loadSeatings(): void {

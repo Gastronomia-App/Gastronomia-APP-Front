@@ -8,7 +8,9 @@ import {
   ViewChild,
   AfterViewInit,
   DestroyRef,
-  effect
+  effect,
+  runInInjectionContext,
+  EnvironmentInjector
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Seating } from '../../../../shared/models/seating';
@@ -40,10 +42,11 @@ export class SeatingGridView implements OnInit, AfterViewInit {
   readonly cols = signal(20);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-
+private readonly injector = inject(EnvironmentInjector);
   // =========================================================
   // 🧩 CICLO DE VIDA
   // =========================================================
+
   ngOnInit(): void {
     if (this.seatingsInput().length) {
       this.seatings.set(this.seatingsInput());
@@ -67,21 +70,24 @@ export class SeatingGridView implements OnInit, AfterViewInit {
   const el = this.gridScrollRef?.nativeElement;
   if (!el) return;
 
+  // 🔁 Observa cambios en el tamaño del contenedor
+  const resizeObserver = new ResizeObserver(() => {
+    this.updateGridSize();
+  });
+  resizeObserver.observe(el);
+
+  // 🧭 Restaura el scroll inicial con offset (alineación fina con editor)
+  const offsetX = 20;
+  const offsetY = 15;
   let attempts = 0;
+
   const restoreScroll = () => {
     if (el.scrollWidth > 0 && el.scrollHeight > 0) {
-      el.scrollLeft = this.zoomState.scrollLeft();
-      el.scrollTop = this.zoomState.scrollTop();
+      const targetLeft = this.zoomState.scrollLeft() + offsetX;
+      const targetTop = this.zoomState.scrollTop() + offsetY;
 
-const offsetX = 20; 
-const offsetY = 15; 
-
-const targetLeft = this.zoomState.scrollLeft() + offsetX;
-const targetTop = this.zoomState.scrollTop() + offsetY;
-
-el.scrollLeft = targetLeft;
-el.scrollTop = targetTop;
-      
+      el.scrollLeft = targetLeft;
+      el.scrollTop = targetTop;
       this.updateGridSize();
     } else if (attempts < 20) {
       attempts++;
@@ -90,44 +96,28 @@ el.scrollTop = targetTop;
   };
   restoreScroll();
 
-  // 2️⃣ Sincronización reactiva con el editor (ZoomState global)
-  effect(() => {
-  const el = this.gridScrollRef?.nativeElement;
-  if (!el) return;
+  // ✅ Sincronización reactiva DENTRO de un contexto de inyección
+  runInInjectionContext(this.injector, () => {
+    effect(() => {
+      const el = this.gridScrollRef?.nativeElement;
+      if (!el) return;
 
-  const left = this.zoomState.scrollLeft();
-  const top = this.zoomState.scrollTop();
-  const zoom = this.zoomState.zoomLevel();
+      const left = this.zoomState.scrollLeft();
+      const top = this.zoomState.scrollTop();
+      const zoom = this.zoomState.zoomLevel();
 
-  this.updateGridSize();
+      this.updateGridSize();
 
-  const correctionFactor = Math.max(2, zoom * 1.8);
+      const targetLeft = left + offsetX;
+      const targetTop = top + offsetY;
 
-  const targetLeft = left + correctionFactor;
-  const targetTop = top + correctionFactor;
-
-  if (Math.abs(el.scrollLeft - targetLeft) > 0.5)
-    el.scrollLeft = targetLeft;
-  if (Math.abs(el.scrollTop - targetTop) > 0.5)
-    el.scrollTop = targetTop;
-});
-}
-
-
-  private readonly syncEffect = effect(() => {
-    const el = this.gridScrollRef?.nativeElement;
-    if (!el) return;
-
-    const left = this.zoomState.scrollLeft();
-    const top = this.zoomState.scrollTop();
-    const zoom = this.zoomState.zoomLevel();
-
-    this.updateGridSize();
-
-    if (Math.abs(el.scrollLeft - left) > 10) el.scrollLeft = left;
-    if (Math.abs(el.scrollTop - top) > 10) el.scrollTop = top;
+      if (Math.abs(el.scrollLeft - targetLeft) > 0.5)
+        el.scrollLeft = targetLeft;
+      if (Math.abs(el.scrollTop - targetTop) > 0.5)
+        el.scrollTop = targetTop;
+    });
   });
-
+}
   // =========================================================
   // 📏 AJUSTE DE CELDAS
   // =========================================================
