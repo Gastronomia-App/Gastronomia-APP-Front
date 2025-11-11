@@ -1,0 +1,12 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Order Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-order-table></app-order-table>
+    </div>
+  </div>
+
+  @if (showOrderDetails()) {
+    <app-order-details (onDetailsClosed)="closeOrderDetails()"></app-order-details>
+  }
+</div>
