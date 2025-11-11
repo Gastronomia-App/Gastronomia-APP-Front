@@ -1,0 +1,34 @@
+<app-table
+  [data]="filteredData()"
+  [columns]="columns()"
+  [loading]="isLoading()"
+  [pagination]="pagination()"
+  [highlightedRowId]="highlightedRowId"
+  [enableInfiniteScroll]="true"
+  [enableSort]="true"
+  [enableSearch]="true"
+  searchPlaceholder="Buscar por nombre de cliente..."
+  [searchFilterFn]="customSearchFilter"
+  [enableFilters]="true"
+  [filters]="filters"
+  [enableActionButton]="false"
+  emptyMessage="No hay órdenes disponibles"
+  (details)="onTableDetails($event)"
+  (edit)="onTableEdit($event)"
+  (delete)="onTableDelete($event)"
+  (loadMore)="onLoadMore($event)"
+  (filtersChange)="onFiltersChange($event)"
+>
+</app-table>
+
+<app-confirmation-modal
+  [isVisible]="showDeleteConfirmation()"
+  title="Confirmar eliminación"
+  [message]="deleteConfirmationMessage"
+  confirmText="Eliminar"
+  cancelText="Cancelar"
+  [isDanger]="true"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()"
+>
+</app-confirmation-modal>
