@@ -1,26 +1,35 @@
 <div class="searchable-list-wrapper">
-    <input 
-        type="text" 
-        class="search-input" 
-        [placeholder]="placeholder"
-        [value]="searchQuery" 
-        (input)="onSearch($event)"
-        (keydown.enter)="onEnter($event)" 
-        [disabled]="isLoading" />
+    <div class="search-container">
+        <input 
+            type="text" 
+            class="search-input" 
+            [placeholder]="placeholder"
+            [value]="searchQuery" 
+            (input)="onSearch($event)"
+            (keydown)="onKeyDown($event)"
+            [disabled]="isLoading" />
 
-    @if(isLoading) {
-        <div class="loading-message">Cargando...</div>
-    }
+        @if(isLoading) {
+            <div class="loading-message">Cargando...</div>
+        }
 
-    @if(filteredItems.length > 0) {
-        <div class="item-dropdown panel">
-            @for(item of filteredItems; track item.id) {
-                <div class="item" (click)="addItem(item)">
-                    <span>{{ item.name }}</span>
-                </div>
-            }
-        </div>
-    }
+        @if(filteredItems.length > 0) {
+            <div class="item-dropdown">
+                @for(item of filteredItems; track item.id; let idx = $index) {
+                    <div 
+                        class="item" 
+                        [class.highlighted]="isHighlighted(idx)"
+                        (click)="addItem(item)"
+                        (mouseenter)="highlightedIndex = idx">
+                        <span class="item-name">{{ item.name }}</span>
+                        @if(allowQuantitySelection && isHighlighted(idx) && pendingQuantity > 1) {
+                            <span class="item-quantity-badge">x{{ pendingQuantity }}</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
 
     @if(selectedItems.length > 0) {
         <div class="selected-items">

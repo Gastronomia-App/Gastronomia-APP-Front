@@ -1,10 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BusinessForm } from '../business-form/business-form';
 import { BusinessService } from '../services';
 import { Business } from '../../../shared/models';
 import { Confirm } from '../../../shared/components/confirm';
+import { BusinessForm } from '../business-form/business-form';
 
 @Component({
   selector: 'app-business-page',
