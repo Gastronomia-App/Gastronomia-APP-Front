@@ -36,6 +36,7 @@ export class ExpenseTable extends BaseTable<Expense> {
       field: 'minAmount',
       type: 'number',
       placeholder: '0.00',
+      min: 0,
       filterFn: (expense, value) => {
         // No client-side filtering, all filtering is done by backend
         return true;
@@ -46,6 +47,7 @@ export class ExpenseTable extends BaseTable<Expense> {
       field: 'maxAmount',
       type: 'number',
       placeholder: '0.00',
+      min: 0,
       filterFn: (expense, value) => {
         // No client-side filtering, all filtering is done by backend
         return true;

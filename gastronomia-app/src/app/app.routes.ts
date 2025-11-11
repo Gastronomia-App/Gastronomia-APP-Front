@@ -138,6 +138,13 @@ export const routes: Routes = [
   ]
 },
   {
+    path: 'orders',
+    loadComponent: () =>
+      import('./domains/orders/orders-page/orders-page')
+        .then(m => m.OrdersPage),
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.WAITER, UserRole.ADMIN, UserRole.OWNER])]
+  },
+  {
     path: 'employees',
     loadComponent: () =>
       import('./domains/employees/employees-page/employees-page')
