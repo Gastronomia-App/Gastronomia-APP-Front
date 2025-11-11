@@ -56,30 +56,57 @@ export class ProductForm implements OnInit {
   isEditMode = false;
 
   // Computed inputs for dynamic components - REACTIVE
-  componentsInputs = computed(() => ({
-    placeholder: 'Buscar componente...',
-    availableItems: this.availableComponents(),
-    selectedItems: this.selectedComponents(),
-    isLoading: this.isLoadingComponents(),
-    customFields: [
-      {
-        key: 'quantity',
-        label: 'Cantidad',
-        type: 'number' as const,
-        editable: true
-      }
-    ],
-    editableFields: true
-  }));
+  componentsInputs = computed(() => {
+    // Filtrar componentes: excluir los ya seleccionados y el producto actual
+    const allComponents = this.availableComponents();
+    const selected = this.selectedComponents();
+    const currentProductId = this.editingProductId;
+    
+    const filteredComponents = allComponents.filter(component => {
+      // Excluir si ya está seleccionado
+      const isSelected = selected.some(s => s.productId === component.id);
+      // Excluir si es el producto actual que se está editando
+      const isSelfReference = currentProductId !== null && component.id === currentProductId;
+      
+      return !isSelected && !isSelfReference;
+    });
 
-  productGroupsInputs = computed(() => ({
-    placeholder: 'Buscar grupo...',
-    availableItems: this.availableProductGroups(),
-    selectedItems: this.selectedProductGroups(),
-    isLoading: this.isLoadingGroups(),
-    customFields: [],
-    editableFields: false
-  }));
+    return {
+      placeholder: 'Buscar componente...',
+      availableItems: filteredComponents,
+      selectedItems: this.selectedComponents(),
+      isLoading: this.isLoadingComponents(),
+      allowQuantitySelection: true, // Habilitar selección de cantidad con flechas
+      customFields: [
+        {
+          key: 'quantity',
+          label: 'Cantidad',
+          type: 'number' as const,
+          editable: true
+        }
+      ],
+      editableFields: true
+    };
+  });
+
+  productGroupsInputs = computed(() => {
+    // Filtrar grupos: excluir los ya seleccionados
+    const allGroups = this.availableProductGroups();
+    const selected = this.selectedProductGroups();
+    
+    const filteredGroups = allGroups.filter(group => {
+      return !selected.some(s => s.id === group.id);
+    });
+
+    return {
+      placeholder: 'Buscar grupo...',
+      availableItems: filteredGroups,
+      selectedItems: this.selectedProductGroups(),
+      isLoading: this.isLoadingGroups(),
+      customFields: [],
+      editableFields: false
+    };
+  });
 
   // Form configuration
   formConfig: FormConfig<Product> = {
@@ -325,11 +352,14 @@ export class ProductForm implements OnInit {
     }
   }
 
-  onComponentAdded(item: Product): void {
+  onComponentAdded(item: Product | any): void {
+    // Si el item viene con cantidad desde searchable-list, usarla
+    const quantity = item.quantity || 1;
+    
     const component: ProductComponent = {
       productId: item.id,
       name: item.name,
-      quantity: 1
+      quantity: quantity
     };
     this.selectedComponents.update(items => [...items, component]);
   }

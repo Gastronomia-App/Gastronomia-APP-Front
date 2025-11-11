@@ -1,8 +1,8 @@
 <div class="sub-header">
     <!-- Left section with tabs -->
-    @if (showLeftActions() && tabs().length > 0) {
+    @if (showLeftActions() && visibleTabs().length > 0) {
     <div class="sub-header-left">
-        @for (tab of tabs(); track tab.id) {
+        @for (tab of visibleTabs(); track tab.id) {
             <!-- Router-based tab button -->
             <button [routerLink]="tab.route" routerLinkActive="active" class="tab-button" (click)="onTabClick(tab.id)">
                 {{ tab.label }}

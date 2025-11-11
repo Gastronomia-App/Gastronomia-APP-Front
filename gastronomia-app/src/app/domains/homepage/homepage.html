@@ -4,18 +4,27 @@
   <div class="hero-content">
     <div class="hero-text">
       <h1 class="hero-title">
-        <span class="highlight">Tu negocio,</span><br>
+        <span class="highlight">Tu negocio,</span><br />
         más simple que nunca
       </h1>
       <p class="hero-subtitle">
-        Gestioná mesas, pedidos, inventario y empleados en un solo lugar.<br>
+        Gestioná mesas, pedidos, inventario y empleados en un solo lugar.<br />
         Potenciá tu restaurante con tecnología moderna.
       </p>
       <div class="hero-actions">
         <button class="btn-large btn-primary" (click)="scrollToSection('register')">
           <span>Probar Gratis</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+            />
           </svg>
         </button>
         <button class="btn-large btn-outline" (click)="scrollToSection('features')">
@@ -27,12 +36,13 @@
     <div class="hero-image">
       <div class="image-slider">
         <div class="slide-container">
-          <img
-            *ngFor="let img of images; let i = index"
-            [src]="img"
-            [class.active]="i === currentImage()"
-            alt="Promo image"
-          />
+          @for (img of images; track $index) {
+            <img
+              [src]="img"
+              [class.active]="$index === currentImage()"
+              alt="Promo image"
+            />
+          }
         </div>
       </div>
     </div>
@@ -41,8 +51,17 @@
   <!-- Scroll Indicator -->
   <div class="scroll-indicator" (click)="scrollToSection('features')">
     <span>Descubrí más</span>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-      <path fill-rule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"
+      />
     </svg>
   </div>
 </section>
@@ -52,15 +71,19 @@
   <div class="section-container">
     <div class="section-header">
       <h2 class="section-title">Todo lo que necesitás en un solo lugar</h2>
-      <p class="section-subtitle">Funcionalidades diseñadas para hacer tu vida más fácil</p>
+      <p class="section-subtitle">
+        Funcionalidades diseñadas para hacer tu vida más fácil
+      </p>
     </div>
 
     <div class="features-grid">
-      <div class="feature-card" *ngFor="let feature of features">
-        <div class="feature-icon" [innerHTML]="feature.icon"></div>
-        <h3 class="feature-title">{{ feature.title }}</h3>
-        <p class="feature-description">{{ feature.description }}</p>
-      </div>
+      @for (feature of features; track feature.title) {
+        <div class="feature-card">
+          <div class="feature-icon" [innerHTML]="feature.icon"></div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-description">{{ feature.description }}</p>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -74,11 +97,13 @@
     </div>
 
     <div class="benefits-grid">
-      <div class="benefit-card" *ngFor="let benefit of benefits">
-        <div class="benefit-icon" [innerHTML]="benefit.icon"></div>
-        <h3 class="benefit-title">{{ benefit.title }}</h3>
-        <p class="benefit-description">{{ benefit.description }}</p>
-      </div>
+      @for (benefit of benefits; track benefit.title) {
+        <div class="benefit-card">
+          <div class="benefit-icon" [innerHTML]="benefit.icon"></div>
+          <h3 class="benefit-title">{{ benefit.title }}</h3>
+          <p class="benefit-description">{{ benefit.description }}</p>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -92,32 +117,29 @@
         <p class="register-subtitle">
           Creá tu cuenta en minutos y empezá a gestionar tu negocio de forma profesional.
         </p>
-        
+
         <div class="register-benefits">
-          <div class="register-benefit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-            </svg>
-            <span>Sin costo inicial</span>
-          </div>
-          <div class="register-benefit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-            </svg>
-            <span>Configuración en minutos</span>
-          </div>
-          <div class="register-benefit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-            </svg>
-            <span>Soporte incluido</span>
-          </div>
-          <div class="register-benefit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-            </svg>
-            <span>Actualizaciones automáticas</span>
-          </div>
+          @for (benefit of [
+            'Sin costo inicial',
+            'Configuración en minutos',
+            'Soporte incluido',
+            'Actualizaciones automáticas'
+          ]; track benefit) {
+            <div class="register-benefit">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path
+                  d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"
+                />
+              </svg>
+              <span>{{ benefit }}</span>
+            </div>
+          }
         </div>
       </div>
 
@@ -130,4 +152,3 @@
 
 <!-- Footer -->
 <app-footer [isHomepage]="true" (sectionClick)="scrollToSection($event)" />
-
