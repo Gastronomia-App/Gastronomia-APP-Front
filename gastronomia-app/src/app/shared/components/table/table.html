@@ -64,6 +64,8 @@
                     <input 
                       [type]="filter.type"
                       [placeholder]="filter.placeholder || ''"
+                      [min]="filter.min"
+                      [max]="filter.max"
                       [value]="getFilterValue(fieldToString(filter.field)) || ''"
                       (input)="onFilterChange(fieldToString(filter.field), $any($event.target).value)"
                       class="filter-input"

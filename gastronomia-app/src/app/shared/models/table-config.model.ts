@@ -139,6 +139,12 @@ export interface TableFilter<T> {
   /** Placeholder text (for text/number inputs) */
   placeholder?: string;
   
+  /** Minimum value (for number inputs) */
+  min?: number;
+  
+  /** Maximum value (for number inputs) */
+  max?: number;
+  
   /** Available options (for select/multiselect/checkbox) */
   options?: FilterOption[];
   
