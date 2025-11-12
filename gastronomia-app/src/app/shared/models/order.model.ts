@@ -1,7 +1,7 @@
 import { Item } from './item.model';
 
 export type OrderType = 'TABLE' | 'TAKEAWAY' | 'DELIVERY';
-export type OrderStatus = 'FINALIZED' | 'IN_PROGRESS' | 'CANCELED';
+export type OrderStatus = 'ACTIVE' | 'FINALIZED' | 'BILLED' | 'CANCELED';
 
 export interface Order {
   id: number;
@@ -17,3 +17,13 @@ export interface Order {
   subtotal: number;
   total: number;
 }
+
+export interface CreateOrderRequest {
+  seatingId: number;
+  employeeId: number;
+  customerId?: number | null;
+  peopleCount?: number | null;
+  orderType: 'TABLE' | 'TAKEAWAY' | 'DELIVERY';
+}
+
+

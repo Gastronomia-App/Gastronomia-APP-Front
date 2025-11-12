@@ -106,37 +106,38 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-  path: 'seatings',
-  loadComponent: () =>
-    import('./domains/seating/seating-root-page/seating-root-page')
-      .then(m => m.SeatingRootPage),
-  canActivate: [authGuard],
-  children: [
-    {
-      path: '',
-      redirectTo: 'status',
-      pathMatch: 'full'
-    },
-    {
-      path: 'status',
-      loadComponent: () =>
-        import('./domains/seating/pages/seating-status-page/seating-status-page')
-          .then(m => m.SeatingStatusPage)
-    },
-    {
-      path: 'view',
-      loadComponent: () =>
-        import('./domains/seating/pages/seating-view-page/seating-view-page')
-          .then(m => m.SeatingViewPage)
-    },
-    {
-      path: 'config',
-      loadComponent: () =>
-        import('./domains/seating/pages/seating-config-page/seating-config-page')
-          .then(m => m.SeatingConfigPage)
-    }
-  ]
-},
+    path: 'seatings',
+    loadComponent: () =>
+      import('./domains/seating/seating-root-page/seating-root-page')
+        .then(m => m.SeatingRootPage),
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'view',
+        pathMatch: 'full'
+      },
+      {
+        path: 'view',
+        loadComponent: () =>
+          import('./domains/seating/pages/seating-view-page/seating-view-page')
+            .then(m => m.SeatingViewPage)
+      },
+      {
+        path: 'status',
+        loadComponent: () =>
+          import('./domains/seating/pages/seating-status-page/seating-status-page')
+            .then(m => m.SeatingStatusPage)
+      },
+      {
+        path: 'config',
+        loadComponent: () =>
+          import('./domains/seating/pages/seating-config-page/seating-config-page')
+            .then(m => m.SeatingConfigPage),
+        canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
+      }
+    ]
+  },
   {
     path: 'orders',
     loadComponent: () =>

@@ -56,7 +56,7 @@ export class SeatingGridEditor implements OnInit, OnDestroy {
   // 🧠 INPUTS Y OUTPUTS
   // =========================================================
   private readonly zoomState = inject(ZoomStateService);
-zoomLevel = this.zoomState.zoomLevel;
+  zoomLevel = this.zoomState.zoomLevel;
   seatingsInput = input<Seating[]>([]);
   draftSeat = input<Seating | null>(null);
   editedSeat = input<Seating | null>(null);
@@ -103,49 +103,49 @@ zoomLevel = this.zoomState.zoomLevel;
   private readonly resize$ = new Subject<void>();
   private readonly destroyRef = inject(DestroyRef);
   ngOnInit(): void {
-  const gridContainer = this.gridScrollRef.nativeElement;
+    const gridContainer = this.gridScrollRef.nativeElement;
 
-  // 🔁 Observador de tamaño existente
-  this.resizeObserver = new ResizeObserver(() => this.resize$.next());
-  this.resizeObserver.observe(gridContainer);
+    // 🔁 Observador de tamaño existente
+    this.resizeObserver = new ResizeObserver(() => this.resize$.next());
+    this.resizeObserver.observe(gridContainer);
 
-  this.resize$
-    .pipe(
-      throttleTime(120, undefined, { leading: true, trailing: true }),
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe({
-      next: () => this.updateGridSize(gridContainer),
-      error: (err) => console.error('❌ Error en ResizeObserver:', err),
-    });
+    this.resize$
+      .pipe(
+        throttleTime(120, undefined, { leading: true, trailing: true }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => this.updateGridSize(gridContainer),
+        error: (err) => console.error('❌ Error en ResizeObserver:', err),
+      });
 
-  // 🧭 NUEVO: Escuchar desplazamientos del grid y guardarlos en ZoomStateService
-  fromEvent(gridContainer, 'scroll')
-  .pipe(
-    throttleTime(120, undefined, { leading: true, trailing: true }),
-    takeUntilDestroyed(this.destroyRef)
-  )
-  .subscribe(() => {
-    this.zoomState.setScroll(gridContainer.scrollLeft, gridContainer.scrollTop);
-  });
-}
+    // 🧭 NUEVO: Escuchar desplazamientos del grid y guardarlos en ZoomStateService
+    fromEvent(gridContainer, 'scroll')
+      .pipe(
+        throttleTime(120, undefined, { leading: true, trailing: true }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.zoomState.setScroll(gridContainer.scrollLeft, gridContainer.scrollTop);
+      });
+  }
 
-ngAfterViewInit(): void {
-  const el = this.gridScrollRef.nativeElement;
-  let attempts = 0;
+  ngAfterViewInit(): void {
+    const el = this.gridScrollRef.nativeElement;
+    let attempts = 0;
 
-  const restoreScroll = () => {
-    if (el.scrollWidth > 0 && el.scrollHeight > 0) {
-      el.scrollLeft = this.zoomState.scrollLeft();
-      el.scrollTop = this.zoomState.scrollTop();
-    } else if (attempts < 10) {
-      attempts++;
-      requestAnimationFrame(restoreScroll);
-    }
-  };
+    const restoreScroll = () => {
+      if (el.scrollWidth > 0 && el.scrollHeight > 0) {
+        el.scrollLeft = this.zoomState.scrollLeft();
+        el.scrollTop = this.zoomState.scrollTop();
+      } else if (attempts < 10) {
+        attempts++;
+        requestAnimationFrame(restoreScroll);
+      }
+    };
 
-  restoreScroll();
-}
+    restoreScroll();
+  }
 
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
@@ -314,9 +314,20 @@ ngAfterViewInit(): void {
 
     const rect = cellEl.getBoundingClientRect();
     const parentRect = (cellEl.offsetParent as HTMLElement)?.getBoundingClientRect();
+
     if (parentRect) {
+      const gridHeight = parentRect.height;
+      const spaceBelow = gridHeight - (rect.bottom - parentRect.top);
+      const menuHeight = 100; // altura real del menú contextual aprox.
+
       this.menuX.set(rect.left - parentRect.left + rect.width / 2);
-      this.menuY.set(rect.bottom - parentRect.top + 4);
+
+      // ✅ si no hay espacio abajo, mostrar arriba pegado
+      if (spaceBelow < menuHeight) {
+        this.menuY.set(rect.top - parentRect.top - 50); // mismo margen que abajo, pero invertido
+      } else {
+        this.menuY.set(rect.bottom - parentRect.top + 4);
+      }
     }
 
     this.menuSeatId.set(seat.id);
@@ -333,9 +344,20 @@ ngAfterViewInit(): void {
 
     const rect = cellEl.getBoundingClientRect();
     const parentRect = (cellEl.offsetParent as HTMLElement)?.getBoundingClientRect();
+
     if (parentRect) {
+      const gridHeight = parentRect.height;
+      const spaceBelow = gridHeight - (rect.bottom - parentRect.top);
+      const menuHeight = 100; // altura real del menú contextual aprox.
+
       this.menuX.set(rect.left - parentRect.left + rect.width / 2);
-      this.menuY.set(rect.bottom - parentRect.top + 4);
+
+      // ✅ si no hay espacio abajo, mostrar arriba pegado
+      if (spaceBelow < menuHeight) {
+        this.menuY.set(rect.top - parentRect.top - 50); // mismo margen que abajo, pero invertido
+      } else {
+        this.menuY.set(rect.bottom - parentRect.top + 4);
+      }
     }
 
     if (seat) {
@@ -380,21 +402,64 @@ ngAfterViewInit(): void {
     const next = this.menuShape() === 'SQUARE' ? 'ROUND' : 'SQUARE';
     this.menuShape.set(next);
     const sid = this.menuSeatId();
+
     if (sid != null) {
-      this.shapeSizeRequested.emit({ id: sid, shape: next, size: this.menuSize() });
-      this.liveChange.emit({ shape: next });
-    } else this.emitDraft();
+      // ✅ Buscar la mesa actual en la grilla
+      const current = this.getSeatElementById(sid);
+      const seat = this.seatings.find(s => s.id === sid);
+      if (!seat) return;
+
+      const updated: Seating = {
+        ...seat,
+        shape: next,
+        size: this.menuSize(),
+      };
+
+      // 💾 Persistir cambio inmediato
+      this.seatingsService.update(sid, updated)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.shapeSizeRequested.emit({ id: sid, shape: next, size: this.menuSize() });
+            this.liveChange.emit({ shape: next });
+          },
+          error: (err) => console.error('❌ Error al guardar forma dinámica:', err)
+        });
+    } else {
+      this.emitDraft();
+    }
   }
+
+
 
   cycleSize(): void {
     const order: Size[] = ['SMALL', 'MEDIUM', 'LARGE'];
     const next = order[(order.indexOf(this.menuSize()) + 1) % order.length];
     this.menuSize.set(next);
     const sid = this.menuSeatId();
+
     if (sid != null) {
-      this.shapeSizeRequested.emit({ id: sid, shape: this.menuShape(), size: next });
-      this.liveChange.emit({ size: next });
-    } else this.emitDraft();
+      const seat = this.seatings.find(s => s.id === sid);
+      if (!seat) return;
+
+      const updated: Seating = {
+        ...seat,
+        size: next,
+        shape: this.menuShape(),
+      };
+
+      this.seatingsService.update(sid, updated)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.shapeSizeRequested.emit({ id: sid, shape: this.menuShape(), size: next });
+            this.liveChange.emit({ size: next });
+          },
+          error: (err) => console.error('❌ Error al guardar tamaño dinámico:', err)
+        });
+    } else {
+      this.emitDraft();
+    }
   }
 
   private emitDraft(): void {
@@ -417,37 +482,37 @@ ngAfterViewInit(): void {
   // 📏 AJUSTE DINÁMICO DE GRID Y ZOOM
   // =========================================================
   updateGridSize(container: HTMLElement): void {
-  if (!container) return;
+    if (!container) return;
 
-  const totalCols = this.cols();
-  const totalRows = this.rows();
-  const zoom = this.zoomLevel();
-  const width = container.clientWidth;
+    const totalCols = this.cols();
+    const totalRows = this.rows();
+    const zoom = this.zoomLevel();
+    const width = container.clientWidth;
 
-  const zoomMap: Record<number, number> = {
-    1: 1,
-    2: 1.33,
-    3: 1.66,
-    4: 2.015,
-    5: 2.85
-  };
+    const zoomMap: Record<number, number> = {
+      1: 1,
+      2: 1.33,
+      3: 1.66,
+      4: 2.015,
+      5: 2.85
+    };
 
-  const zoomFactor = zoomMap[zoom] ?? 1;
-  const baseCell = width / totalCols;
-  let cellSize = baseCell * zoomFactor;
+    const zoomFactor = zoomMap[zoom] ?? 1;
+    const baseCell = width / totalCols;
+    let cellSize = baseCell * zoomFactor;
 
-  // 🔧 Normaliza el tamaño (sin valores impares)
-  cellSize =
-    Math.floor(cellSize) % 2 === 0
-      ? Math.floor(cellSize)
-      : Math.floor(cellSize) - 1;
+    // 🔧 Normaliza el tamaño (sin valores impares)
+    cellSize =
+      Math.floor(cellSize) % 2 === 0
+        ? Math.floor(cellSize)
+        : Math.floor(cellSize) - 1;
 
-  // 🎨 Variables CSS
-  container.style.setProperty('--cell-size', `${cellSize}px`);
-  container.style.setProperty('--cols', totalCols.toString());
-  container.style.setProperty('--rows', totalRows.toString());
-  container.style.setProperty('--zoom', zoom.toString());
-}
+    // 🎨 Variables CSS
+    container.style.setProperty('--cell-size', `${cellSize}px`);
+    container.style.setProperty('--cols', totalCols.toString());
+    container.style.setProperty('--rows', totalRows.toString());
+    container.style.setProperty('--zoom', zoom.toString());
+  }
 
   // =========================================================
   // 🎨 UTILIDADES VISUALES Y ACCIONES

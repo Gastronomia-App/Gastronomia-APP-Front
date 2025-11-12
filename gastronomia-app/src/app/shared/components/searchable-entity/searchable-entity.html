@@ -1,0 +1,43 @@
+<div class="searchable-entity-wrapper">
+  <!-- Estado: no hay selección -->
+  @if (!selectedItem) {
+    <div class="search-container">
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="placeholder"
+        [value]="searchQuery"
+        (input)="onSearch($event)"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isLoading"
+      />
+
+      @if (isLoading) {
+        <div class="loading-message">Cargando...</div>
+      }
+
+      @if (filteredItems.length > 0) {
+        <div class="dropdown">
+          @for (item of filteredItems; track item.id; let i = $index) {
+            <div
+              class="dropdown-item"
+              [class.highlighted]="isHighlighted(i)"
+              (click)="selectItem(item)"
+              (mouseenter)="highlightedIndex = i"
+            >
+              {{ item.name }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Estado: hay selección -->
+  @if (selectedItem) {
+    <div class="selected-card">
+      <span class="name">{{ selectedItem.name }}</span>
+      <button type="button" class="clear-btn" (click)="clearSelection()">✕</button>
+    </div>
+  }
+</div>
