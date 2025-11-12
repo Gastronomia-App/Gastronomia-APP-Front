@@ -8,9 +8,7 @@ import { take } from 'rxjs';
 import { CustomersService } from '../../../customer/services/customers-service';
 import { EmployeeService } from '../../../employees';
 import { OrderService } from '../../services/order.service';
-import { Customer, Employee, FormConfig } from '../../../../shared/models';
-import { CreateOrderRequest } from '../../../../shared/models/order.model';
-import { SearchableList } from '../../../../shared/components/searchable-list';
+import { Customer, Employee, FormConfig, Order } from '../../../../shared/models';
 import { Form } from '../../../../shared/components/form';
 import { SearchableEntity } from '../../../../shared/components/searchable-entity/searchable-entity';
 
@@ -47,7 +45,7 @@ export class OrderForm implements OnInit, AfterViewInit {
   formRef = viewChild(Form);
 
   // Form configuration signal
-  readonly formConfig = signal<FormConfig<CreateOrderRequest>>({
+  readonly formConfig = signal<FormConfig<Order>>({
     title: 'Nueva Orden',
     submitLabel: 'Crear Orden',
     sections: [
@@ -198,19 +196,19 @@ export class OrderForm implements OnInit, AfterViewInit {
   // ===================== SUBMIT =====================
 
   // Handles form submission and order creation
-  onSubmit(event: { data: CreateOrderRequest }): void {
-    const dto: CreateOrderRequest = {
+  onSubmit(event: { data: Order }): void {
+    const order: Order = {
       ...event.data,
       seatingId: this.seatingId(),
       orderType: 'TABLE'
     };
 
-    this.orderService.createOrder(dto).pipe(take(1)).subscribe({
+    this.orderService.createOrder(order).pipe(take(1)).subscribe({
       next: () => this.orderCreated.emit(),
       error: (err) => console.error('Error creating order', err)
     });
 
-    console.log('Order:', dto);
+    console.log('Order:', order);
   }
 
   // ===================== INPUT CHANGES =====================
@@ -228,7 +226,7 @@ export class OrderForm implements OnInit, AfterViewInit {
 
   // Fully rebuilds form configuration when a new seating is selected
   private rebuildFormConfig(): void {
-    const newConfig: FormConfig<CreateOrderRequest> = {
+    const newConfig: FormConfig<Order> = {
       title: 'Nueva Orden',
       submitLabel: 'Crear Orden',
       sections: [

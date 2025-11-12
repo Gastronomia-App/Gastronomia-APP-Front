@@ -24,12 +24,12 @@ export class OrderFormService {
 
   // Methods to trigger events
   editOrder(order: Order): void {
-    this.setActiveOrderId(order.id);
+    this.setActiveOrderId(order.id ?? null);
     this.editOrderSource.next(order);
   }
 
   viewOrderDetails(order: Order): void {
-    this.setActiveOrderId(order.id);
+    this.setActiveOrderId(order.id ?? null);
     this.viewOrderDetailsSource.next(order);
   }
 

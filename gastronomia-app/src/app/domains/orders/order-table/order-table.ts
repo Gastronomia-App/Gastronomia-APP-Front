@@ -270,7 +270,7 @@ export class OrderTable extends BaseTable<Order> {
   }
 
   protected getItemId(order: Order): number {
-    return order.id;
+    return order.id!;
   }
 
   protected onEditItem(order: Order): void {

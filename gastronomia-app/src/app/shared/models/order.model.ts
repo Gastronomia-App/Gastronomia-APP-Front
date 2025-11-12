@@ -4,26 +4,26 @@ export type OrderType = 'TABLE' | 'TAKEAWAY' | 'DELIVERY';
 export type OrderStatus = 'ACTIVE' | 'FINALIZED' | 'BILLED' | 'CANCELED';
 
 export interface Order {
-  id: number;
+  // Response fields (populated by backend)
+  id?: number;
   employeeName?: string;
   customerName?: string;
   seatingNumber?: number;
+  dateTime?: string;
+  items?: Item[];
+  discount?: number;
+  status?: string;
+  subtotal?: number;
+  total?: number;
+  
+  // Request/Response fields
   orderType: OrderType;
-  items: Item[];
-  dateTime: string;
-  peopleCount?: number;
-  discount: number;
-  status: string;
-  subtotal: number;
-  total: number;
-}
-
-export interface CreateOrderRequest {
-  seatingId: number;
-  employeeId: number;
-  customerId?: number | null;
   peopleCount?: number | null;
-  orderType: 'TABLE' | 'TAKEAWAY' | 'DELIVERY';
+  
+  // Request-only fields (IDs for creation/update)
+  seatingId?: number;
+  employeeId?: number;
+  customerId?: number | null;
 }
 
 

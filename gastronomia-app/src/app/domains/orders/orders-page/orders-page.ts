@@ -51,8 +51,8 @@ export class OrdersPage implements OnInit, AfterViewChecked {
         if (this.currentOrderId === order.id && this.showOrderDetails()) {
           this.closeOrderDetails();
         } else {
-          this.currentOrderId = order.id;
-          this.orderFormService.setActiveOrderId(order.id);
+          this.currentOrderId = order.id ?? null;
+          this.orderFormService.setActiveOrderId(order.id ?? null);
           this.pendingDetailsOrder = order;
           this.showOrderDetails.set(true);
         }
