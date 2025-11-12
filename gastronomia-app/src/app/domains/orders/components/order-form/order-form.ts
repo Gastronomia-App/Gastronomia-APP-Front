@@ -11,6 +11,7 @@ import { OrderService } from '../../services/order.service';
 import { Customer, Employee, FormConfig, Order } from '../../../../shared/models';
 import { Form } from '../../../../shared/components/form';
 import { SearchableEntity } from '../../../../shared/components/searchable-entity/searchable-entity';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-order-form',
@@ -20,31 +21,23 @@ import { SearchableEntity } from '../../../../shared/components/searchable-entit
   styleUrl: './order-form.css'
 })
 export class OrderForm implements OnInit, AfterViewInit {
-  // Dependency injection
   private readonly customerService = inject(CustomersService);
   private readonly employeeService = inject(EmployeeService);
   private readonly orderService = inject(OrderService);
 
-  // Outputs
   orderClosed = output<void>();
   orderCreated = output<void>();
 
-  // Inputs
   seatingId = input.required<number>();
 
-  // Signals for data and state management
   readonly customers = signal<Array<Customer & { name: string }>>([]);
   readonly employees = signal<Employee[]>([]);
   readonly isLoadingCustomers = signal(true);
   readonly isLoadingEmployees = signal(true);
-
-  // Currently selected customer
   readonly selectedCustomer = signal<Customer | null>(null);
 
-  // Reference to dynamic form component
   formRef = viewChild(Form);
 
-  // Form configuration signal
   readonly formConfig = signal<FormConfig<Order>>({
     title: 'Nueva Orden',
     submitLabel: 'Crear Orden',
@@ -57,14 +50,15 @@ export class OrderForm implements OnInit, AfterViewInit {
             type: 'number',
             required: true,
             min: 1,
-            max: 10,
+            max: 20,
             step: 1,
             helpText: 'Número de personas en la mesa.'
           },
           {
             name: 'customerId',
-            label: 'Cliente',
+            label: 'Cliente (opcional)',
             type: 'custom',
+            // required: true,  // <-- removed: customer is optional now
             fullWidth: true,
             customComponent: SearchableEntity,
             customInputs: {
@@ -97,23 +91,25 @@ export class OrderForm implements OnInit, AfterViewInit {
     ]
   });
 
-  // Lifecycle hook - initialization
   ngOnInit(): void {
     this.loadEmployees();
     this.loadCustomers();
   }
 
-  // Lifecycle hook - after view initialization
   ngAfterViewInit(): void {
     queueMicrotask(() => {
       this.formRef()?.renderDynamicComponents();
+
+      // Create 'customerId' control WITHOUT validators (optional field)
+      const form = this.formRef()?.form;
+      if (form && !form.get('customerId')) {
+        form.addControl('customerId', new FormControl<number | null>(null));
+      }
+
       this.refreshCustomerSearchInput();
     });
   }
 
-  // ===================== LOADERS =====================
-
-  // Load employee options for the form
   private loadEmployees(): void {
     this.isLoadingEmployees.set(true);
     this.employeeService.getEmployees().pipe(take(1)).subscribe({
@@ -133,7 +129,6 @@ export class OrderForm implements OnInit, AfterViewInit {
     });
   }
 
-  // Load customers for the searchable field
   private loadCustomers(): void {
     this.isLoadingCustomers.set(true);
     this.customerService.search({}, 0, 50).pipe(take(1)).subscribe({
@@ -147,20 +142,15 @@ export class OrderForm implements OnInit, AfterViewInit {
       complete: () => {
         this.isLoadingCustomers.set(false);
         this.refreshCustomerSearchInput();
+        queueMicrotask(() => this.formRef()?.renderDynamicComponents());
       }
     });
   }
 
-  // ===================== CANCEL HANDLER =====================
-
-  // Emit close event to parent component
   onCancel(): void {
     this.orderClosed.emit();
   }
 
-  // ===================== REFRESH =====================
-
-  // Refreshes the customer search input with updated data
   private refreshCustomerSearchInput(): void {
     const cfg = this.formConfig();
     const field = cfg.sections[0].fields.find(f => f.name === 'customerId');
@@ -174,57 +164,81 @@ export class OrderForm implements OnInit, AfterViewInit {
     };
 
     this.formConfig.set({ ...cfg });
-    queueMicrotask(() => this.formRef()?.renderDynamicComponents());
   }
 
-  // ===================== CUSTOMER HANDLERS =====================
-
-  // When a customer is selected
   private onCustomerSelected(customer: Customer): void {
     this.selectedCustomer.set(customer);
-    this.formRef()?.form.patchValue({ customerId: (customer as any).id });
-    this.refreshCustomerSearchInput();
+    const form = this.formRef()?.form;
+    const id = Number((customer as any).id);
+    form?.get('customerId')?.setValue(id);
+    form?.get('customerId')?.markAsDirty();
+    form?.get('customerId')?.markAsTouched();
   }
 
-  // When the customer selection is cleared
   private onCustomerCleared(): void {
     this.selectedCustomer.set(null);
-    this.formRef()?.form.patchValue({ customerId: null });
-    this.refreshCustomerSearchInput();
+    const form = this.formRef()?.form;
+    form?.get('customerId')?.setValue(null);
+    form?.get('customerId')?.markAsDirty();
+    form?.get('customerId')?.markAsTouched();
   }
 
-  // ===================== SUBMIT =====================
-
-  // Handles form submission and order creation
   onSubmit(event: { data: Order }): void {
-    const order: Order = {
+    const form = this.formRef()?.form;
+
+    // Read and normalize values
+    const customerIdCtrl = form?.get('customerId')?.value;
+    const employeeIdRaw = (event.data as any).employeeId;
+
+    // Build payload: omit customerId if empty
+    const payload: any = {
       ...event.data,
       seatingId: this.seatingId(),
-      orderType: 'TABLE'
+      orderType: 'TABLE',
+      employeeId: employeeIdRaw != null ? Number(employeeIdRaw) : undefined
     };
 
-    this.orderService.createOrder(order).pipe(take(1)).subscribe({
+    if (customerIdCtrl == null) {
+      // Do not send customerId at all if user didn't pick one
+      delete payload.customerId;
+    } else {
+      payload.customerId = Number(customerIdCtrl);
+    }
+
+    this.orderService.createOrder(payload).pipe(take(1)).subscribe({
       next: () => this.orderCreated.emit(),
       error: (err) => console.error('Error creating order', err)
     });
-
-    console.log('Order:', order);
   }
 
-  // ===================== INPUT CHANGES =====================
-
-  // Detects input changes and rebuilds form when the seating ID changes
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['seatingId'] && !changes['seatingId'].firstChange) {
-      console.log('Seating changed, resetting form');
       this.selectedCustomer.set(null);
       this.rebuildFormConfig();
     }
   }
 
-  // ===================== FORM REBUILD =====================
+  private clearFormForNewSeating(): void {
+    const form = this.formRef()?.form;
+    if (!form) return;
 
-  // Fully rebuilds form configuration when a new seating is selected
+    // Reset with defaults; customer remains null (optional)
+    form.reset({
+      orderType: 'TABLE',
+      peopleCount: null,
+      employeeId: null,
+      customerId: null
+    });
+
+    const customerCtrl = form.get('customerId');
+    if (customerCtrl) {
+      customerCtrl.setValue(null);
+      customerCtrl.markAsPristine();
+      customerCtrl.markAsUntouched();
+      customerCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
   private rebuildFormConfig(): void {
     const newConfig: FormConfig<Order> = {
       title: 'Nueva Orden',
@@ -238,14 +252,15 @@ export class OrderForm implements OnInit, AfterViewInit {
               type: 'number',
               required: true,
               min: 1,
-              max: 10,
+              max: 20,
               step: 1,
               helpText: 'Número de personas en la mesa.'
             },
             {
               name: 'customerId',
-              label: 'Cliente',
+              label: 'Cliente (opcional)',
               type: 'custom',
+              // required: true, // <-- keep it optional
               fullWidth: true,
               customComponent: SearchableEntity,
               customInputs: {
@@ -282,10 +297,18 @@ export class OrderForm implements OnInit, AfterViewInit {
       ]
     };
 
-    // Replace the signal’s value to trigger full re-render
     this.formConfig.set(newConfig);
 
-    // Wait for the view to stabilize before re-rendering dynamic components
-    queueMicrotask(() => this.formRef()?.renderDynamicComponents());
+    queueMicrotask(() => {
+      this.formRef()?.renderDynamicComponents();
+
+      const form = this.formRef()?.form;
+      // Recreate optional control (no validators)
+      if (form && !form.get('customerId')) {
+        form.addControl('customerId', new FormControl<number | null>(null));
+      }
+
+      this.clearFormForNewSeating();
+    });
   }
 }
