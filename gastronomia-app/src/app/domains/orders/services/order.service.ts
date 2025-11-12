@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../enviroments/environment';
 import { Order, PageResponse } from '../../../shared/models';
+import { CreateOrderRequest } from '../../../shared/models/order.model';
 
 interface OrderFilters {
     status?: string | null;
@@ -63,4 +64,8 @@ export class OrderService {
   deleteOrder(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  createOrder(dto: CreateOrderRequest): Observable<Order> {
+  return this.http.post<Order>(this.apiUrl, dto);
+}
 }

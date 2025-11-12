@@ -17,3 +17,13 @@ export interface Order {
   subtotal: number;
   total: number;
 }
+
+export interface CreateOrderRequest {
+  seatingId: number;
+  employeeId: number;
+  customerId?: number | null;
+  peopleCount?: number | null;
+  orderType: 'TABLE' | 'TAKEAWAY' | 'DELIVERY';
+}
+
+

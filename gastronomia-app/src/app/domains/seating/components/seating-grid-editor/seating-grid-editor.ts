@@ -377,25 +377,68 @@ ngAfterViewInit(): void {
   // 🌀 CAMBIO DE FORMA Y TAMAÑO
   // =========================================================
   toggleShape(): void {
-    const next = this.menuShape() === 'SQUARE' ? 'ROUND' : 'SQUARE';
-    this.menuShape.set(next);
-    const sid = this.menuSeatId();
-    if (sid != null) {
-      this.shapeSizeRequested.emit({ id: sid, shape: next, size: this.menuSize() });
-      this.liveChange.emit({ shape: next });
-    } else this.emitDraft();
+  const next = this.menuShape() === 'SQUARE' ? 'ROUND' : 'SQUARE';
+  this.menuShape.set(next);
+  const sid = this.menuSeatId();
+
+  if (sid != null) {
+    // ✅ Buscar la mesa actual en la grilla
+    const current = this.getSeatElementById(sid);
+    const seat = this.seatings.find(s => s.id === sid);
+    if (!seat) return;
+
+    const updated: Seating = {
+      ...seat,
+      shape: next,
+      size: this.menuSize(),
+    };
+
+    // 💾 Persistir cambio inmediato
+    this.seatingsService.update(sid, updated)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.shapeSizeRequested.emit({ id: sid, shape: next, size: this.menuSize() });
+          this.liveChange.emit({ shape: next });
+        },
+        error: (err) => console.error('❌ Error al guardar forma dinámica:', err)
+      });
+  } else {
+    this.emitDraft();
   }
+}
+
+
 
   cycleSize(): void {
-    const order: Size[] = ['SMALL', 'MEDIUM', 'LARGE'];
-    const next = order[(order.indexOf(this.menuSize()) + 1) % order.length];
-    this.menuSize.set(next);
-    const sid = this.menuSeatId();
-    if (sid != null) {
-      this.shapeSizeRequested.emit({ id: sid, shape: this.menuShape(), size: next });
-      this.liveChange.emit({ size: next });
-    } else this.emitDraft();
+  const order: Size[] = ['SMALL', 'MEDIUM', 'LARGE'];
+  const next = order[(order.indexOf(this.menuSize()) + 1) % order.length];
+  this.menuSize.set(next);
+  const sid = this.menuSeatId();
+
+  if (sid != null) {
+    const seat = this.seatings.find(s => s.id === sid);
+    if (!seat) return;
+
+    const updated: Seating = {
+      ...seat,
+      size: next,
+      shape: this.menuShape(),
+    };
+
+    this.seatingsService.update(sid, updated)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.shapeSizeRequested.emit({ id: sid, shape: this.menuShape(), size: next });
+          this.liveChange.emit({ size: next });
+        },
+        error: (err) => console.error('❌ Error al guardar tamaño dinámico:', err)
+      });
+  } else {
+    this.emitDraft();
   }
+}
 
   private emitDraft(): void {
     const row = this.menuRow();

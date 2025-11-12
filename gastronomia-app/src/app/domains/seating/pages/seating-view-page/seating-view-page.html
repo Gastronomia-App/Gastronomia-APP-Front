@@ -6,29 +6,38 @@
       <p class="error">{{ error() }}</p>
     } @else {
       <app-seating-grid-view
-        [seatingsInput]="seatings()">
-      </app-seating-grid-view>
+  [seatingsInput]="seatings()"
+  [selectedSeating]="selectedSeating()"
+  (seatingFreeSelected)="onFreeSeatingSelected($event)"
+  (seatingOccupiedSelected)="onOccupiedSeatingSelected($event)"
+  (seatingBillingSelected)="onBillingSeatingSelected($event)">
+</app-seating-grid-view>
     }
   </div>
 
   <aside class="aside-panel seating-aside">
     <div class="aside-panel-wrapper">
-      <div class="aside-panel-header">
-        <h2>Vista del salón</h2>
-      </div>
 
-      <div class="aside-panel-container">
-        <section>
-          <p class="text-muted">
-            Acá podés visualizar la disposición actual del salón en tiempo real.
-          </p>
-
-          <div class="tip-box">
-            <span class="emoji">馃挕</span>
-            <p>Este modo está diseñado para visualizar el estado general del salón en tiempo real.</p>
-          </div>
-        </section>
-      </div>
+      @if (currentMode() === 'createOrder' && selectedSeating()) {
+        <app-order-form
+          [seatingId]="selectedSeating()!.id"
+          [attr.key]="selectedSeating()!.id"
+          (orderCreated)="onOrderCreated()"
+          (orderClosed)="onOrderClosed()">
+        </app-order-form>
+      }
+      @else if (currentMode() === 'occupiedDetail') {
+        <p class="text-muted">Esta mesa está ocupada. Pronto se mostrará el detalle de la orden.</p>
+      }
+      @else if (currentMode() === 'billing') {
+        <p class="text-muted">Esta mesa está en facturación.</p>
+      }
+      @else {
+        <div class="aside-panel-header"><h2>Vista del salón</h2></div>
+        <div class="aside-panel-container">
+          <p class="text-muted">Hacé clic en una mesa libre para crear una nueva orden.</p>
+        </div>
+      }
     </div>
   </aside>
 </div>
