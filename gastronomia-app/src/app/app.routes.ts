@@ -59,13 +59,6 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'customers',
-    loadComponent: () =>
-      import('./domains/customer/customer-page/customer-page')
-        .then(m => m.CustomerPage),
-    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
-  },
-  {
     path: 'cash-flow',
     loadComponent: () => import('./domains/cash-flow/cash-flow-page/cash-flow-page')
       .then(m => m.CashFlowPage),
@@ -137,13 +130,22 @@ export const routes: Routes = [
         canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
       }
     ]
-  },
-  {
-    path: 'employees',
+  }, {
+    path: 'people',
     loadComponent: () =>
-      import('./domains/employees/employees-page/employees-page')
-        .then(m => m.EmployeesPage),
-    canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
+      import('./domains/people/people-page/people-page')
+        .then(m => m.PeoplePage),
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
+    children: [{ path: '', redirectTo: 'customers', pathMatch: 'full', },
+    {
+      path: 'customers', loadComponent: () =>
+        import('./domains/customer/customer-page/customer-page')
+          .then(m => m.CustomerPage), canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
+    },
+    {
+      path: 'employees', loadComponent: () => import('./domains/employees/employees-page/employees-page').then(m => m.EmployeesPage),
+      canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])],
+    },],
   },
   {
     path: 'businesses',
