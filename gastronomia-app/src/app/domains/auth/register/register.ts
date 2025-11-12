@@ -51,7 +51,7 @@ export class Register {
       lastName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
       dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9,13}$/)]],
-      username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
+      username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
     });
   }
 

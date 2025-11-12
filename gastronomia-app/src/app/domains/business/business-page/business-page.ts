@@ -87,7 +87,6 @@ export class BusinessPage implements OnInit {
         this.isEditMode.set(false);
         this.showSaveConfirm.set(false);
         this.pendingFormData = null;
-        alert('Negocio actualizado correctamente');
       },
       error: (error) => {
         console.error('Error updating business:', error);

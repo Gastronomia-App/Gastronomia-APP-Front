@@ -153,6 +153,12 @@ export const routes: Routes = [
       import('./domains/business/business-page/business-page')
         .then(m => m.BusinessPage),
     canActivate: [roleGuard([UserRole.OWNER])]
+  },{
+    path: 'profile',
+    loadComponent: () =>
+      import('./domains/employees/employees-profile-page/employees-profile-page')
+    .then( m => m.EmployeesProfilePage),
+    canActivate: [roleGuard([UserRole.ADMIN, UserRole.CASHIER, UserRole.WAITER, UserRole.OWNER])]
   },
   {
     path: '**',

@@ -19,7 +19,7 @@ export class UserDropdownComponent {
   UserRole = UserRole;
 
   irAMiPerfil(): void {
-    this.router.navigate(['/employees']);
+    this.router.navigate(['/profile']);
   }
 
   irAMiNegocio(): void {

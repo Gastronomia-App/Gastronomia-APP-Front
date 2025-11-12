@@ -105,7 +105,7 @@ export class LoginComponent {
         dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
         email: ['', [Validators.required, Validators.email]],
         phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9,12}$/)]],
-        username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
+        username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
         password: ['', [Validators.required, Validators.minLength(8)]]
       });
     }
