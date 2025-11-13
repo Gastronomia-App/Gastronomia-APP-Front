@@ -44,7 +44,6 @@ export class CustomerDetails implements OnInit {
     showFooter: true,
     sections: [
       {
-        title: 'Información personal',
         fields: [
           { name: 'name', label: 'Nombre', type: 'text' },
           { name: 'lastName', label: 'Apellido', type: 'text' },
@@ -62,12 +61,6 @@ export class CustomerDetails implements OnInit {
             },
             formatter: (value) => value ? `${value}%` : '0%'
           },
-        ]
-      },
-      {
-        title: 'Identificación',
-        fields: [
-          { name: 'id', label: 'ID de cliente', type: 'text' }
         ]
       }
     ],
