@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { LoginRequest } from '../../../shared/models/auth.model';
 import { Business } from '../../../shared/models/business.model';
 import { Role } from '../../../shared/models/role.enum';
+import { BusinessService } from '../../business/services';
+import { BusinessStateService } from '../../business/services/business-state-service';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +20,8 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-
+  private businessService = inject(BusinessService);
+  private businessState = inject(BusinessStateService);
   // Input para determinar el modo: 'login' o 'register'
   @Input() mode: 'login' | 'register' = 'login';
 
@@ -33,21 +36,21 @@ export class LoginComponent {
 
   constructor() {
     this.form = this.createForm();
-    
+
     // Verificar si viene con credenciales desde el registro
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state || window.history.state;
-    
+
     if (state && state['username']) {
       console.log('🔑 LoginComponent - Credenciales recibidas desde registro');
       console.log('👤 LoginComponent - Username a cargar:', state['username']);
-      
+
       // Pre-cargar el formulario con el username (no la password)
       setTimeout(() => {
         this.form.patchValue({
           username: state['username']
         });
-        
+
         if (state['message']) {
           this.successMessage.set(state['message']);
         }
@@ -59,7 +62,7 @@ export class LoginComponent {
     // Recrear el formulario si el modo cambia
     if (this.mode === 'register') {
       this.form = this.createForm();
-      
+
       // Escuchar cambios en businessName para actualizar el sufijo
       this.form.get('businessName')?.valueChanges.subscribe((value: string) => {
         const sanitized = this.sanitizeBusinessName(value);
@@ -70,15 +73,15 @@ export class LoginComponent {
 
   // Sanitizar el nombre del negocio para usarlo como sufijo
   private sanitizeBusinessName(name: string): string {
-  if (!name) return '';
-  
-  return name
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') 
-    .replace(/\s+/g, '_') 
-    .replace(/[^a-z0-9_]/g, '') 
-    .substring(0, 20); 
-}
+    if (!name) return '';
+
+    return name
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '')
+      .substring(0, 20);
+  }
 
   private createForm(): FormGroup {
     if (this.mode === 'login') {
@@ -92,13 +95,13 @@ export class LoginComponent {
         // Datos del negocio
         businessName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(100)]],
         cuit: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
-        
+
         // Dirección del negocio
         street: ['', [Validators.required]],
         city: ['', [Validators.required]],
         province: ['', [Validators.required]],
         zipCode: ['', [Validators.required]],
-        
+
         // Datos del dueño
         name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
         lastName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
@@ -137,13 +140,24 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (session) => {
         this.loading.set(false);
-        this.router.navigateByUrl('/seatings');
+
+        // NUEVO: traer el negocio apenas logea
+        this.businessService.getMyBusiness().subscribe({
+          next: (business) => {
+            this.businessState.set(business);  // 👉 llena BusinessStateService
+            this.router.navigateByUrl('/seatings');
+          },
+          error: () => {
+            console.error("No se pudo cargar el negocio del usuario");
+            this.router.navigateByUrl('/seatings');
+          }
+        });
       },
       error: (error) => {
         this.error.set(
-          error?.error?.message ?? 
-          error?.message ?? 
-          'Credenciales inválidas. Por favor verifica tu usuario y contraseña.'
+          error?.error?.message ??
+          error?.message ??
+          'Credenciales inválidas.'
         );
         this.loading.set(false);
       }
@@ -152,10 +166,10 @@ export class LoginComponent {
 
   private submitRegister(): void {
     const values = this.form.value;
-    
+
     // Construir username completo con sufijo
     const fullUsername = values.username + this.businessNameSuffix();
-    
+
     const business: Business = {
       name: values.businessName,
       cuit: values.cuit,
@@ -185,11 +199,11 @@ export class LoginComponent {
         this.loading.set(false);
         console.log('✅ LoginComponent - Negocio creado:', createdBusiness);
         console.log('👤 LoginComponent - Owner:', createdBusiness.owner);
-        
+
         const username = createdBusiness.owner?.username;
-        
+
         console.log('🔑 LoginComponent - Username para login:', { username });
-        
+
         this.router.navigate(['/login'], {
           state: {
             username,
@@ -200,8 +214,8 @@ export class LoginComponent {
       error: (error) => {
         console.error('❌ LoginComponent - Error en registro:', error);
         this.error.set(
-          error?.error?.message ?? 
-          error?.message ?? 
+          error?.error?.message ??
+          error?.message ??
           'Error al registrar el negocio. Por favor verifica los datos ingresados.'
         );
         this.loading.set(false);

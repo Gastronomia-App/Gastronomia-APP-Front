@@ -201,8 +201,4 @@ export class EmployeesUpdateProfile implements OnInit {
     this.closed.emit();
   }
 
-  @HostListener('document:keydown.escape')
-  onEsc(): void {
-    this.close();
-  }
 }

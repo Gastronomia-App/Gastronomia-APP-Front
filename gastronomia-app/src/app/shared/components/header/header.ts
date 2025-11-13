@@ -31,7 +31,6 @@ export class Header {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private businessState = inject(BusinessStateService);
-
   UserRole = UserRole;
 
   isMobileMenuOpen = signal(false);
@@ -51,7 +50,7 @@ export class Header {
   
   displayBusinessName = computed(() => {
   const b = this.business();
-  return b?.name || 'Mi Negocio';
+  return b?.name;
 });
 
   dayOfWeek = computed(() => {
