@@ -1,0 +1,251 @@
+.upd-modal-root, 
+.upd-dialog, 
+.upd-dlg-body, 
+.upd-field, 
+.upd-label, 
+.upd-input input, 
+.upd-btn, 
+.upd-preview, 
+.upd-pv-name, 
+.upd-pv-user {
+  font-family: var(--font-family);
+  color: var(--color-primary-dark);
+  letter-spacing: 0.2px;
+}
+
+
+.upd-username-counter {
+  margin-top: 4px;
+  font-size: 0.80rem;
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+.upd-dlg-header {
+  position: relative;
+  z-index: 5;
+}
+.upd-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.upd-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--color-text);
+}
+/* Cuando supera el límite se vuelve rojo */
+.upd-error-text {
+  color: var(--color-danger) !important;
+}
+/* ============================================================
+   Ajustes específicos para los iconos del formulario
+============================================================ */
+
+/* Tamaño uniforme para íconos de labels */
+.upd-label svg.email-icon,
+.upd-label svg.username-icon,
+.upd-label svg.password-icon {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 1.9;
+  display: block;
+}
+
+/* Ícono de correo */
+.upd-label svg.email-icon rect {
+  rx: 3;
+  ry: 3;
+}
+
+/* Ícono @ username */
+.upd-label svg.username-icon {
+  stroke-width: 2;
+}
+
+/* Ícono candado */
+.upd-label svg.password-icon {
+  stroke-width: 2;
+}
+
+/* Icono del ojo */
+.upd-icon-inline svg.eye-icon {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2;
+  display: block;
+}
+
+/* Ajuste del botón del ojo para no invadir el input */
+.upd-icon-inline {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* ===== Modal (prefijo: upd-) ===== */
+.upd-modal-root{ position:fixed; inset:0; z-index:10000; display:grid; place-items:center; }
+.upd-overlay{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); }
+.upd-dialog{
+  position:relative; z-index:1; width:min(960px,96vw); max-height:90vh;
+  display:flex; flex-direction:column; background:var(--color-surface);
+  border:1px solid var(--color-border); border-radius:16px; box-shadow:0 12px 28px rgba(0,0,0,.18); overflow:hidden;
+}
+
+/* Header */
+.upd-dlg-header{ display:flex; justify-content:space-between; align-items:center; padding:20px 24px 12px; border-bottom:1px solid var(--color-border); }
+.upd-hdr h2{ margin:0; font-size:1.25rem; font-weight:800; color:var(--color-text); }
+.upd-hdr p{ margin:6px 0 0; color:var(--color-text-light); font-size:.95rem; }
+.upd-icon-btn{ display:grid; place-items:center; width:36px; height:36px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-surface); color:var(--color-text); }
+
+/* Body */
+.upd-dlg-body{ padding:24px; overflow:auto; }
+.upd-section{ margin-bottom:24px; }
+.upd-section-title{ display:flex; align-items:center; gap:10px; color:var(--color-text); font-weight:800; margin-bottom:12px; }
+.upd-pill{ display:grid; place-items:center; width:28px; height:28px; border-radius:8px; background:var(--color-primary-lightest); color:var(--color-primary-dark); }
+.upd-pill svg{ width:16px; height:16px; fill:currentColor; }
+.upd-divider{ height:1px; background:var(--color-border); margin:20px 0 24px; }
+
+/* Grid */
+.upd-grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media (max-width:820px){ .upd-grid-2{ grid-template-columns:1fr; } }
+
+/* Fields */
+.upd-field{ display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+.upd-label{ display:flex; align-items:center; gap:8px; color:var(--color-text); font-weight:700; padding-left:0; }
+.upd-label svg{ width:16px; height:16px; color:var(--color-primary); }
+.upd-req{ color:var(--color-danger); }
+
+/* Inputs */
+/* Inputs */
+.upd-input {
+  display: grid;
+  align-items: center;
+  padding: 11px 14px;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+  transition: border .2s, box-shadow .2s;
+}
+.upd-error-border {
+  border-color: var(--color-danger) !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.20) !important;
+}
+
+/* Aseguramos consistencia visual del mensaje */
+.upd-error {
+  margin-top: 4px;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+}
+/* Contorno verde refinado */
+.upd-input:focus-within {
+  border-color: var(--color-primary-lightest);
+  box-shadow: 0 0 0 2px rgba(48, 100, 98, 0.25);
+}
+
+/* Evita el borde negro del navegador */
+.upd-input input:focus {
+  outline: none;
+}
+
+.upd-input input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: .95rem;
+}
+/* Username suffix inside */
+.upd-input-suffix{ grid-template-columns:1fr auto; gap:8px; }
+.upd-suffix{
+  display:inline-flex; align-items:center; height:28px; padding:0 10px; border-radius:6px;
+  background:var(--color-primary-lightest); color:var(--color-primary-dark); font-weight:800; border:1px dashed var(--color-border);
+}
+
+/* Password eye */
+.upd-input-icon{ grid-template-columns:1fr auto; gap:4px; }
+.upd-icon-inline{ display:grid; place-items:center; width:36px; height:36px; border:0; background:transparent; color:var(--color-secondary-dark); cursor:pointer; }
+.upd-icon-inline:hover{ color:var(--color-primary-dark); }
+
+/* Hints */
+.upd-hint{ color:var(--color-text-light); font-size:.85rem; margin-top:6px; }
+.upd-hint b{ color:var(--color-primary-dark); }
+.upd-error{ color:var(--color-danger); font-size:.85rem; margin-top:6px; }
+
+/* Preview */
+.upd-preview{ border:1px solid var(--color-border); border-radius:12px; background:linear-gradient(180deg,var(--color-primary-lightest),var(--color-white)); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.upd-preview-hdr{ display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--color-border); font-weight:800; color:var(--color-text); }
+.upd-preview-body{ display:flex; align-items:center; gap:16px; padding:16px; }
+.upd-avatar{ width:56px; height:56px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg,var(--color-primary-light),var(--color-primary-secondary)); box-shadow:0 4px 14px rgba(0,0,0,.08); }
+.upd-avatar svg{ width:30px; height:30px; fill:var(--color-white); }
+.upd-pv-info{ display:flex; flex-direction:column; gap:4px; }
+.upd-pv-name{ font-weight:800; color:var(--color-text); }
+.upd-pv-user{ color:var(--color-secondary-dark); font-weight:600; }
+
+/* Footer */
+.upd-dlg-footer{ display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 24px; border-top:1px solid var(--color-border); }
+.upd-btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px; height:44px; padding:0 16px; border-radius:10px; border:1px solid transparent; font-weight:800; }
+.upd-btn-primary{ color:var(--color-white); background:var(--color-primary); }
+.upd-btn-primary:hover{ background:var(--color-primary-dark); }
+.upd-btn-ghost{ color:var(--color-primary-dark); background:var(--color-primary-lightest); border:1px solid var(--color-border); }
+.upd-btn-ghost:hover{ background:var(--color-primary); color:var(--color-white); }
+
+
+.security-logo {
+  width: 64px;
+  height: 64px;
+  display: block;
+  margin: 0 auto 12px;
+}
+.security-redirect-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: grid;
+  place-items: center;
+  z-index: 99999;
+  backdrop-filter: blur(2px);
+}
+
+.security-redirect-card {
+  width: 360px;
+  background: white;
+  padding: 28px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.countdown-text {
+  margin-top: 10px;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+  animation: shrinkBar 5s linear forwards;
+}
+
+@keyframes shrinkBar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}

@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+// employees-info.ts
+import { Component, input, OnChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Business, Employee } from '../../../shared/models';
 import { EmployeeService } from '../services/employee.service';
@@ -11,7 +12,8 @@ import { BusinessService } from '../../business/services';
   templateUrl: './employees-info.html',
   styleUrl: './employees-info.css',
 })
-export class EmployeesInfo {
+export class EmployeesInfo implements OnChanges{
+  refresh = input<number>(0);
   readonly employee = signal<Employee | null>(null);
   readonly business = signal<Business | null>(null);
   readonly loading = signal(true);
@@ -23,6 +25,10 @@ export class EmployeesInfo {
   ) {
     this.loadData();
   }
+
+  ngOnChanges(): void {
+  this.loadData();
+}
 
   private loadData(): void {
     this.employeeService.getCurrentEmployee().subscribe({
@@ -48,59 +54,56 @@ export class EmployeesInfo {
   }
 
   // ---------- UI helpers ----------
-
   roleLabel(role?: string | null): string {
-  if (!role) return '—';
-
-  const r = String(role).toUpperCase();
-
-  switch (r) {
-    case 'OWNER':
-      return 'Propietario';
-    case 'ADMIN':
-      return 'Administrador';
-    case 'CASHIER':
-      return 'Cajero';
-    case 'WAITER':
-      return 'Mozo';
-    default:
-      return '—';
+    if (!role) return '—';
+    const r = String(role).toUpperCase();
+    switch (r) {
+      case 'OWNER':   return 'Propietario';
+      case 'ADMIN':   return 'Administrador';
+      case 'CASHIER': return 'Cajero';
+      case 'WAITER':  return 'Mozo';
+      default:        return '—';
+    }
   }
-}
 
-
-accessLevelNumber(): 1 | 2 | 3 | 4 {
-  const r = String((this.employee() as any)?.role ?? '').toUpperCase();
-  switch (r) {
-    case 'OWNER':  return 4;
-    case 'ADMIN':  return 3;
-    case 'CASHIER':return 2;
-    case 'WAITER': return 1;
-    default:       return 1;
+  // Star mapping (1..4): 1=WAITER, 2=CASHIER, 3=ADMIN, 4=OWNER
+  starCount(): 1 | 2 | 3 | 4 {
+    const r = String((this.employee() as any)?.role ?? '').toUpperCase();
+    switch (r) {
+      case 'OWNER':   return 4;
+      case 'ADMIN':   return 3;
+      case 'CASHIER': return 2;
+      case 'WAITER':  return 1;
+      default:        return 1;
+    }
   }
-}
 
-// Clase CSS para colorear el badge del nivel
-accessLevelClass(): 'level-1' | 'level-2' | 'level-3' | 'level-4' {
-  return ('level-' + this.accessLevelNumber()) as any;
-}
-
-// Descripción debajo de “Nivel de acceso”
-accessSubtitle(): string {
-  const r = String((this.employee() as any)?.role ?? '').toUpperCase();
-  switch (r) {
-    case 'OWNER':
-      return 'Acceso total. Administra todo el sistema y la configuración del negocio.';
-    case 'ADMIN':
-      return 'Acceso alto. Gestiona usuarios, productos, mesas y ventas.';
-    case 'CASHIER':
-      return 'Acceso medio. Factura, cobra y consulta ventas del día.';
-    case 'WAITER':
-      return 'Acceso básico. Toma pedidos y gestiona mesas asignadas.';
-    default:
-      return '—';
+  // Color class for stars based on count
+  starsColorClass(): 'stars-1' | 'stars-2' | 'stars-3' | 'stars-4' {
+    return ('stars-' + this.starCount()) as any;
   }
-}
+
+  // Utility to render N stars
+  starArray(n: number): number[] {
+    // Generates [0..n-1] to iterate in template
+    return Array.from({ length: n }, (_, i) => i);
+  }
+
+  accessSubtitle(): string {
+    const r = String((this.employee() as any)?.role ?? '').toUpperCase();
+    switch (r) {
+      case 'OWNER':
+        return 'Acceso total. Administra todo el sistema y la configuración del negocio.';
+      case 'ADMIN':
+        return 'Acceso alto. Gestiona usuarios, productos, mesas y ventas.';
+      case 'CASHIER':
+        return 'Acceso medio. Factura, cobra y consulta ventas del día.';
+      case 'WAITER':
+        return 'Acceso básico. Toma pedidos y gestiona mesas asignadas.';
+      default:
+        return '—';
+    }
+  }
 
   formatDate(d?: string | Date | null): string {
     if (!d) return '—';
@@ -144,9 +147,5 @@ accessSubtitle(): string {
     if (e?.active === false) return 'Inactiva';
     if (String(e?.status ?? '').toLowerCase() === 'pending') return 'Pendiente';
     return 'Activa';
-  }
-
-  accessLevel(): string {
-    return this.roleLabel((this.employee() as any)?.role);
   }
 }

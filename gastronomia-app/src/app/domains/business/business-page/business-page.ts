@@ -5,6 +5,7 @@ import { BusinessService } from '../services';
 import { Business } from '../../../shared/models';
 import { Confirm } from '../../../shared/components/confirm';
 import { BusinessForm } from '../business-form/business-form';
+import { BusinessStateService } from '../services/business-state-service';
 
 @Component({
   selector: 'app-business-page',
@@ -14,13 +15,13 @@ import { BusinessForm } from '../business-form/business-form';
 })
 export class BusinessPage implements OnInit {
   private businessService = inject(BusinessService);
-  
+  private businessState = inject(BusinessStateService);
   // UI state
   myBusiness = signal<Business | null>(null);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
   isEditMode = signal(false);
-  
+
   // Confirm dialogs
   showDeleteConfirm = signal(false);
   showSaveConfirm = signal(false);
@@ -43,12 +44,13 @@ export class BusinessPage implements OnInit {
     this.businessService.getMyBusiness().subscribe({
       next: (business) => {
         this.myBusiness.set(business);
+        this.businessState.set(business);  // ← IMPORTANT
         this.isLoading.set(false);
       },
       error: (error) => {
         console.error('Error loading business:', error);
         this.isLoading.set(false);
-        
+
         if (error.status === 404) {
           this.errorMessage.set('No tienes un negocio asociado');
         } else if (error.status === 401) {
@@ -80,10 +82,11 @@ export class BusinessPage implements OnInit {
     if (!this.myBusiness() || !this.pendingFormData) return;
 
     const businessId = this.myBusiness()!.id!;
-    
+
     this.businessService.updateBusiness(businessId, this.pendingFormData).subscribe({
       next: (updated) => {
         this.myBusiness.set(updated);
+        this.businessState.set(updated);
         this.isEditMode.set(false);
         this.showSaveConfirm.set(false);
         this.pendingFormData = null;
@@ -91,7 +94,7 @@ export class BusinessPage implements OnInit {
       error: (error) => {
         console.error('Error updating business:', error);
         this.showSaveConfirm.set(false);
-        
+
         if (error.status === 403) {
           alert('No tienes permiso para modificar este negocio');
         } else {
@@ -120,7 +123,7 @@ export class BusinessPage implements OnInit {
     if (!this.myBusiness() || !this.isDeleteConfirmed()) return;
 
     const businessId = this.myBusiness()!.id!;
-    
+
     this.businessService.deleteBusiness(businessId).subscribe({
       next: () => {
         this.showDeleteConfirm.set(false);
@@ -131,7 +134,7 @@ export class BusinessPage implements OnInit {
       error: (error) => {
         console.error('Error deleting business:', error);
         this.showDeleteConfirm.set(false);
-        
+
         if (error.status === 403) {
           alert('No tienes permiso para eliminar este negocio');
         } else {

@@ -9,7 +9,7 @@ import { PageResponse } from '../../../shared/models';
 export class EmployeeService {
   private base = `${environment.apiBaseUrl}/employees`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Get all employees (without pagination)
   getEmployees(): Observable<Employee[]> {
@@ -45,6 +45,10 @@ export class EmployeeService {
   }
 
   getCurrentEmployee(): Observable<Employee> {
-  return this.http.get<Employee>(`${this.base}/me`);
-}
+    return this.http.get<Employee>(`${this.base}/me`);
+  }
+
+  updateCurrentEmployee(data: Partial<Employee>): Observable<Employee> {
+    return this.http.patch<Employee>(`${this.base}/me`, data);
+  }
 }

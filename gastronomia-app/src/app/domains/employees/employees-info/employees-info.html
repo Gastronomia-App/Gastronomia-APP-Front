@@ -1,16 +1,17 @@
+<!-- employees-info.html -->
 @if (loading()) {
   <div class="state state-loading">Cargando perfil…</div>
 } @else if (error()) {
   <div class="state state-error">{{ error() }}</div>
 } @else {
   <section class="profile-card">
-    <!-- Cabecera con degradado verde -->
+    <!-- Header gradient -->
     <div class="profile-hero"></div>
 
-    <!-- Identidad -->
+    <!-- Identity -->
     <div class="identity">
       <div class="avatar" aria-hidden="true">
-        <!-- SVG de usuario -->
+        <!-- User SVG -->
         <svg viewBox="0 0 24 24" focusable="false">
           <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-9 2.2-9 6v2h18v-2c0-3.8-4.6-6-9-6Z"/>
         </svg>
@@ -22,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Tarjetas de información -->
+    <!-- Info tiles -->
     <div class="info-grid">
       <div class="info-tile">
         <div class="icon">
@@ -78,36 +79,37 @@
     </div>
   </section>
 
-  <!-- Bloque inferior -->
-   <section class="account-card">
-  <header class="account-header">
-    <div class="dot"></div>
-    <h3>Información de la cuenta</h3>
-  </header>
+  <!-- Account block -->
+  <section class="account-card">
+    <header class="account-header">
+      <div class="dot"></div>
+      <h3>Información de la cuenta</h3>
+    </header>
 
-  <div class="account-row">
-    <div class="account-col">
-      <div class="account-title">Estado de la cuenta</div>
-      <div class="account-sub">Tu cuenta está activa y verificada</div>
-    </div>
-    <span class="pill pill-success">{{ accountStatus() }}</span>
-  </div>
+    <div class="account-row">
+      <div class="account-col">
+        <div class="title-row">
+          <div class="account-title">Nivel de acceso</div>
 
-  <div class="account-row">
-    <div class="account-col">
-      <div class="account-title">
-        Nivel de acceso
-        <span class="level-pill" [class]="'level-pill ' + accessLevelClass()">
-          ({{ accessLevelNumber() }})
-        </span>
+          <!-- Solid stars next to the title -->
+          <div
+            class="access-stars"
+            [class]="'access-stars ' + starsColorClass()"
+            [attr.aria-label]="'Nivel ' + starCount() + ' de 4'">
+            @for (s of starArray(starCount()); track s) {
+              <svg class="star" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 17.27 18.18 21 16.54 13.97 22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+            }
+          </div>
+        </div>
+        <div class="account-sub">{{ accessSubtitle() }}</div>
       </div>
-      <div class="account-sub">{{ accessSubtitle() }}</div>
-    </div>
 
-    <!-- a la derecha: el nombre del rol -->
-    <div class="access-badges">
-      <span class="role-badge">{{ roleLabel(employee()?.role) }}</span>
+      <!-- Right side: role name only -->
+      <div class="access-badges">
+        <span class="role-badge">{{ roleLabel(employee()?.role) }}</span>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 }

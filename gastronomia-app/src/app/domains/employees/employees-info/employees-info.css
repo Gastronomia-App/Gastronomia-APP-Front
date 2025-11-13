@@ -1,8 +1,16 @@
+/* employees-info.css */
+/* Accent and star palette */
 :host {
-  /* Alineo los acentos al esquema verde del sistema */
-  --accent-1: var(--color-primary-secondary);  /* #49aaa7 */
-  --accent-2: var(--color-primary);            /* #306462 */
-  --accent-3: var(--color-primary-light);      /* #639795 */
+  --accent-1: var(--color-primary-secondary);
+  --accent-2: var(--color-primary);
+  --accent-3: var(--color-primary-light);
+
+  /* Star palette (steel-like for 1-star) */
+  --star-gray: #cfd6dc;         /* lighter, steel-like gray for 1-star */
+  --star-gray-stroke: #8f98a1;  /* cooler, darker outline for contrast */
+  --star-yellow: #f0d36b;       /* toned-down yellow */
+  --star-orange: #fb8c00;       /* orange */
+  --star-red: #e53935;          /* red */
 
   display: block;
   width: 100%;
@@ -19,13 +27,8 @@
   margin-bottom: 1rem;
 }
 
-/* Cabecera degradada (verde) */
-.profile-hero {
-  height: 120px;
-  background-color: var(--color-primary-light); /* tono verde sólido (#49aaa7) */
-}
+.profile-hero { height: 120px; background-color: var(--color-primary-light); }
 
-/* identidad */
 .identity {
   display: flex;
   align-items: center;
@@ -46,24 +49,11 @@
   flex-shrink: 0;
 }
 
-.avatar svg {
-  width: 44px;
-  height: 44px;
-  fill: #fff;
-}
+.avatar svg { width: 44px; height: 44px; fill: #fff; }
 
-.identity-text { display: flex;
-   flex-direction: column;
-    gap: 0.35rem;
-   }
+.identity-text { display: flex; flex-direction: column; gap: 0.35rem; }
 
-.name {
-  margin: 0;
-  color: var(--color-primary-dark);
-  font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: 0.3px;
-}
+.name { margin: 0; color: var(--color-primary-dark); font-weight: 600; font-size: 1.25rem; letter-spacing: 0.3px; }
 
 .role-badge {
   display: inline-flex;
@@ -71,7 +61,7 @@
   gap: 0.4rem;
   font-size: 0.78rem;
   color: var(--color-primary);
-  background: #e7f5f3;             /* verde muy claro */
+  background: #e7f5f3;
   border: 1px solid #cbe7e5;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
@@ -104,25 +94,11 @@
   display: grid;
   place-items: center;
 }
-
-.info-tile .icon svg {
-  width: 18px;
-  height: 18px;
-  fill: var(--color-primary);
-}
+.info-tile .icon svg { width: 18px; height: 18px; fill: var(--color-primary); }
 
 .info-tile .meta { display: flex; flex-direction: column; gap: 0.15rem; }
-
-.info-tile .label {
-  font-size: 0.8rem;
-  color: var(--color-primary-light);
-}
-
-.info-tile .value {
-  font-size: 0.95rem;
-  color: var(--color-primary-dark);
-  overflow-wrap: anywhere;
-}
+.info-tile .label { font-size: 0.8rem; color: var(--color-primary-light); }
+.info-tile .value { font-size: 0.95rem; color: var(--color-primary-dark); overflow-wrap: anywhere; }
 
 .value-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -146,18 +122,8 @@
   margin-bottom: 0.6rem;
 }
 
-.account-header .dot {
-  width: 14px; height: 14px;
-  border: 2px solid var(--color-desaturated);
-  border-radius: 50%;
-}
-
-.account-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--color-primary-dark);
-  font-weight: 600;
-}
+.account-header .dot { width: 14px; height: 14px; border: 2px solid var(--color-desaturated); border-radius: 50%; }
+.account-header h3 { margin: 0; font-size: 1rem; color: var(--color-primary-dark); font-weight: 600; }
 
 .account-row {
   display: flex;
@@ -170,32 +136,47 @@
 
 .account-col { display: flex; flex-direction: column; }
 
+/* Title + stars aligned inline */
+.title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .account-title { color: var(--color-primary-dark); font-weight: 500; font-size: 0.95rem; }
 .account-sub { color: var(--color-primary-light); font-size: 0.85rem; }
 
-/* pills */
-.pill {
+/* Right-side container */
+.access-badges { display: flex; align-items: center; gap: 0.5rem; }
+
+/* ---------- Stars (solid, role-colored) ---------- */
+.access-stars {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  border: 1px solid transparent;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
-.pill-success {
-  color: #186b3a;
-  background: #e9f9ef;
-  border-color: #b7ebc8;
+/* Star size and fill behavior */
+.access-stars .star {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;            /* solid fill uses current text color */
+  stroke: currentColor;
+  stroke-width: 0.25;
 }
 
-/* también en verde para el nivel de acceso */
-.pill-accent {
-  color: var(--color-primary);
-  background: #e7f5f3;
-  border-color: #cbe7e5;
-}
+/* Color sets by level (applies to all rendered stars) */
+.stars-1 { color: var(--star-gray); }
+.stars-1 .star { stroke: var(--star-gray-stroke); stroke-width: 0.9; }
+
+.stars-2 { color: var(--star-yellow); }
+.stars-3 { color: var(--star-orange); }
+.stars-4 { color: var(--star-red); }
 
 /* states */
 .state {
@@ -207,52 +188,6 @@
 }
 .state-loading { color: var(--color-primary-light); font-style: italic; }
 .state-error { color: var(--color-danger); font-weight: 500; }
-
-/* contenedor a la derecha del row */
-.access-badges {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-/* badge numérico de nivel (1–4) */
-.level-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 0.08rem 0.35rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  margin-left: 0.35rem;
-}
-
-/* Colores por nivel */
-.level-1 { /* básico */
-  color: #556566;
-  background: #eef2f1;
-  border-color: #d9e3e1;
-}
-.level-2 { /* intermedio (teal) */
-  color: var(--color-primary);
-  background: #e7f5f3;
-  border-color: #cbe7e5;
-}
-.level-3 { /* alto (verde) */
-  color: #186b3a;
-  background: #e9f9ef;
-  border-color: #b7ebc8;
-}
-.level-4 { /* máximo (dorado) */
-  color: #7a5f00;
-  background: #fff7cc;
-  border-color: #f3e48f;
-}
-
-
-
-
 
 /* responsive */
 @media (max-width: 680px) {

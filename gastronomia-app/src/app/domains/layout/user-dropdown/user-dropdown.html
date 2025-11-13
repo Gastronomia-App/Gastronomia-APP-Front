@@ -2,7 +2,7 @@
   <!-- Mi perfil: visible para OWNER y ADMIN -->
   <li
     class="header-dropdown-item"
-    *appHasRole="[UserRole.OWNER, UserRole.ADMIN]"
+    *appHasRole="[UserRole.OWNER, UserRole.ADMIN, UserRole.CASHIER, UserRole.WAITER]"
     (click)="irAMiPerfil()"
     role="button"
   >
