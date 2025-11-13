@@ -45,7 +45,8 @@ export class EmployeesTable extends BaseTable<Employee> {
         { value: 'CASHIER', label: 'Cajero' },
         { value: 'WAITER', label: 'Mozo' }
       ],
-      filterFn: (employee, value) => !value || value === '' ? true : employee.role === value
+      filterFn: (employee, value) =>
+        !value || value === '' ? true : employee.role === value
     },
     {
       label: 'Estado',
@@ -83,20 +84,22 @@ export class EmployeesTable extends BaseTable<Employee> {
       { header: 'Apellido', field: 'lastName', sortable: true },
       { header: 'Email', field: 'email', sortable: true },
       { header: 'Teléfono', field: 'phoneNumber' },
-      {header: 'Rol',
+      {
+        header: 'Rol',
         field: 'role',
         sortable: true,
         formatter: (value: string) => {
-  const roleLabels: Record<string, string> = {
-    OWNER: 'Propietario',
-    ADMIN: 'Administrador',
-    CASHIER: 'Cajero',
-    WAITER: 'Mozo',
-  };
+          const roleLabels: Record<string, string> = {
+            OWNER: 'Propietario',
+            ADMIN: 'Administrador',
+            CASHIER: 'Cajero',
+            WAITER: 'Mozo'
+          };
 
-  return roleLabels[value as keyof typeof roleLabels] ?? value;
-}},
-      { 
+          return roleLabels[value as keyof typeof roleLabels] ?? value;
+        }
+      },
+      {
         header: 'Estado',
         field: 'deleted',
         template: 'badge',
@@ -175,7 +178,15 @@ export class EmployeesTable extends BaseTable<Employee> {
   protected onViewDetails(employee: Employee): void {
     this.employeeFormService.viewEmployeeDetails(employee);
   }
+
   public onNewEmployee(): void {
-  this.onNewEmployeeClick.emit();
-}
+    this.onNewEmployeeClick.emit();
+  }
+
+  // ============================
+  // 🔥 Método público para recargar la tabla desde afuera
+  // ============================
+  public reloadFromPage(): void {
+    this.refreshData();
+  }
 }

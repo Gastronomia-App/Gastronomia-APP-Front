@@ -28,7 +28,7 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
   currentEmployeeId: number | null = null;
 
   ngOnInit(): void {
-    // Subscribe to employee form service events
+    // Editar empleado
     this.subscriptions.add(
       this.employeeFormService.editEmployee$.subscribe((employee) => {
         this.showEmployeeDetails.set(false);
@@ -38,9 +38,9 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
+    // Ver detalles
     this.subscriptions.add(
       this.employeeFormService.viewEmployeeDetails$.subscribe((employee) => {
-        // Toggle details if same employee
         if (this.currentEmployeeId === employee.id && this.showEmployeeDetails()) {
           this.closeEmployeeDetails();
         } else {
@@ -53,12 +53,27 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
+    // Cerrar detalles
     this.subscriptions.add(
       this.employeeFormService.closeDetails$.subscribe(() => {
         this.showEmployeeDetails.set(false);
         this.showEmployeeForm.set(false);
         this.currentEmployeeId = null;
         this.employeeFormService.setActiveEmployeeId(null);
+      })
+    );
+
+    // 🔥 Cuando se crea un empleado → recargar tabla
+    this.subscriptions.add(
+      this.employeeFormService.employeeCreated$.subscribe(() => {
+        this.employeeTable?.reloadFromPage();
+      })
+    );
+
+    // 🔥 Cuando se actualiza un empleado → recargar tabla
+    this.subscriptions.add(
+      this.employeeFormService.employeeUpdated$.subscribe(() => {
+        this.employeeTable?.reloadFromPage();
       })
     );
   }

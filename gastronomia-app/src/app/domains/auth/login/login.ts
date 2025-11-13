@@ -22,30 +22,23 @@ export class LoginComponent {
   private router = inject(Router);
   private businessService = inject(BusinessService);
   private businessState = inject(BusinessStateService);
-  // Input para determinar el modo: 'login' o 'register'
+
   @Input() mode: 'login' | 'register' = 'login';
 
-  // Signals para estado reactivo
   loading = signal(false);
   error = signal<string | undefined>(undefined);
   successMessage = signal<string | undefined>(undefined);
   businessNameSuffix = signal<string>('');
 
-  // FormGroup tipado
   form: FormGroup;
 
   constructor() {
     this.form = this.createForm();
 
-    // Verificar si viene con credenciales desde el registro
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state || window.history.state;
 
     if (state && state['username']) {
-      console.log('🔑 LoginComponent - Credenciales recibidas desde registro');
-      console.log('👤 LoginComponent - Username a cargar:', state['username']);
-
-      // Pre-cargar el formulario con el username (no la password)
       setTimeout(() => {
         this.form.patchValue({
           username: state['username']
@@ -59,11 +52,9 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
-    // Recrear el formulario si el modo cambia
     if (this.mode === 'register') {
       this.form = this.createForm();
 
-      // Escuchar cambios en businessName para actualizar el sufijo
       this.form.get('businessName')?.valueChanges.subscribe((value: string) => {
         const sanitized = this.sanitizeBusinessName(value);
         this.businessNameSuffix.set(sanitized ? `@${sanitized}` : '');
@@ -71,7 +62,6 @@ export class LoginComponent {
     }
   }
 
-  // Sanitizar el nombre del negocio para usarlo como sufijo
   private sanitizeBusinessName(name: string): string {
     if (!name) return '';
 
@@ -87,29 +77,31 @@ export class LoginComponent {
     if (this.mode === 'login') {
       return this.fb.group({
         username: ['', [Validators.required, Validators.minLength(5)]],
-        password: ['', [Validators.required, Validators.minLength(8)]]
+        password: ['', [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(20)  // password max length
+        ]]
       });
     } else {
-      // Formulario de registro
       return this.fb.group({
-        // Datos del negocio
         businessName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(100)]],
         cuit: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
-
-        // Dirección del negocio
         street: ['', [Validators.required]],
         city: ['', [Validators.required]],
         province: ['', [Validators.required]],
         zipCode: ['', [Validators.required]],
-
-        // Datos del dueño
         name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
         lastName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]],
         dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
         email: ['', [Validators.required, Validators.email]],
         phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9,12}$/)]],
         username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
-        password: ['', [Validators.required, Validators.minLength(8)]]
+        password: ['', [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(20) // password max length
+        ]]
       });
     }
   }
@@ -141,14 +133,12 @@ export class LoginComponent {
       next: (session) => {
         this.loading.set(false);
 
-        // NUEVO: traer el negocio apenas logea
         this.businessService.getMyBusiness().subscribe({
           next: (business) => {
-            this.businessState.set(business);  // 👉 llena BusinessStateService
+            this.businessState.set(business);
             this.router.navigateByUrl('/seatings');
           },
           error: () => {
-            console.error("No se pudo cargar el negocio del usuario");
             this.router.navigateByUrl('/seatings');
           }
         });
@@ -167,7 +157,6 @@ export class LoginComponent {
   private submitRegister(): void {
     const values = this.form.value;
 
-    // Construir username completo con sufijo
     const fullUsername = values.username + this.businessNameSuffix();
 
     const business: Business = {
@@ -191,18 +180,11 @@ export class LoginComponent {
       }
     };
 
-    console.log('📤 LoginComponent - Enviando datos de registro:', business);
-    console.log('👤 LoginComponent - Username completo:', fullUsername);
-
     this.authService.register(business).subscribe({
       next: (createdBusiness) => {
         this.loading.set(false);
-        console.log('✅ LoginComponent - Negocio creado:', createdBusiness);
-        console.log('👤 LoginComponent - Owner:', createdBusiness.owner);
 
         const username = createdBusiness.owner?.username;
-
-        console.log('🔑 LoginComponent - Username para login:', { username });
 
         this.router.navigate(['/login'], {
           state: {
@@ -212,44 +194,40 @@ export class LoginComponent {
         });
       },
       error: (error) => {
-        console.error('❌ LoginComponent - Error en registro:', error);
         this.error.set(
           error?.error?.message ??
           error?.message ??
-          'Error al registrar el negocio. Por favor verifica los datos ingresados.'
+          'Error al registrar el negocio.'
         );
         this.loading.set(false);
       }
     });
   }
 
-  // Helper para verificar si un campo tiene error
   hasError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return !!(field && field.invalid && field.touched);
   }
 
-  // Helper para obtener mensaje de error
   getErrorMessage(fieldName: string): string {
     const field = this.form.get(fieldName);
     if (!field || !field.errors || !field.touched) return '';
 
     if (field.errors['required']) return 'Este campo es requerido';
     if (field.errors['minlength']) {
-      const minLength = field.errors['minlength'].requiredLength;
-      return `Mínimo ${minLength} caracteres`;
+      return `Mínimo ${field.errors['minlength'].requiredLength} caracteres`;
     }
     if (field.errors['maxlength']) {
-      const maxLength = field.errors['maxlength'].requiredLength;
-      return `Máximo ${maxLength} caracteres`;
+      return `Máximo ${field.errors['maxlength'].requiredLength} caracteres`;
     }
     if (field.errors['email']) return 'Email inválido';
+
     if (field.errors['pattern']) {
       if (fieldName === 'dni') return 'DNI debe tener 7 u 8 dígitos';
       if (fieldName === 'phoneNumber') return 'Teléfono debe tener entre 9 y 12 dígitos';
       if (fieldName === 'cuit') return 'CUIT debe tener 11 dígitos';
     }
+
     return 'Campo inválido';
   }
 }
-
