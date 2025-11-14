@@ -1,11 +1,12 @@
 import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Table, BaseTable } from '../../../../shared/components/table';
-import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
-import { Customer, TableColumn, TableFilter } from '../../../../shared/models';
-import { CustomersService } from '../../services/customers-service';
+import { BaseTable, Table } from '../../../shared/components/table';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
+import { Customer, TableColumn, TableFilter } from '../../../shared/models';
+import { CustomersService } from '../services/customers-service';
+import { CustomerFormService } from '../services/CustomerFormService';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CustomerFormService } from '../../services/CustomerFormService';
+
 
 @Component({
   selector: 'app-customer-table',

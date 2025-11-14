@@ -1,9 +1,9 @@
 import { Component, inject, output, viewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Form } from '../../../../shared/components/form';
-import { Customer, FormConfig, FormSubmitEvent } from '../../../../shared/models';
-import { CustomersService } from '../../services/customers-service';
-import { CustomerFormService } from '../../services/CustomerFormService';
+import { Form } from '../../../shared/components/form';
+import { CustomerFormService } from '../services/CustomerFormService';
+import { CustomersService } from '../services/customers-service';
+import { Customer, FormConfig, FormSubmitEvent } from '../../../shared/models';
 
 @Component({
   selector: 'app-customer-form',

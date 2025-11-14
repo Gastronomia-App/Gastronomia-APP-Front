@@ -21,7 +21,17 @@
   max-width: 1120px;
   margin: 0 auto;
 }
+ 
+.page-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
+.page-content::-webkit-scrollbar {
+  display: none;
+}
 /* header */
 .page-header {
   display: flex;

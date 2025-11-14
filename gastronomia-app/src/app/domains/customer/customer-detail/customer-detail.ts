@@ -1,9 +1,9 @@
 import { Component, inject, output, signal, viewChild, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Detail } from '../../../../shared/components/detail';
-import { Customer, DetailConfig } from '../../../../shared/models';
-import { CustomersService } from '../../services/customers-service';
-import { CustomerFormService } from '../../services/CustomerFormService';
+import { Detail } from '../../../shared/components/detail';
+import { CustomersService } from '../services/customers-service';
+import { CustomerFormService } from '../services/CustomerFormService';
+import { Customer, DetailConfig } from '../../../shared/models';
 
 @Component({
   selector: 'app-customer-detail',

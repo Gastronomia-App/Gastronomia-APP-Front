@@ -1,11 +1,11 @@
 import { Component, inject, ViewChild, OnInit, OnDestroy, signal, AfterViewChecked } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { CustomerForm } from '../components/customer-form/customer-form';
-import { CustomerDetails } from '../components/customer-detail/customer-detail';
 import { Customer } from '../../../shared/models';
-import { CustomerTable } from '../components/customer-table/customer-table';
 import { CustomerFormService } from '../services/CustomerFormService';
 import { CommonModule } from '@angular/common';
+import { CustomerTable } from '../customer-table/customer-table';
+import { CustomerForm } from '../customer-form/customer-form';
+import { CustomerDetails } from '../customer-detail/customer-detail';
 
 @Component({
   selector: 'app-customer-page',
