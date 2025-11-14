@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, Output, } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ItemCard, CustomField } from '../item-card';
 
 /**
  * Base constraint for items that can be used in the searchable list
+ * id is optional to support items not yet saved to database
  */
 export interface BaseSearchableItem {
-  id: number;
+  id?: number;
   name: string;
 }
 
@@ -18,10 +18,12 @@ export interface BaseSearchableItem {
  * - Search and filter items in real-time
  * - Keyboard navigation with arrow keys (↑/↓)
  * - Optional quantity selection with arrow keys (←/→)
+ * - Optional duplicate prevention (allowDuplicates)
  * - Dropdown appears immediately below search input
  * - Highlighted item on hover and keyboard navigation
  * - ESC key to close dropdown
  * - ENTER key to select highlighted item
+ * - Decoupled from rendering - parent handles selected items display
  * 
  * Keyboard shortcuts:
  * - ↑/↓: Navigate through filtered items
@@ -31,64 +33,112 @@ export interface BaseSearchableItem {
  * 
  * Usage example:
  * ```html
+ * <!-- Prevent duplicates (default) -->
  * <app-searchable-list
  *   [availableItems]="products"
  *   [selectedItems]="selectedComponents"
  *   [allowQuantitySelection]="true"
  *   [placeholder]="'Buscar componente...'"
- *   (itemAdded)="onComponentAdded($event)"
- *   (itemRemoved)="onComponentRemoved($event)">
+ *   (itemAdded)="onComponentAdded($event)">
  * </app-searchable-list>
+ * 
+ * <!-- Allow duplicates -->
+ * <app-searchable-list
+ *   [availableItems]="products"
+ *   [selectedItems]="pendingItems"
+ *   [allowDuplicates]="true"
+ *   [allowQuantitySelection]="true"
+ *   [placeholder]="'Buscar producto...'"
+ *   (itemAdded)="onProductAdded($event)">
+ * </app-searchable-list>
+ * 
+ * <!-- Parent handles rendering of selected items -->
+ * <div class="selected-items">
+ *   @for (item of selectedComponents; track item.id) {
+ *     <app-item-card [item]="item" (itemRemoved)="onComponentRemoved($event)"></app-item-card>
+ *   }
+ * </div>
  * ```
  */
 @Component({
   selector: 'app-searchable-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ItemCard],
+  imports: [CommonModule, FormsModule],
   templateUrl: './searchable-list.html',
   styleUrl: './searchable-list.css',
 })
-export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchableItem, TSelected extends BaseSearchableItem = TAvailable> {
+export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchableItem, TSelected extends BaseSearchableItem = TAvailable> implements OnChanges {
   @Input() placeholder: string = 'Buscar...';
   @Input() availableItems: TAvailable[] = [];
-  @Input() selectedItems: TSelected[] = [];
+  @Input() selectedItems: TSelected[] = []; // Only used for filtering
   @Input() isLoading: boolean = false;
-  
-  // Configuration options - Using customFields instead
-  @Input() customFields: CustomField[] = [];
-  @Input() editableFields: boolean = true;
-  @Input() allowQuantitySelection: boolean = false; // Nueva opción para habilitar selección de cantidad
+  @Input() allowQuantitySelection: boolean = false; // Enable quantity selection with arrows
+  @Input() allowDuplicates: boolean = false; // Allow selecting the same item multiple times
 
-  @Output() itemAdded = new EventEmitter<TAvailable>();
+  // Output events - parent handles all mutations
+  @Output() itemAdded = new EventEmitter<TAvailable & { quantity?: number }>();
   @Output() itemRemoved = new EventEmitter<number>();
   @Output() itemUpdated = new EventEmitter<TSelected>();
+  @Output() searchFocus = new EventEmitter<void>(); // Evento cuando el input recibe focus
 
   searchQuery = '';
   filteredItems: TAvailable[] = [];
-  highlightedIndex = -1; // Índice del item resaltado con teclado
-  pendingQuantity = 1; // Cantidad a agregar cuando se seleccione
+  highlightedIndex = -1; // Highlighted item index via keyboard
+  pendingQuantity = 1; // Quantity to add when item is selected
 
-  onSearch(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.searchQuery = input.value;
-    this.highlightedIndex = -1; // Reset highlight on new search
-    this.pendingQuantity = 1; // Reset quantity on new search
-    
-    if (this.searchQuery.trim() === '') {
-      this.filteredItems = [];
-      return;
+  ngOnChanges(changes: SimpleChanges): void {
+    // Cuando cambian los availableItems o selectedItems, actualizar filteredItems
+    // SOLO si hay una búsqueda activa (searchQuery no está vacío)
+    if (changes['availableItems'] || changes['selectedItems']) {
+      if (this.searchQuery.trim() !== '') {
+        this.updateFilteredItems();
+      }
     }
+  }
 
+  private updateFilteredItems(): void {
     if (!Array.isArray(this.availableItems)) {
       this.filteredItems = [];
       return;
     }
 
+    // Si no hay búsqueda, NO mostrar dropdown (lista vacía)
+    if (this.searchQuery.trim() === '') {
+      this.filteredItems = [];
+      this.highlightedIndex = -1;
+      return;
+    }
+
     const lowerQuery = this.searchQuery.toLowerCase();
-    this.filteredItems = this.availableItems.filter(item =>
-      item.name.toLowerCase().includes(lowerQuery) &&
-      !this.selectedItems.some(selected => selected.id === item.id)
-    );
+    
+    // Si allowDuplicates es true, no filtrar por selectedItems
+    if (this.allowDuplicates) {
+      this.filteredItems = this.availableItems.filter(item =>
+        item.name.toLowerCase().includes(lowerQuery)
+      );
+    } else {
+      // Filtrar por búsqueda Y excluir items ya seleccionados
+      this.filteredItems = this.availableItems.filter(item =>
+        item.name.toLowerCase().includes(lowerQuery) &&
+        !this.selectedItems.some(selected => selected.id === item.id)
+      );
+    }
+
+    // Auto-seleccionar primera opción cuando hay resultados
+    if (this.filteredItems.length > 0) {
+      this.highlightedIndex = 0;
+    } else {
+      this.highlightedIndex = -1;
+    }
+  }
+
+  onSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery = input.value;
+    this.pendingQuantity = 1; // Reset quantity on new search
+    // NO resetear highlightedIndex aquí, se hace en updateFilteredItems
+
+    this.updateFilteredItems();
   }
 
   onKeyDown(event: KeyboardEvent): void {
@@ -163,11 +213,9 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   }
 
   addItem(item: TAvailable): void {
-    // Si allowQuantitySelection está habilitado y hay cantidad pendiente > 1,
-    // emitir el item con la cantidad
+    // If allowQuantitySelection is enabled and quantity > 1, include it
     if (this.allowQuantitySelection && this.pendingQuantity > 1) {
-      // Crear un objeto que incluya la cantidad
-      const itemWithQuantity = { ...item, quantity: this.pendingQuantity } as any;
+      const itemWithQuantity = { ...item, quantity: this.pendingQuantity };
       this.itemAdded.emit(itemWithQuantity);
     } else {
       this.itemAdded.emit(item);
@@ -177,14 +225,6 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     this.filteredItems = [];
     this.highlightedIndex = -1;
     this.pendingQuantity = 1;
-  }
-
-  removeItem(itemId: number): void {
-    this.itemRemoved.emit(itemId);
-  }
-
-  onQuantityChange(item: TSelected): void {
-    this.itemUpdated.emit(item);
   }
 
   isHighlighted(index: number): boolean {

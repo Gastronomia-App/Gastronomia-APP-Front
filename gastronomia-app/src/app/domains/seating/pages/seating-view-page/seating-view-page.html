@@ -26,11 +26,12 @@
           (orderClosed)="onOrderClosed()">
         </app-order-form>
       }
-      @else if (currentMode() === 'occupiedDetail') {
-        <p class="text-muted">Esta mesa está ocupada. Pronto se mostrará el detalle de la orden.</p>
-      }
-      @else if (currentMode() === 'billing') {
-        <p class="text-muted">Esta mesa está en facturación.</p>
+      @else if ((currentMode() === 'occupiedDetail' || currentMode() === 'billing') && selectedSeating()?.activeOrder) {
+        <app-order-items-form
+          [order]="selectedSeating()!.activeOrder!"
+          (orderClosed)="onOrderClosed()"
+          (orderUpdated)="onOrderUpdated()">
+        </app-order-items-form>
       }
       @else {
         <div class="aside-panel-header"><h2>Vista del salón</h2></div>

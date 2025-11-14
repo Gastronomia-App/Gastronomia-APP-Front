@@ -12,12 +12,12 @@ export interface Order {
   dateTime?: string;
   items?: Item[];
   discount?: number;
-  status?: string;
+  status?: OrderStatus;
   subtotal?: number;
   total?: number;
   
   // Request/Response fields
-  orderType: OrderType;
+  orderType?: OrderType;
   peopleCount?: number | null;
   
   // Request-only fields (IDs for creation/update)

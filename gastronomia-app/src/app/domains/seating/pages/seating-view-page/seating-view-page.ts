@@ -13,13 +13,16 @@ import { CommonModule } from '@angular/common';
 import { SeatingGridView } from '../../components/seating-grid-view/seating-grid-view';
 import { SeatingsService } from '../../services/seating-service';
 import { Seating } from '../../../../shared/models/seating';
+import { Order } from '../../../../shared/models';
 import { ZoomStateService } from '../../services/zoom-state-service';
 import { OrderForm } from '../../../orders/components/order-form/order-form';
+import { OrderItemsForm } from '../../../orders/order-items-form/order-items-form';
+import { OrderService } from '../../../orders/services/order.service';
 
 @Component({
   selector: 'app-seating-view-page',
   standalone: true,
-  imports: [CommonModule, SeatingGridView, OrderForm],
+  imports: [CommonModule, SeatingGridView, OrderForm, OrderItemsForm],
   templateUrl: './seating-view-page.html',
   styleUrl: './seating-view-page.css'
 })
@@ -120,16 +123,44 @@ export class SeatingViewPage implements AfterViewInit {
     this.currentMode.set('createOrder');
   }
 
-  // Handles click on occupied seating (future detail view)
+  // Handles click on occupied seating - load full seating with activeOrder
   onOccupiedSeatingSelected(seating: Seating): void {
-    this.selectedSeating.set(seating);
-    this.currentMode.set('occupiedDetail');
+    // Load full seating details to get activeOrder
+    this.seatingService.getById(seating.id).subscribe({
+      next: (fullSeating) => {
+        this.selectedSeating.set(fullSeating);
+        if (fullSeating.activeOrder?.id) {
+          this.currentMode.set('occupiedDetail');
+        } else {
+          console.warn('No active order found for occupied seating');
+          this.currentMode.set('none');
+        }
+      },
+      error: (err) => {
+        console.error('Error loading seating details:', err);
+        this.currentMode.set('none');
+      }
+    });
   }
 
-  // Handles click on billing seating (billing state)
+  // Handles click on billing seating - load full seating with activeOrder
   onBillingSeatingSelected(seating: Seating): void {
-    this.selectedSeating.set(seating);
-    this.currentMode.set('billing');
+    // Load full seating details to get activeOrder
+    this.seatingService.getById(seating.id).subscribe({
+      next: (fullSeating) => {
+        this.selectedSeating.set(fullSeating);
+        if (fullSeating.activeOrder?.id) {
+          this.currentMode.set('billing');
+        } else {
+          console.warn('No active order found for billing seating');
+          this.currentMode.set('none');
+        }
+      },
+      error: (err) => {
+        console.error('Error loading seating details:', err);
+        this.currentMode.set('none');
+      }
+    });
   }
 
   // =========================================================
@@ -141,10 +172,30 @@ export class SeatingViewPage implements AfterViewInit {
     this.selectedSeating.set(null);
   }
 
+  // When an order is updated (items, status, etc.)
+  onOrderUpdated(): void {
+    this.loadSeatings();
+  }
+
   // When a new order is successfully created
   onOrderCreated(): void {
-    console.log('Order created successfully. Refreshing grid...');
-    this.selectedSeating.set(null);
-    this.loadSeatings(); // Reloads seatings without recreating the grid
+    const currentSeatingId = this.selectedSeating()?.id;
+    if (!currentSeatingId) return;
+
+    this.seatingService.getAll().subscribe({
+      next: (data) => {
+        const current = this.seatings();
+        current.splice(0, current.length, ...data);
+        this.seatings.set(current);
+
+        const updatedSeating = data.find(s => s.id === currentSeatingId);
+        if (updatedSeating) {
+          this.onOccupiedSeatingSelected(updatedSeating);
+        }
+      },
+      error: (err) => {
+        console.error('Error reloading seatings after order creation:', err);
+      }
+    });
   }
 }

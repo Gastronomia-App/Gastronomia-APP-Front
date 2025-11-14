@@ -83,8 +83,11 @@ export class ItemCard<T extends BaseSearchableItem = BaseSearchableItem> impleme
 
   /**
    * Handle remove button click
+   * Only emits if item has an id
    */
   onRemove(): void {
-    this.itemRemoved.emit(this.item.id);
+    if (this.item.id !== undefined) {
+      this.itemRemoved.emit(this.item.id);
+    }
   }
 }
