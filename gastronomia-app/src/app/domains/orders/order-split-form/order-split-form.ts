@@ -94,7 +94,7 @@ export class OrderSplitForm implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadFreeSeatings();
+    this.loadSeatings();
     this.loadEmployees();
     this.loadCustomers();
     
@@ -104,10 +104,11 @@ export class OrderSplitForm implements OnInit {
     }
   }
 
-  private loadFreeSeatings(): void {
+  private loadSeatings(): void {
     this.seatingService.getAll().subscribe({
       next: (seatings) => {
-        this.availableSeatings.set(seatings.filter(s => s.status === 'FREE'));
+        const currentSeatingNumber = this.order().seatingNumber;
+        this.availableSeatings.set(seatings.filter(s => s.number !== currentSeatingNumber));
       },
       error: (error) => {
         console.error('Error loading seatings:', error);

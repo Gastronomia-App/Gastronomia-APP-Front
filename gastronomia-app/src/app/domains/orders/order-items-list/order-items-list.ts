@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ItemCard, CustomField } from '../../../../shared/components/item-card';
-import { Item } from '../../../../shared/models';
+import { ItemCard, CustomField } from '../../../shared/components/item-card';
+import { Item } from '../../../shared/models';
 
 // Extend Item to be compatible with ItemCard
 interface ItemCardCompatible extends Item {

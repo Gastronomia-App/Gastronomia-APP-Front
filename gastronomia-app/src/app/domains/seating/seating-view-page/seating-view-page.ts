@@ -16,7 +16,7 @@ import { SeatingsService } from '../services/seating-service';
 import { Seating } from '../../../shared/models/seating';
 import { ZoomStateService } from '../services/zoom-state-service';
 
-import { OrderForm } from '../../orders/components/order-form/order-form';
+import { OrderForm } from '../../orders/order-form/order-form';
 import { OrderItemsForm } from '../../orders/order-items-form/order-items-form';
 
 @Component({

@@ -5,12 +5,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { take } from 'rxjs';
-import { CustomersService } from '../../../customer/services/customers-service';
-import { EmployeeService } from '../../../employees';
-import { OrderService } from '../../services/order.service';
-import { Customer, Employee, FormConfig, Order } from '../../../../shared/models';
-import { Form } from '../../../../shared/components/form';
-import { SearchableEntity } from '../../../../shared/components/searchable-entity/searchable-entity';
+import { CustomersService } from '../../customer/services/customers-service';
+import { EmployeeService } from '../../employees';
+import { OrderService } from '../services/order.service';
+import { Customer, Employee, FormConfig, Order } from '../../../shared/models';
+import { Form } from '../../../shared/components/form';
+import { SearchableEntity } from '../../../shared/components/searchable-entity/searchable-entity';
 import { FormControl } from '@angular/forms';
 
 @Component({
