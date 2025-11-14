@@ -8,11 +8,12 @@ import { CategoryFormService } from '../services/category-form.service';
 import { Category, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { clampHue, hslToHex, hexToHue, DEFAULT_LIGHTNESS, DEFAULT_SATURATION } from '../../../shared/utils/color.helpers';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [CommonModule, Form, FormsModule],
+  imports: [CommonModule, Form, FormsModule, AlertComponent],
   templateUrl: './category-form.html',
   styleUrl: './category-form.css',
   host: {
@@ -24,7 +25,8 @@ export class CategoryForm {
   private categoryFormService = inject(CategoryFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-
+  showAlert = signal(false);
+  alertMessage = signal<string | null>(null);
   // Reference to the generic Form component
   formComponent = viewChild(Form);
 
@@ -106,38 +108,40 @@ export class CategoryForm {
     };
 
     if (event.isEditMode && event.editingId) {
-      // UPDATE
-      console.log(`ðŸ“¤ PUT /api/categories/${event.editingId} - Request:`, formData);
-      this.categoryService.updateCategory(Number(event.editingId), formData)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (category) => {
-            console.log(`ðŸ“¥ PUT /api/categories/${event.editingId} - Response:`, category);
-            this.categoryFormService.notifyCategoryUpdated(category);
-            this.resetForm();
-            this.onClose();
-          },
-          error: (error) => {
-            console.error(`âŒ PUT /api/categories/${event.editingId} - Error:`, error);
-          }
-        });
-    } else {
-      // CREATE
-      console.log('ðŸ“¤ POST /api/categories - Request:', formData);
-      this.categoryService.createCategory(formData)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (category) => {
-            console.log('ðŸ“¥ POST /api/categories - Response:', category);
-            this.categoryFormService.notifyCategoryCreated(category);
-            this.resetForm();
-            this.onClose();
-          },
-          error: (error) => {
-            console.error('âŒ POST /api/categories - Error:', error);
-          }
-        });
-    }
+  // UPDATE
+  this.categoryService.updateCategory(Number(event.editingId), formData)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (category) => {
+        this.categoryFormService.notifyCategoryUpdated(category);
+        this.resetForm();
+        this.onClose();
+      },
+      error: (error) => {
+        this.alertMessage.set(
+          error.error?.message || 'No se pudo actualizar la categoría.'
+        );
+        this.showAlert.set(true);
+      }
+    });
+} else {
+  // CREATE
+  this.categoryService.createCategory(formData)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (category) => {
+        this.categoryFormService.notifyCategoryCreated(category);
+        this.resetForm();
+        this.onClose();
+      },
+      error: (error) => {
+        this.alertMessage.set(
+          error.error?.message || 'No se pudo crear la categoría.'
+        );
+        this.showAlert.set(true);
+      }
+    });
+}
   }
 
   loadCategory(category: Category): void {

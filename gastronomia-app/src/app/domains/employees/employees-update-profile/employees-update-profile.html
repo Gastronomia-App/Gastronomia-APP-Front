@@ -216,3 +216,13 @@
     </div>
     }
 </section>
+
+<div class="alert-overlay-wrapper">
+  @if (showAlert()) {
+    <app-alert
+      title="Error"
+      [message]="alertMessage()"
+      (onClose)="showAlert.set(false)"
+    />
+  }
+</div>

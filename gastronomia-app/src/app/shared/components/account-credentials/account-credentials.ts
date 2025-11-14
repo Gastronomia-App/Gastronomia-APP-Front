@@ -51,6 +51,12 @@ export class AccountCredentials {
     return len > this.maxUsername();
   });
 
+  // 🔥 VALIDACIÓN CORRECTA (solo parte local)
+  usernameInvalid = computed(() => {
+    const len = this.usernameLength();
+    return len < this.minUsername() || len > this.maxUsername();
+  });
+
   passwordTooShort = computed(() => {
     const len = this.passwordLength();
     return len > 0 && len < this.minPassword();
@@ -62,12 +68,11 @@ export class AccountCredentials {
   });
 
   constructor() {
-    // When parent username changes (new employee, edit other employee, etc.)
-    // split into local + domain and ALWAYS clear password.
+    // sync external username → local + domain
     effect(() => {
       const full = (this.username() ?? '').trim();
 
-      // Always reset password when parent username changes
+      // reset password always
       this.password.set('');
       this.passwordChanged.emit('');
 
@@ -104,7 +109,6 @@ export class AccountCredentials {
   // ===== Handlers =====
   onUsernameInput(event: Event): void {
     const target = event.target as HTMLInputElement;
-    // Remove any '@' so user cannot break domain part
     const sanitized = target.value.replace(/@/g, '');
     this.localPart.set(sanitized);
     this.usernameLocalChanged.emit(sanitized);
@@ -117,9 +121,7 @@ export class AccountCredentials {
   }
 
   togglePasswordVisibility(): void {
-    if (this.disabled()) {
-      return;
-    }
+    if (this.disabled()) return;
     this.showPassword.update(v => !v);
   }
 }

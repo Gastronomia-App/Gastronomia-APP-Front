@@ -15,11 +15,12 @@ import { Employee, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { AccountCredentials } from '../../../shared/components/account-credentials/account-credentials';
 import { UserRole } from '../../../shared/models/auth.model';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './employee-form.html',
   styleUrl: './employee-form.css',
   host: { class: 'entity-form' }
@@ -38,13 +39,14 @@ export class EmployeeForm implements OnInit {
   isEditingOwner = false;
   isReadOnlyForAdmin = false;
 
-  // currentUsername:
-  // - Nuevo empleado → solo dominio "@coffeecloud"
-  // - Editar empleado → username completo "piero@coffeecloud"
   currentUsername: string | null = null;
 
   usernameLocal: string | null = null;
   passwordLocal: string | null = null;
+
+  // Alerts
+  showAlert = signal(false);
+  alertMessage = signal('');
 
   // -----------------------------------------
   // FORM CONFIG
@@ -138,7 +140,7 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // EXTRAE SOLO EL DOMINIO DEL USER LOGUEADO
+  // DOMAIN
   // -----------------------------------------
   private setDomainFromLoggedUser(): void {
     const loggedUsername = this.authService.username();
@@ -149,7 +151,7 @@ export class EmployeeForm implements OnInit {
       return;
     }
 
-    this.currentUsername = full.substring(full.indexOf('@')); // "@coffeecloud"
+    this.currentUsername = full.substring(full.indexOf('@'));
   }
 
   // -----------------------------------------
@@ -198,86 +200,89 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // SUBMIT — CORREGIDO
+  // SUBMIT — VALIDATED
   // -----------------------------------------
   onFormSubmit(event: FormSubmitEvent<Employee>): void {
-  const data = event.data as any;
+    const data = event.data as any;
 
-  const logged = this.authService.role()?.replace('ROLE_', '') || '';
-  const targetRole = data.role?.replace('ROLE_', '') || '';
+    // Validate local username
+    if (this.usernameLocal && (this.usernameLocal.length < 5 || this.usernameLocal.length > 50)) {
+      this.alertMessage.set('El nombre de usuario debe tener entre 5 y 50 caracteres.');
+      this.showAlert.set(true);
+      return;
+    }
 
-  if (logged === 'ADMIN' && targetRole === 'ADMIN') {
-    alert('No puedes asignar el rol Administrador.');
-    return;
-  }
+    // Validate role permissions
+    const logged = this.authService.role()?.replace('ROLE_', '') || '';
+    const targetRole = data.role?.replace('ROLE_', '') || '';
 
-  const formData: any = {
-    name: data.name,
-    lastName: data.lastName,
-    dni: data.dni,
-    email: data.email,
-    phoneNumber: data.phoneNumber,
-    role: data.role
-  };
+    if (logged === 'ADMIN' && targetRole === 'ADMIN') {
+      this.alertMessage.set('No puedes asignar el rol Administrador.');
+      this.showAlert.set(true);
+      return;
+    }
 
-  const local = this.usernameLocal?.trim() ?? '';
+    const formData: any = {
+      name: data.name,
+      lastName: data.lastName,
+      dni: data.dni,
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      role: data.role
+    };
 
-  // -------------------------------------------------------
-  // 🔥 CASO 1: CREAR → enviar solo el local SIN DOMINIO
-  // -------------------------------------------------------
-  if (!event.isEditMode) {
-    if (local) formData.username = local; // SOLO local
-  }
+    const local = this.usernameLocal?.trim() ?? '';
 
-  // -------------------------------------------------------
-  // 🔥 CASO 2: EDITAR → enviar username COMPLETO
-  // -------------------------------------------------------
-  if (event.isEditMode && event.editingId) {
-    if (local) {
-      // Extraer dominio desde currentUsername
-      let domain = '';
-      if (this.currentUsername?.includes('@')) {
-        domain = this.currentUsername.substring(
-          this.currentUsername.indexOf('@')
-        );
+    // CREATE
+    if (!event.isEditMode) {
+      if (local) formData.username = local;
+
+      if (this.passwordLocal?.trim()) formData.password = this.passwordLocal.trim();
+
+      this.employeeService.createEmployee(formData).subscribe({
+        next: employee => {
+          this.employeeFormService.notifyEmployeeCreated(employee);
+          this.resetForm();
+          this.onClose();
+        },
+        error: err => {
+          this.alertMessage.set(err.error?.message || 'Error al crear empleado.');
+          this.showAlert.set(true);
+        }
+      });
+
+      return;
+    }
+
+    // EDIT
+    if (event.isEditMode && event.editingId) {
+      if (local) {
+        let domain = '';
+        if (this.currentUsername?.includes('@')) {
+          domain = this.currentUsername.substring(this.currentUsername.indexOf('@'));
+        }
+        formData.username = local + domain;
       }
-      formData.username = local + domain; // local + dominio completo
-    }
 
-    if (this.passwordLocal?.trim()) {
-      formData.password = this.passwordLocal.trim();
-    }
+      if (this.passwordLocal?.trim()) formData.password = this.passwordLocal.trim();
 
-    this.employeeService
-      .updateEmployee(Number(event.editingId), formData)
-      .subscribe({
+      this.employeeService.updateEmployee(Number(event.editingId), formData).subscribe({
         next: e => {
           this.employeeFormService.notifyEmployeeUpdated(e);
           this.resetForm();
           this.onClose();
           this.employeeFormService.viewEmployeeDetails(e);
+        },
+        error: err => {
+          this.alertMessage.set(err.error?.message || 'Error al actualizar empleado.');
+          this.showAlert.set(true);
         }
       });
-
-    return;
-  }
-
-  // -------- CREATE REQUEST --------
-  if (this.passwordLocal?.trim()) {
-    formData.password = this.passwordLocal.trim();
-  }
-
-  this.employeeService.createEmployee(formData).subscribe({
-    next: employee => {
-      this.employeeFormService.notifyEmployeeCreated(employee);
-      this.resetForm();
-      this.onClose();
     }
-  });
-}
+  }
 
   // -----------------------------------------
-  // EDITAR
+  // EDIT
   // -----------------------------------------
   loadEmployee(employee: Employee): void {
     this.isEditMode = true;
@@ -287,9 +292,9 @@ export class EmployeeForm implements OnInit {
 
     this.isEditingOwner =
       employee.role === 'OWNER' || employee.role === UserRole.OWNER;
+
     this.isReadOnlyForAdmin = logged === 'ADMIN' && this.isEditingOwner;
 
-    // Username completo, pero solo para mostrar su dominio
     this.currentUsername = employee.username ?? null;
 
     this.usernameLocal = null;
@@ -318,7 +323,7 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // RESET
+  // RESET FORM
   // -----------------------------------------
   resetForm(): void {
     this.isEditMode = false;
@@ -336,11 +341,17 @@ export class EmployeeForm implements OnInit {
     this.formComponent()?.resetForm();
   }
 
+  // -----------------------------------------
+  // CANCEL
+  // -----------------------------------------
   onFormCancel(): void {
     this.resetForm();
     this.onClose();
   }
 
+  // -----------------------------------------
+  // CLOSE
+  // -----------------------------------------
   onClose(): void {
     this.onFormClosed.emit();
   }

@@ -1,5 +1,14 @@
 <!-- supplier-form.html -->
 <aside class="aside-panel">
+
+   @if (showAlert()) {
+    <app-alert
+      [title]="'Error'"
+      [message]="alertMessage()"
+      (onClose)="showAlert.set(false)"
+      (onAccept)="showAlert.set(false)">
+    </app-alert>
+  }
   <!-- Generic Form Component with integrated header and footer -->
   <app-form
     [config]="formConfig"

@@ -10,6 +10,10 @@ export class BusinessStateService {
   }
 
   clear(): void {
-    this.business.set(null);
-  }
+  console.error('BusinessStateService.clear() fue llamado');
+  console.trace();  // ← muestra la pila completa
+  this.business.set(null);
+}
+
+  
 }

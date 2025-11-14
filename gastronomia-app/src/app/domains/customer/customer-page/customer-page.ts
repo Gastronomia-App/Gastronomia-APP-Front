@@ -24,13 +24,13 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
   private pendingCustomer?: Customer;
   private pendingDetailsCustomer?: Customer;
 
-  // === UI State (reemplaza showForm/showDetails signals viejos)
+  // === UI State (replaces old showForm/showDetails signals) ===
   showCustomerForm = signal(false);
   showCustomerDetails = signal(false);
   currentCustomerId: number | null = null;
 
   ngOnInit(): void {
-    // ====== Abrir formulario en modo edición ======
+    // ====== Open form in edit mode ======
     this.subscriptions.add(
       this.customerFormService.editCustomer$.subscribe((customer) => {
         this.showCustomerDetails.set(false);
@@ -40,10 +40,10 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
-    // ====== Ver detalles ======
+    // ====== View details ======
     this.subscriptions.add(
       this.customerFormService.viewCustomerDetails$.subscribe((customer) => {
-        // Toggle: si hago click en el mismo cliente, cierro el detalle
+        // Toggle: if clicking the same customer, close the detail panel
         if (this.currentCustomerId === customer.id && this.showCustomerDetails()) {
           this.closeCustomerDetails();
         } else {
@@ -56,7 +56,7 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
-    // ====== Cerrar todos los paneles ======
+    // ====== Close all panels ======
     this.subscriptions.add(
       this.customerFormService.closeDetails$.subscribe(() => {
         this.showCustomerDetails.set(false);
@@ -68,13 +68,13 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngAfterViewChecked(): void {
-    // Cargar datos en formulario pendiente
+    // Load pending form data
     if (this.pendingCustomer && this.customerFormComponent) {
       this.customerFormComponent.loadCustomer(this.pendingCustomer);
       this.pendingCustomer = undefined;
     }
 
-    // Cargar datos en detalle pendiente
+    // Load pending detail data
     if (this.pendingDetailsCustomer && this.customerDetailsComponent) {
       this.customerDetailsComponent.loadCustomer(this.pendingDetailsCustomer);
       this.pendingDetailsCustomer = undefined;
@@ -85,7 +85,7 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
     this.subscriptions.unsubscribe();
   }
 
-  // ==================== FORM / DETALLES ====================
+  // ==================== FORM / DETAILS ====================
 
   openCustomerForm(): void {
     this.showCustomerDetails.set(false);
@@ -93,7 +93,7 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
     this.currentCustomerId = null;
     this.customerFormService.setActiveCustomerId(null);
 
-    // 🔹 Si vengo de un cliente en edición, reinicia el formulario
+    // If coming from an edit customer, reset form
     setTimeout(() => {
       if (this.customerFormComponent) {
         this.customerFormComponent.resetForm();
@@ -102,10 +102,10 @@ export class CustomerPage implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   closeCustomerForm(): void {
-  this.showCustomerForm.set(false);
-  this.currentCustomerId = null;
-  this.customerFormService.setActiveCustomerId(null);
-}
+    this.showCustomerForm.set(false);
+    this.currentCustomerId = null;
+    this.customerFormService.setActiveCustomerId(null);
+  }
 
   closeCustomerDetails(): void {
     this.showCustomerDetails.set(false);

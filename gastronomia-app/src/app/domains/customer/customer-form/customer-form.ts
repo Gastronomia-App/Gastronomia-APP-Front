@@ -1,33 +1,39 @@
-import { Component, inject, output, viewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, output, viewChild, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Form } from '../../../shared/components/form';
 import { CustomerFormService } from '../services/CustomerFormService';
 import { CustomersService } from '../services/customers-service';
 import { Customer, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './customer-form.html',
   styleUrl: './customer-form.css',
   host: { class: 'entity-form' }
 })
 export class CustomerForm {
+
   private customerFormService = inject(CustomerFormService);
   private customersService = inject(CustomersService);
   private cdr = inject(ChangeDetectorRef);
 
   formComponent = viewChild(Form);
 
-  // === Estado ===
+  // === State ===
   editingCustomerId: number | null = null;
   isEditMode = false;
+
+  // === Alerts ===
+  showAlert = signal(false);
+  alertMessage = signal('');
 
   // === Outputs ===
   onFormClosed = output<void>();
 
-  // === Configuración del formulario ===
+  // === Form configuration ===
   formConfig: FormConfig<Customer> = {
     title: 'Nuevo Cliente',
     editTitle: 'Editar Cliente',
@@ -40,55 +46,61 @@ export class CustomerForm {
           { name: 'lastName', label: 'Apellido', type: 'text', required: true, placeholder: 'Ej: Pérez' },
           { name: 'dni', label: 'DNI', type: 'text', required: true, placeholder: 'Ej: 12345678' },
           { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'Ej: juan@example.com' },
-          { name: 'phoneNumber', label: 'Teléfono', type: 'text', placeholder: 'Ej: 541112345678' },
+          { name: 'phoneNumber', label: 'Teléfono', type: 'text', required: true, placeholder: 'Ej: 541112345678' },
           { name: 'discount', label: 'Descuento (%)', type: 'number', min: 0, max: 100, step: 1, placeholder: 'Ej: 10' }
         ]
       }
     ]
   };
 
-  /** 🔹 Envío del formulario */
+  /** -------------------------------------------------------
+   *  SUBMIT
+   *  ------------------------------------------------------ */
   onFormSubmit(event: FormSubmitEvent<Customer>): void {
+
     const data: Partial<Customer> = {
-  name: event.data.name,
-  lastName: event.data.lastName,
-  dni: event.data.dni,
-  email: event.data.email,
-  phoneNumber: event.data.phoneNumber,
-  discount: Number(event.data.discount ?? 0)
-};
+      name: event.data.name,
+      lastName: event.data.lastName,
+      dni: event.data.dni,
+      email: event.data.email,
+      phoneNumber: event.data.phoneNumber,
+      discount: Number(event.data.discount ?? 0)
+    };
 
     if (this.isEditMode && this.editingCustomerId) {
-      console.log(`📤 PATCH /api/customers/${this.editingCustomerId}`, data);
+      // UPDATE
       this.customersService.update(this.editingCustomerId, data).subscribe({
         next: (customer) => {
-          console.log('✅ Cliente actualizado:', customer);
           this.customerFormService.notifyCustomerUpdated(customer);
           this.resetForm();
           this.onClose();
           this.customerFormService.viewCustomerDetails(customer);
         },
         error: (error) => {
-          console.error('❌ Error al actualizar cliente:', error);
+          this.alertMessage.set(error.error?.message || 'Could not update customer.');
+          this.showAlert.set(true);
         }
       });
+
     } else {
-      console.log('📤 POST /api/customers', data);
+      // CREATE
       this.customersService.create(data).subscribe({
         next: (customer) => {
-          console.log('✅ Cliente creado:', customer);
           this.customerFormService.notifyCustomerCreated(customer);
           this.resetForm();
           this.onClose();
         },
         error: (error) => {
-          console.error('❌ Error al crear cliente:', error);
+          this.alertMessage.set(error.error?.message || 'Could not create customer.');
+          this.showAlert.set(true);
         }
       });
     }
   }
 
-  /** 🔹 Carga los datos de un cliente para editar */
+  /** -------------------------------------------------------
+   *  LOAD
+   *  ------------------------------------------------------ */
   loadCustomer(customer: Customer): void {
     this.isEditMode = true;
     this.editingCustomerId = customer.id;
@@ -108,31 +120,26 @@ export class CustomerForm {
     this.cdr.detectChanges();
   }
 
-  /** 🔹 Resetea el formulario */
+  /** -------------------------------------------------------
+   *  RESET
+   *  ------------------------------------------------------ */
   resetForm(): void {
     this.isEditMode = false;
     this.editingCustomerId = null;
+
     const form = this.formComponent();
     if (form) form.resetForm();
   }
 
-  /** 🔹 Cancelar formulario */
+  /** -------------------------------------------------------
+   *  CANCEL + CLOSE
+   *  ------------------------------------------------------ */
   onFormCancel(): void {
-  this.resetForm();
-  this.onFormClosed.emit(); // ✅ ahora avisa al padre que se debe cerrar el panel
-}
-
-  /** 🔹 Cerrar panel lateral */
-  onClose(): void {
+    this.resetForm();
     this.onFormClosed.emit();
   }
 
-onClearForm(): void {
-  const form = this.formComponent();
-  if (form) {
-    form.resetForm();
-    console.log('🧹 Campos del formulario limpiados');
+  onClose(): void {
+    this.onFormClosed.emit();
   }
-}
-
 }

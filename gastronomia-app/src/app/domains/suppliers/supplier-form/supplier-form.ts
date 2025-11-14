@@ -1,11 +1,12 @@
-import { 
-  Component, 
-  inject, 
-  OnInit, 
-  output, 
-  ChangeDetectorRef, 
-  viewChild, 
-  DestroyRef
+import {
+  Component,
+  inject,
+  OnInit,
+  output,
+  ChangeDetectorRef,
+  viewChild,
+  DestroyRef,
+  signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Validators } from '@angular/forms';
@@ -14,38 +15,43 @@ import { Form } from '../../../shared/components/form/form';
 import { SupplierService } from '../../../services/supplier.service';
 import { SupplierFormService } from '../services';
 import { Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-supplier-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './supplier-form.html',
   styleUrl: './supplier-form.css',
 })
 export class SupplierForm implements OnInit {
   // ==================== Dependency Injection ====================
-  
+
   private supplierService = inject(SupplierService);
   private supplierFormService = inject(SupplierFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
   // ==================== ViewChild Reference ====================
-  
-  // Reference to the generic Form component - REQUIRED for manual operations
+
   formComponent = viewChild(Form);
 
   // ==================== Outputs ====================
-  
+
   onFormClosed = output<void>();
 
+  // ==================== Alert Signals ====================
+
+  showAlert = signal(false);
+  alertMessage = signal('');
+
   // ==================== Edit Mode State ====================
-  
+
   editingSupplierId: number | null = null;
   isEditMode = false;
 
   // ==================== Form Configuration ====================
-  
+
   formConfig: FormConfig<Supplier> = {
     sections: [
       {
@@ -77,7 +83,9 @@ export class SupplierForm implements OnInit {
             type: 'text',
             placeholder: '12345678901',
             required: false,
-            validators: [Validators.pattern(/^\d{11}$/)],
+            validators: [
+              Validators.pattern(/^\d{2}-\d{8}-\d$/)
+            ],
             fullWidth: false,
             helpText: 'Formato: 11 dígitos sin guiones'
           }
@@ -157,15 +165,12 @@ export class SupplierForm implements OnInit {
   };
 
   // ==================== Lifecycle Hooks ====================
-  
-  ngOnInit(): void {
-    // No additional initialization needed
-  }
+
+  ngOnInit(): void { }
 
   // ==================== Form Submission Handler ====================
-  
+
   onFormSubmit(event: FormSubmitEvent<Supplier>): void {
-    // Transform form data to match API expectations
     const data = event.data as any;
     const formData: any = {
       tradeName: data.tradeName?.trim(),
@@ -176,13 +181,11 @@ export class SupplierForm implements OnInit {
       address: null
     };
 
-    // Handle address fields (they come directly in event.data, not nested)
     const street = data.street?.trim();
     const city = data.city?.trim();
     const province = data.province?.trim();
     const zipCode = data.zipCode?.trim();
-    
-    // Check if at least one address field has a value
+
     if (street || city || province || zipCode) {
       formData.address = {
         street: street || null,
@@ -193,7 +196,6 @@ export class SupplierForm implements OnInit {
     }
 
     if (event.isEditMode && event.editingId) {
-      // UPDATE operation
       this.supplierService.updateSupplier(Number(event.editingId), formData)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
@@ -204,13 +206,14 @@ export class SupplierForm implements OnInit {
             this.supplierFormService.viewSupplierDetails(supplier);
           },
           error: (error) => {
-            console.error('Error updating supplier:', error);
-            alert(`Error al actualizar el proveedor: ${error.error?.message || error.message || 'Error desconocido'}`);
+            this.alertMessage.set(
+              error?.error?.message || error?.message || 'Error al actualizar el proveedor.'
+            );
+            this.showAlert.set(true);
           }
         });
+
     } else {
-      // CREATE operation
-      console.log('Sending supplier data to backend:', formData); // Debug log
       this.supplierService.createSupplier(formData)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
@@ -221,20 +224,21 @@ export class SupplierForm implements OnInit {
             this.supplierFormService.viewSupplierDetails(supplier);
           },
           error: (error) => {
-            console.error('Error creating supplier:', error);
-            alert(`Error al crear el proveedor: ${error.error?.message || error.message || 'Error desconocido'}`);
+            this.alertMessage.set(
+              error?.error?.message || error?.message || 'Error al crear el proveedor.'
+            );
+            this.showAlert.set(true);
           }
         });
     }
   }
 
   // ==================== Load Supplier for Edit ====================
-  
+
   loadSupplier(supplier: Supplier): void {
     this.isEditMode = true;
     this.editingSupplierId = supplier.id;
 
-    // Prepare data for form - flatten address fields to root level
     const supplierData: any = {
       tradeName: supplier.tradeName,
       legalName: supplier.legalName || '',
@@ -247,7 +251,6 @@ export class SupplierForm implements OnInit {
       zipCode: supplier.address?.zipCode || ''
     };
 
-    // Load data into form component
     const formComp = this.formComponent();
     if (formComp) {
       formComp.loadData(supplierData);
@@ -257,7 +260,7 @@ export class SupplierForm implements OnInit {
   }
 
   // ==================== Reset Form ====================
-  
+
   resetForm(): void {
     this.isEditMode = false;
     this.editingSupplierId = null;
@@ -269,7 +272,7 @@ export class SupplierForm implements OnInit {
   }
 
   // ==================== Form Actions ====================
-  
+
   onFormCancel(): void {
     this.resetForm();
     this.onClose();

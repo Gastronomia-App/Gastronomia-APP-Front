@@ -13,6 +13,7 @@ import {
 } from '../../shared/models/auth.model';
 import { Employee } from '../../shared/models/employee.model';
 import { Business } from '../../shared/models/business.model';
+import { BusinessStateService } from '../../domains/business/services/business-state-service';
 
 const TOKEN_KEY = 'access_token';
 const EMPLOYEE_KEY = 'current_employee';
@@ -30,7 +31,7 @@ export class AuthService {
   private employeeSignal = signal<Employee | null>(this.restoreEmployee());
   
   // Signal reactivo para el negocio actual
-  private businessSignal = signal<Business | null>(this.restoreBusiness());
+  private businessSignal = signal<Business | null>(null);
   
   // Sesión actual (solo lectura)
   session = this.sessionSignal.asReadonly();
@@ -41,6 +42,7 @@ export class AuthService {
   // Negocio actual (solo lectura)
   business = this.businessSignal.asReadonly();
 
+  
   // Computed signals para acceso rápido a datos del usuario
   username = computed(() => this.session()?.claims.sub ?? null);
   role = computed(() => this.session()?.claims.role ?? null);
@@ -52,7 +54,15 @@ export class AuthService {
   
   businessName = computed(() => this.business()?.name ?? null);
 
-  constructor(private http: HttpClient) {}
+  constructor(
+  private http: HttpClient,
+  private businessState: BusinessStateService
+) {
+  const restored = this.restoreBusiness();
+  if (restored) {
+    this.businessSignal.set(restored);
+  }
+}
 
   // --------- Login / Logout ---------
   
@@ -257,15 +267,18 @@ export class AuthService {
    * Restaura el negocio desde localStorage
    */
   private restoreBusiness(): Business | null {
-    try {
-      const raw = localStorage.getItem(BUSINESS_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as Business;
-    } catch (error) {
-      console.error('❌ Error al restaurar negocio:', error);
-      return null;
-    }
+  try {
+    const raw = localStorage.getItem(BUSINESS_KEY);
+    if (!raw) return null;
+
+    const business = JSON.parse(raw) as Business;
+    this.businessState.set(business);
+    return business;
+  } catch (error) {
+    console.error('❌ Error al restaurar negocio:', error);
+    return null;
   }
+}
 
   /**
    * Limpia todo el localStorage

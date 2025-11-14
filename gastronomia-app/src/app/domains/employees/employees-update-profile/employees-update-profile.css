@@ -12,7 +12,20 @@
   color: var(--color-primary-dark);
   letter-spacing: 0.2px;
 }
+.alert-overlay-wrapper {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 99999; /* Más alto que el modal */
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
 
+.alert-overlay-wrapper app-alert {
+  pointer-events: all; /* Para permitir clic en el botón */
+}
 
 .upd-username-counter {
   margin-top: 4px;

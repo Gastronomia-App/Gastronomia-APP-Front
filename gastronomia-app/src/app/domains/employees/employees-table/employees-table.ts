@@ -24,17 +24,17 @@ export class EmployeesTable extends BaseTable<Employee> {
 
   onNewEmployeeClick = output<void>();
 
-  // === Datos para el modal ===
+  // Modal data
   showDeleteModal = signal(false);
   override itemToDelete: { id: number, name: string } | null = null;
 
-  // === Mensaje ===
+  // Delete message
   get deleteConfirmationMessage(): string {
     if (!this.itemToDelete) return '';
     return `¿Estás seguro de eliminar al empleado "${this.itemToDelete.name}"?`;
   }
 
-  // === Filtros ===
+  // Filters
   filters: TableFilter<Employee>[] = [
     {
       label: 'Rol',
@@ -75,9 +75,8 @@ export class EmployeesTable extends BaseTable<Employee> {
   }
 
   // ============================
-  // Métodos obligatorios BaseTable
+  // Required BaseTable methods
   // ============================
-
   protected getColumns(): TableColumn<Employee>[] {
     return [
       { header: 'Nombre', field: 'name', sortable: true },
@@ -135,9 +134,8 @@ export class EmployeesTable extends BaseTable<Employee> {
   }
 
   // ============================
-  // DELETE (modificado)
+  // Delete (modified)
   // ============================
-
   override onTableDelete(employee: Employee) {
     this.itemToDelete = {
       id: employee.id!,
@@ -165,11 +163,11 @@ export class EmployeesTable extends BaseTable<Employee> {
   // ============================
   // Edit / Details
   // ============================
-
   protected onEditItem(employee: Employee): void {
     const logged = (this.authService.role() ?? '').replace('ROLE_', '');
     const target = (employee.role ?? '').replace('ROLE_', '');
 
+    // Admin cannot edit Owner or Admin
     if (logged === 'ADMIN' && (target === 'OWNER' || target === 'ADMIN')) return;
 
     this.employeeFormService.editEmployee(employee);
@@ -184,7 +182,7 @@ export class EmployeesTable extends BaseTable<Employee> {
   }
 
   // ============================
-  // 🔥 Método público para recargar la tabla desde afuera
+  // Public method to reload table from outside
   // ============================
   public reloadFromPage(): void {
     this.refreshData();

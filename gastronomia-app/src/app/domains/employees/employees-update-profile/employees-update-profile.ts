@@ -1,4 +1,3 @@
-// EmployeesUpdateProfile.ts
 import {
   Component,
   Output,
@@ -13,16 +12,17 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { EmployeeService } from '../services/employee.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-employees-update-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AlertComponent],
   templateUrl: './employees-update-profile.html',
   styleUrl: './employees-update-profile.css'
 })
 export class EmployeesUpdateProfile implements OnInit {
-@Output() updated = new EventEmitter<void>();
+  @Output() updated = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
 
   private readonly fb = inject(FormBuilder);
@@ -47,9 +47,13 @@ export class EmployeesUpdateProfile implements OnInit {
 
   readonly showPassword = signal(false);
 
-  // overlay + countdown
+  // Overlay and countdown
   readonly securityRedirect = signal(false);
   readonly redirectCountdown = signal(5);
+
+  // Alert
+  readonly showAlert = signal(false);
+  readonly alertMessage = signal('');
 
   readonly form: FormGroup = this.fb.group({
     firstName: ['', [Validators.maxLength(80)]],
@@ -73,6 +77,7 @@ export class EmployeesUpdateProfile implements OnInit {
       const username = emp.username ?? '';
       const atIndex = username.indexOf('@');
 
+      // Extract domain and local part
       if (atIndex >= 0) {
         this.localDefault = username.substring(0, atIndex);
         this.domain = username.substring(atIndex);
@@ -83,6 +88,7 @@ export class EmployeesUpdateProfile implements OnInit {
 
       this.form.reset();
 
+      // Prevent "@" usage in local username
       const ctrl = this.form.get('usernameLocal');
       if (ctrl) {
         ctrl.valueChanges.subscribe(v => {
@@ -132,7 +138,6 @@ export class EmployeesUpdateProfile implements OnInit {
   }
 
   submit(): void {
-
     const dto: any = {};
 
     const rawLocal = (this.form.get('usernameLocal')?.value ?? '').trim();
@@ -141,11 +146,11 @@ export class EmployeesUpdateProfile implements OnInit {
     const usernameChanged = rawLocal.length > 0;
     const passwordChanged = password.length > 0;
 
+    // Validate local username length
     if (usernameChanged) {
-      if (rawLocal.length < this.MIN_USERNAME ||
-          rawLocal.length > this.MAX_TOTAL_USERNAME) {
-        this.form.get('usernameLocal')?.setErrors({ length: true });
-        this.form.markAllAsTouched();
+      if (rawLocal.length < this.MIN_USERNAME || rawLocal.length > this.MAX_TOTAL_USERNAME) {
+        this.alertMessage.set('El nombre de usuario debe tener entre 5 y 50 caracteres.');
+        this.showAlert.set(true);
         return;
       }
       dto.username = rawLocal;
@@ -167,15 +172,15 @@ export class EmployeesUpdateProfile implements OnInit {
 
     this.employeeService.updateCurrentEmployee(dto).subscribe({
       next: () => {
-
         this.updated.emit();
-        // CASE 1: no cambio credenciales → solo cerrar modal
+
+        // If username and password were not changed, just close
         if (!usernameChanged && !passwordChanged) {
           this.close();
           return;
         }
 
-        // CASE 2: cambió credenciales → mostrar overlay
+        // Show security redirect with countdown
         this.securityRedirect.set(true);
 
         let counter = 5;
@@ -191,14 +196,15 @@ export class EmployeesUpdateProfile implements OnInit {
             this.router.navigate(['/login']);
           }
         }, 1000);
-
       },
-      error: err => console.error(err)
+      error: err => {
+        this.alertMessage.set(err.error?.message || 'Error al actualizar perfil.');
+        this.showAlert.set(true);
+      }
     });
   }
 
   close(): void {
     this.closed.emit();
   }
-
 }

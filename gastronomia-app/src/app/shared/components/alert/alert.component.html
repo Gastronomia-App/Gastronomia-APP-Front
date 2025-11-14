@@ -1,51 +1,29 @@
 <div class="alert-backdrop" (click)="onBackdropClick($event)">
-  <div class="alert-dialog" [class.success]="type() === 'success'" [class.error]="type() === 'error'">
+  <div class="alert-dialog">
 
     <!-- HEADER -->
     <div class="alert-header">
-
       <div class="header-icon">
-        @if (type() === 'success') {
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9.75 16.5 5.5 12.25l1.5-1.5 2.75 2.75 7-7 1.5 1.5-8.5 8.5z"/>
-          </svg>
-        } @else {
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm3.54 13.54-1.06 1.06L12 13.06l-2.47 2.47-1.06-1.06L10.94 12 8.47 9.53l1.06-1.06L12 10.94l2.47-2.47 1.06 1.06L13.06 12l2.48 2.54Z"/>
-          </svg>
-        }
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm3.54 13.54-1.06 1.06L12 13.06l-2.47 2.47-1.06-1.06L10.94 12 8.47 9.53l1.06-1.06L12 10.94l2.47-2.47 1.06 1.06L13.06 12l2.48 2.54Z" />
+        </svg>
       </div>
 
-      <button class="close-btn" (click)="close()">
-        ✕
-      </button>
+      <button class="close-btn" (click)="close()">✕</button>
 
       <h2 class="alert-title">{{ title() }}</h2>
     </div>
 
     <!-- BODY -->
     <div class="alert-body">
-      <p class="alert-message">{{ message() }}</p>
-
-      <div class="alert-info-line">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"/>
-        </svg>
-        <span>Sistema de alertas</span>
-        <span>·</span>
-        <span>{{ formattedTime }}</span>
-      </div>
+      <p class="alert-message">
+        {{ message() }}
+      </p>
     </div>
 
     <!-- FOOTER -->
     <div class="alert-footer">
-
-      @if (showCancel()) {
-        <button class="btn cancel-btn" (click)="cancel()">Cancelar</button>
-      }
-
-      <button class="btn accept-btn" (click)="accept()">Aceptar</button>
-
+      <button class="accept-btn" (click)="accept()">Aceptar</button>
     </div>
 
   </div>

@@ -9,11 +9,12 @@ import { ProductGroupService } from '../services/product-group.service';
 import { ProductGroupFormService } from '../services/product-group-form.service';
 import { ProductService } from '../../products/services/product.service';
 import { Product, ProductGroup, ProductOption, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-product-group-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './product-group-form.html',
   styleUrl: './product-group-form.css',
   host: {
@@ -27,48 +28,34 @@ export class ProductGroupForm implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
-  // Reference to the generic Form component
   formComponent = viewChild(Form);
-
   onFormClosed = output<void>();
 
-  // Data for form fields - Using SIGNALS for reactivity
+  // ALERTAS
+  showAlert = signal(false);
+  alertMessage = signal('');
+
+  // DATA
   availableProducts = signal<Product[]>([]);
   selectedOptions = signal<ProductOption[]>([]);
-
-  // Track original state for edit mode (to detect changes)
   originalOptions: ProductOption[] = [];
-
   isLoadingProducts = signal<boolean>(false);
 
   editingProductGroupId: number | null = null;
   isEditMode = false;
 
-  // Computed inputs for dynamic components - REACTIVE
   optionsInputs = computed(() => ({
     placeholder: 'Buscar producto...',
     availableItems: this.availableProducts(),
     selectedItems: this.enrichOptionsWithNames(this.selectedOptions()),
     isLoading: this.isLoadingProducts(),
     customFields: [
-      {
-        key: 'maxQuantity',
-        label: 'Máx. cantidad',
-        type: 'number' as const,
-        editable: true
-      },
-      {
-        key: 'priceIncrease',
-        label: 'Incremento',
-        type: 'currency' as const,
-        editable: true,
-        suffix: '$'
-      }
+      { key: 'maxQuantity', label: 'Máx. cantidad', type: 'number' as const, editable: true },
+      { key: 'priceIncrease', label: 'Incremento', type: 'currency' as const, editable: true, suffix: '$' }
     ],
     editableFields: true
   }));
 
-  // Form configuration
   formConfig: FormConfig<ProductGroup> = {
     sections: [
       {
@@ -124,21 +111,16 @@ export class ProductGroupForm implements OnInit {
       }
     ]
   };
-  
+
   constructor() {
-    // Watch for changes in computed inputs and update form
     effect(() => {
       const optionsInputs = this.optionsInputs();
-      
-      // Update the formConfig with new inputs
       const optionsSection = this.formConfig.sections.find(s => s.title === 'Opciones');
       if (optionsSection) {
         const optionsField = optionsSection.fields.find(f => f.name === 'options');
-        
         if (optionsField) {
           optionsField.customInputs = optionsInputs;
         }
-        
         setTimeout(() => {
           this.formComponent()?.renderDynamicComponents();
         }, 0);
@@ -151,16 +133,10 @@ export class ProductGroupForm implements OnInit {
     this.setupProductGroupDeletedSubscription();
   }
 
-  /**
-   * Listen for product group deletion to auto-close form
-   */
   private setupProductGroupDeletedSubscription(): void {
     this.productGroupFormService.productGroupDeleted$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        // Close form when any product group is deleted
-        this.onClose();
-      });
+      .subscribe(() => this.onClose());
   }
 
   private loadAvailableProducts(): void {
@@ -171,8 +147,10 @@ export class ProductGroupForm implements OnInit {
         this.updateDynamicFieldsAndRerender();
         this.isLoadingProducts.set(false);
       },
-      error: (error) => {
-        console.error('❌ GET /api/products - Error:', error);
+      error: () => {
+        this.alertMessage.set('No se pudieron cargar los productos.');
+        this.showAlert.set(true);
+
         this.isLoadingProducts.set(false);
         this.availableProducts.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -184,26 +162,21 @@ export class ProductGroupForm implements OnInit {
     const optionsSection = this.formConfig.sections.find(s => s.title === 'Opciones');
     if (optionsSection) {
       const optionsField = optionsSection.fields.find(f => f.name === 'options');
-      
       if (optionsField) {
         optionsField.customInputs = this.optionsInputs();
       }
-      
       setTimeout(() => {
         this.formComponent()?.renderDynamicComponents();
       }, 0);
     }
   }
 
-  /**
-   * Enrich options with product names (for display in SearchableList)
-   */
   private enrichOptionsWithNames(options: ProductOption[]): any[] {
     return options.map(option => {
       const product = this.availableProducts().find(p => p.id === option.productId);
       return {
         ...option,
-        id: option.productId, // Use productId as id for SearchableList
+        id: option.productId,
         name: product ? product.name : `Producto #${option.productId}`
       };
     });
@@ -211,7 +184,7 @@ export class ProductGroupForm implements OnInit {
 
   onOptionAdded(item: Product): void {
     const option: ProductOption = {
-      id: 0, // Will be set by backend
+      id: 0,
       productId: item.id,
       maxQuantity: 1,
       priceIncrease: 0
@@ -220,7 +193,7 @@ export class ProductGroupForm implements OnInit {
   }
 
   onOptionRemoved(itemId: number): void {
-    this.selectedOptions.update(items => 
+    this.selectedOptions.update(items =>
       items.filter(o => o.id !== itemId && o.productId !== itemId)
     );
   }
@@ -231,7 +204,7 @@ export class ProductGroupForm implements OnInit {
       if (index !== -1) {
         const updated = [...items];
         updated[index] = {
-          id: updated[index].id, // Mantener el ID de relación si existe
+          id: updated[index].id,
           productId: item.productId || item.id,
           maxQuantity: Number(item.maxQuantity) || 1,
           priceIncrease: Number(item.priceIncrease) || 0
@@ -243,7 +216,6 @@ export class ProductGroupForm implements OnInit {
   }
 
   onFormSubmit(event: FormSubmitEvent<any>): void {
-    // Basic product group data (without options)
     const formData: any = {
       name: event.data.name || '',
       minQuantity: Number(event.data.minQuantity) || 0,
@@ -257,124 +229,105 @@ export class ProductGroupForm implements OnInit {
     }
   }
 
-  /**
-   * Create new product group and then add options
-   */
   private createProductGroup(formData: any): void {
-    console.log('📤 POST /api/groups - Request:', formData);
-    
     this.productGroupService.createProductGroup(formData).subscribe({
       next: (productGroup) => {
-        console.log('📥 POST /api/groups - Response:', productGroup);
-        
-        // Now add options
+
         this.addOptions(productGroup.id).subscribe({
           next: () => {
-            console.log('✅ Product group created with options');
-            
-            // Reload the product group to get the complete version with all options
+
             this.productGroupService.getProductGroupById(productGroup.id).subscribe({
               next: (createdProductGroup) => {
-                console.log('📥 GET /api/groups/' + productGroup.id + ' - Created product group:', createdProductGroup);
                 this.productGroupFormService.notifyProductGroupCreated(createdProductGroup);
                 this.resetForm();
                 this.onClose();
               },
-              error: (error) => {
-                console.error('❌ Error reloading created product group:', error);
-                // Fallback: use the product group from the POST response
+              error: () => {
+                this.alertMessage.set('El grupo fue creado, pero ocurrió un error al recargar los datos.');
+                this.showAlert.set(true);
+
                 this.productGroupFormService.notifyProductGroupCreated(productGroup);
                 this.resetForm();
                 this.onClose();
               }
             });
+
           },
-          error: (error) => {
-            console.error('❌ Error adding options:', error);
+          error: () => {
+            this.alertMessage.set('No se pudieron agregar las opciones.');
+            this.showAlert.set(true);
           }
         });
+
       },
-      error: (error) => {
-        console.error('❌ POST /api/groups - Error:', error);
+      error: () => {
+        this.alertMessage.set('No se pudo crear el grupo de opciones.');
+        this.showAlert.set(true);
       }
     });
   }
 
-  /**
-   * Update product group and then sync options
-   */
   private updateProductGroup(productGroupId: number, formData: any): void {
-    console.log(`📤 PUT /api/groups/${productGroupId} - Request:`, formData);
-    
     this.productGroupService.updateProductGroup(productGroupId, formData).subscribe({
       next: (productGroup) => {
-        console.log(`📥 PUT /api/groups/${productGroupId} - Response:`, productGroup);
-        
-        // Sync options
+
         this.syncOptions(productGroupId).subscribe({
           next: () => {
-            console.log('✅ Product group updated with options synced');
-            
-            // Reload the product group to get the updated version with all options
+
             this.productGroupService.getProductGroupById(productGroupId).subscribe({
               next: (updatedProductGroup) => {
-                console.log('📥 GET /api/groups/' + productGroupId + ' - Updated product group:', updatedProductGroup);
                 this.productGroupFormService.notifyProductGroupUpdated(updatedProductGroup);
                 this.resetForm();
                 this.onClose();
                 this.productGroupFormService.viewProductGroupDetails(updatedProductGroup);
               },
-              error: (error) => {
-                console.error('❌ Error reloading product group:', error);
-                // Fallback: use the product group from the PUT response
+              error: () => {
+                this.alertMessage.set('El grupo fue actualizado, pero ocurrió un error al recargar los datos.');
+                this.showAlert.set(true);
+
                 this.productGroupFormService.notifyProductGroupUpdated(productGroup);
                 this.resetForm();
                 this.onClose();
                 this.productGroupFormService.viewProductGroupDetails(productGroup);
               }
             });
+
           },
-          error: (error) => {
-            console.error('❌ Error syncing options:', error);
+          error: () => {
+            this.alertMessage.set('Ocurrió un error al sincronizar las opciones.');
+            this.showAlert.set(true);
           }
         });
+
       },
-      error: (error) => {
-        console.error(`❌ PUT /api/groups/${productGroupId} - Error:`, error);
+      error: () => {
+        this.alertMessage.set('No se pudo actualizar el grupo.');
+        this.showAlert.set(true);
       }
     });
   }
 
-  /**
-   * Add all options to a newly created product group
-   */
   private addOptions(productGroupId: number): Observable<any> {
     const optionsToAdd = this.selectedOptions().map(o => ({
       productId: o.productId,
       maxQuantity: o.maxQuantity || 1,
       priceIncrease: o.priceIncrease || 0
     }));
-    
+
     if (optionsToAdd.length > 0) {
       return this.productGroupService.addProductOptions(productGroupId, optionsToAdd);
     }
-    
-    // If no options, return completed observable
-    return new Observable(observer => { 
-      observer.next(true); 
-      observer.complete(); 
+
+    return new Observable(observer => {
+      observer.next(true);
+      observer.complete();
     });
   }
 
-  /**
-   * Sync options for an updated product group
-   * Detects: additions, updates, and deletions
-   */
   private syncOptions(productGroupId: number): Observable<any> {
     const operations: Observable<any>[] = [];
     const currentOptions = this.selectedOptions();
-    
-    // Find options to ADD (no id)
+
     const optionsToAdd = currentOptions
       .filter(o => !o.id)
       .map(o => ({
@@ -382,22 +335,22 @@ export class ProductGroupForm implements OnInit {
         maxQuantity: o.maxQuantity || 1,
         priceIncrease: o.priceIncrease || 0
       }));
-    
+
     if (optionsToAdd.length > 0) {
       operations.push(
         this.productGroupService.addProductOptions(productGroupId, optionsToAdd)
       );
     }
 
-    // Find options to UPDATE (id exists and data changed)
     const optionsToUpdate = currentOptions.filter(o => {
       if (!o.id) return false;
       const original = this.originalOptions.find(oo => oo.id === o.id);
       return original && (
-        original.maxQuantity !== o.maxQuantity || 
+        original.maxQuantity !== o.maxQuantity ||
         original.priceIncrease !== o.priceIncrease
       );
     });
+
     optionsToUpdate.forEach(option => {
       operations.push(
         this.productGroupService.updateProductOption(productGroupId, option.id!, {
@@ -408,28 +361,21 @@ export class ProductGroupForm implements OnInit {
       );
     });
 
-    // Find options to DELETE (in original but not in current)
-    const optionsToDelete = this.originalOptions.filter(oo => 
+    const optionsToDelete = this.originalOptions.filter(oo =>
       !currentOptions.find(o => o.id === oo.id)
     );
+
     optionsToDelete.forEach(option => {
       operations.push(
         this.productGroupService.removeProductOption(productGroupId, option.id!)
       );
     });
 
-    console.log('🔄 Sync operations:', {
-      optionsToAdd: optionsToAdd.length,
-      optionsToUpdate: optionsToUpdate.length,
-      optionsToDelete: optionsToDelete.length
-    });
-
-    // Execute all operations in parallel
-    return operations.length > 0 
+    return operations.length > 0
       ? new Observable(observer => {
           let completed = 0;
           let hasError = false;
-          
+
           operations.forEach(op => {
             op.subscribe({
               next: () => {
@@ -439,16 +385,17 @@ export class ProductGroupForm implements OnInit {
                   observer.complete();
                 }
               },
-              error: (err: any) => {
+              error: () => {
                 hasError = true;
-                observer.error(err);
+                this.alertMessage.set('Ocurrió un error procesando las operaciones del grupo.');
+                this.showAlert.set(true);
               }
             });
           });
         })
-      : new Observable(observer => { 
-          observer.next(true); 
-          observer.complete(); 
+      : new Observable(observer => {
+          observer.next(true);
+          observer.complete();
         });
   }
 
@@ -473,11 +420,9 @@ export class ProductGroupForm implements OnInit {
         priceIncrease: o.priceIncrease || 0
       }));
       this.selectedOptions.set(options);
-      // Save original state for comparison
       this.originalOptions = JSON.parse(JSON.stringify(options));
     }
 
-    // Load data into form component
     const formComp = this.formComponent();
     if (formComp) {
       formComp.loadData(productGroupData);

@@ -23,11 +23,11 @@ export class CustomerDetails implements OnInit {
 
   detailComponent = viewChild(Detail);
 
-  // Señales reactivas
+  // Reactive signals
   customer = signal<Customer | null>(null);
 
   constructor() {
-    // Cada vez que cambie el cliente, re-renderiza el detalle dinámico
+    // When customer changes, re-render dynamic detail components
     effect(() => {
       const currentCustomer = this.customer();
       if (currentCustomer) {
@@ -78,12 +78,12 @@ export class CustomerDetails implements OnInit {
     ]
   };
 
-  /** Cargar los datos del cliente actual */
+  /** Load current customer data */
   loadCustomer(customer: Customer): void {
     this.customer.set(customer);
   }
 
-  /** Editar cliente desde el detalle */
+  /** Edit customer from detail panel */
   onEdit(): void {
     const current = this.customer();
     if (current) {
@@ -92,7 +92,7 @@ export class CustomerDetails implements OnInit {
     }
   }
 
-  /** Cerrar panel lateral */
+  /** Close side panel */
   onClose(): void {
     this.onDetailsClosed.emit();
   }

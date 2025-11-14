@@ -6,16 +6,19 @@ import { Business } from '../../../shared/models';
 import { Confirm } from '../../../shared/components/confirm';
 import { BusinessForm } from '../business-form/business-form';
 import { BusinessStateService } from '../services/business-state-service';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-business-page',
-  imports: [CommonModule, FormsModule, BusinessForm, Confirm],
+  imports: [CommonModule, FormsModule, BusinessForm, Confirm, AlertComponent],
   templateUrl: './business-page.html',
   styleUrl: './business-page.css',
 })
 export class BusinessPage implements OnInit {
   private businessService = inject(BusinessService);
   private businessState = inject(BusinessStateService);
+  showAlert = signal(false);
+alertMessage = signal<string | null>(null);
   // UI state
   myBusiness = signal<Business | null>(null);
   isLoading = signal(true);
@@ -48,7 +51,6 @@ export class BusinessPage implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('Error loading business:', error);
         this.isLoading.set(false);
 
         if (error.status === 404) {
@@ -91,16 +93,19 @@ export class BusinessPage implements OnInit {
         this.showSaveConfirm.set(false);
         this.pendingFormData = null;
       },
-      error: (error) => {
-        console.error('Error updating business:', error);
-        this.showSaveConfirm.set(false);
+       error: (error) => {
+      console.error('Error updating business:', error);
 
-        if (error.status === 403) {
-          alert('No tienes permiso para modificar este negocio');
-        } else {
-          alert('Error al actualizar el negocio');
-        }
+      this.showSaveConfirm.set(false);
+
+      if (error.status === 403) {
+        this.alertMessage.set('No tienes permiso para modificar este negocio.');
+      } else {
+        this.alertMessage.set('Error al actualizar el negocio.');
       }
+
+      this.showAlert.set(true);
+    }
     });
   }
 
@@ -127,20 +132,19 @@ export class BusinessPage implements OnInit {
     this.businessService.deleteBusiness(businessId).subscribe({
       next: () => {
         this.showDeleteConfirm.set(false);
-        alert('Negocio eliminado correctamente');
-        // Redirect or reload
         window.location.href = '/';
       },
       error: (error) => {
-        console.error('Error deleting business:', error);
-        this.showDeleteConfirm.set(false);
+      this.showDeleteConfirm.set(false);
 
-        if (error.status === 403) {
-          alert('No tienes permiso para eliminar este negocio');
-        } else {
-          alert('Error al eliminar el negocio');
-        }
+      if (error.status === 403) {
+        this.alertMessage.set('No tienes permiso para eliminar este negocio.');
+      } else {
+        this.alertMessage.set('Error al eliminar el negocio.');
       }
+
+      this.showAlert.set(true);
+    }
     });
   }
 
