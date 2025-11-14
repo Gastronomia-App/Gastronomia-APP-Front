@@ -25,6 +25,5 @@ export class SeatingRootPage {
   ]);
 
   onTabClick(tabId: string): void {
-    console.log('Tab clicked:', tabId);
   }
 }

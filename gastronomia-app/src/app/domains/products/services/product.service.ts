@@ -19,7 +19,6 @@ export class ProductService {
 
   getProductsPage(page: number = 0, size: number = 20): Observable<PageResponse<Product>> {
     const products = this.http.get<PageResponse<Product>>(`${this.apiUrl}/products?page=${page}&size=${size}`);
-    products.subscribe(p => console.log(p));
     return products;
   }
 

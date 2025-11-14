@@ -208,14 +208,6 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
 
   constructor() {
     // Debug effect
-    effect(() => {
-      console.log('📊 Table Data Updated:', {
-        rows: this.data().length,
-        columns: this.columns().length,
-        actions: this.actions().length
-      });
-    });
-
     // Auto-load more data if needed when data changes
     effect(() => {
       // Trigger re-check when data or pagination changes
