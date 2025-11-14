@@ -14,15 +14,23 @@
     }
   </div>
 
-  <!-- Aside panel for order items -->
-  @if (showOrderItems() && selectedSeating()?.activeOrder) {
+  <!-- Aside panel for order form or order items -->
+  @if (currentMode() !== 'none' && selectedSeating()) {
     <aside class="aside-panel seating-aside">
       <div class="aside-panel-wrapper">
-        <app-order-items-form
-          [order]="selectedSeating()!.activeOrder!"
-          (orderClosed)="onOrderItemsClosed()"
-          (orderUpdated)="onOrderUpdated()">
-        </app-order-items-form>
+        @if (currentMode() === 'createOrder') {
+          <app-order-form
+            [seatingId]="selectedSeating()!.id"
+            (orderCreated)="onOrderCreated()"
+            (orderClosed)="onOrderClosed()">
+          </app-order-form>
+        } @else if (currentMode() === 'orderItems' && selectedSeating()?.activeOrder) {
+          <app-order-items-form
+            [order]="selectedSeating()!.activeOrder!"
+            (orderClosed)="onOrderItemsClosed()"
+            (orderUpdated)="onOrderUpdated()">
+          </app-order-items-form>
+        }
       </div>
     </aside>
   }
