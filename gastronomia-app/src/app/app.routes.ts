@@ -1,5 +1,4 @@
-﻿// app.routes.ts
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { LoginComponent } from './domains/auth/login/login';
 import { authGuard } from './core/guards/auth.guard';
 import { HomePage } from './domains/homepage/homepage';
@@ -17,93 +16,93 @@ export const routes: Routes = [
   },
   {
     path: 'inventory',
-    loadComponent: () => import('./domains/inventory/inventory-page/inventory-page')
-      .then(m => m.InventoryPage),
+    loadComponent: () =>
+      import('./domains/inventory/inventory-page/inventory-page')
+        .then(m => m.InventoryPage),
     canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
     children: [
       {
         path: '',
         redirectTo: 'products',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'products',
-        loadComponent: () => import('./domains/products/product-page/product-page')
-          .then(m => m.ProductPage)
+        loadComponent: () =>
+          import('./domains/products/product-page/product-page')
+            .then(m => m.ProductPage),
       },
       {
         path: 'categories',
-        loadComponent: () => import('./domains/categories/category-page/category-page')
-          .then(m => m.CategoryPage)
+        loadComponent: () =>
+          import('./domains/categories/category-page/category-page')
+            .then(m => m.CategoryPage),
       },
       {
         path: 'groups',
-        loadComponent: () => import('./domains/product-groups/product-group-page/product-group-page')
-          .then(m => m.ProductGroupPage)
-      }
-    ]
+        loadComponent: () =>
+          import('./domains/product-groups/product-group-page/product-group-page')
+            .then(m => m.ProductGroupPage),
+      },
+    ],
   },
   {
     path: 'products',
     redirectTo: '/inventory/products',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'categories',
     redirectTo: '/inventory/categories',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'groups',
     redirectTo: '/inventory/groups',
-    pathMatch: 'full'
-  },
-  {
-    path: 'customers',
-    loadComponent: () =>
-      import('./domains/customer/customer-page/customer-page')
-        .then(m => m.CustomerPage),
-    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])]
+    pathMatch: 'full',
   },
   {
     path: 'cash-flow',
-    loadComponent: () => import('./domains/cash-flow/cash-flow-page/cash-flow-page')
-      .then(m => m.CashFlowPage),
+    loadComponent: () =>
+      import('./domains/cash-flow/cash-flow-page/cash-flow-page')
+        .then(m => m.CashFlowPage),
     canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
     children: [
       {
         path: '',
         redirectTo: 'expenses',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'expenses',
-        loadComponent: () => import('./domains/expenses/expenses-page/expenses-page')
-          .then(m => m.ExpensesPage)
+        loadComponent: () =>
+          import('./domains/expenses/expenses-page/expenses-page')
+            .then(m => m.ExpensesPage),
       },
       {
         path: 'audits',
-        loadComponent: () => import('./domains/audits/audit-page/audit-page')
-          .then(m => m.AuditsPage)
-      }
-    ]
+        loadComponent: () =>
+          import('./domains/audits/audit-page/audit-page')
+            .then(m => m.AuditsPage),
+      },
+    ],
   },
   {
     path: 'expenses',
     redirectTo: '/cash-flow/expenses',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'audits',
     redirectTo: '/cash-flow/audits',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'suppliers',
     loadComponent: () =>
       import('./domains/suppliers/suppliers-page/suppliers-page')
         .then(m => m.SuppliersPage),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
   },
   {
     path: 'seatings',
@@ -115,52 +114,90 @@ export const routes: Routes = [
       {
         path: '',
         redirectTo: 'view',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'view',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-view-page/seating-view-page')
-            .then(m => m.SeatingViewPage)
+          import('./domains/seating/seating-view-page/seating-view-page')
+            .then(m => m.SeatingViewPage),
       },
       {
         path: 'status',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-status-page/seating-status-page')
-            .then(m => m.SeatingStatusPage)
+          import('./domains/seating/seating-status-page/seating-status-page')
+            .then(m => m.SeatingStatusPage),
       },
       {
         path: 'config',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-config-page/seating-config-page')
+          import('./domains/seating/seating-config-page/seating-config-page')
             .then(m => m.SeatingConfigPage),
-        canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
-      }
-    ]
+        canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])],
+      },
+    ],
   },
   {
     path: 'orders',
     loadComponent: () =>
       import('./domains/orders/orders-page/orders-page')
         .then(m => m.OrdersPage),
-    canActivate: [roleGuard([UserRole.CASHIER, UserRole.WAITER, UserRole.ADMIN, UserRole.OWNER])]
+    canActivate: [
+      roleGuard([
+        UserRole.CASHIER,
+        UserRole.WAITER,
+        UserRole.ADMIN,
+        UserRole.OWNER,
+      ]),
+    ],
   },
   {
-    path: 'employees',
+    path: 'people',
     loadComponent: () =>
-      import('./domains/employees/employees-page/employees-page')
-        .then(m => m.EmployeesPage),
-    canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
+      import('./domains/people/people-page/people-page')
+        .then(m => m.PeoplePage),
+    canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
+    children: [
+      { path: '', redirectTo: 'customers', pathMatch: 'full' },
+      {
+        path: 'customers',
+        loadComponent: () =>
+          import('./domains/customer/customer-page/customer-page')
+            .then(m => m.CustomerPage),
+        canActivate: [roleGuard([UserRole.CASHIER, UserRole.ADMIN, UserRole.OWNER])],
+      },
+      {
+        path: 'employees',
+        loadComponent: () =>
+          import('./domains/employees/employees-page/employees-page')
+            .then(m => m.EmployeesPage),
+        canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])],
+      },
+    ],
   },
   {
     path: 'businesses',
     loadComponent: () =>
       import('./domains/business/business-page/business-page')
         .then(m => m.BusinessPage),
-    canActivate: [roleGuard([UserRole.OWNER])]
+    canActivate: [roleGuard([UserRole.OWNER])],
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./domains/employees/employees-profile-page/employees-profile-page')
+        .then(m => m.EmployeesProfilePage),
+    canActivate: [
+      roleGuard([
+        UserRole.ADMIN,
+        UserRole.CASHIER,
+        UserRole.WAITER,
+        UserRole.OWNER,
+      ]),
+    ],
   },
   {
     path: '**',
-    redirectTo: ''
-  }
+    redirectTo: '',
+  },
 ];

@@ -1,0 +1,21 @@
+<aside class="aside-panel">
+  <app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode"
+    [editingId]="editingCustomerId"
+    [showHeader]="true"
+    [showFooter]="true"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+    (formClose)="onClose()">
+  </app-form>
+</aside>
+
+@if (showAlert()) {
+  <app-alert
+    type="error"
+    title="Error"
+    [message]="alertMessage()"
+    (onAccept)="showAlert.set(false)"
+    (onClose)="showAlert.set(false)"/>
+}

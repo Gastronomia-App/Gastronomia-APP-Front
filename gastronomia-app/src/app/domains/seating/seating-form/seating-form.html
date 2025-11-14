@@ -1,0 +1,20 @@
+<div class="aside-panel-wrapper">
+  @if (seating()) {
+    <app-form
+      [config]="formConfig()"
+      [isEditMode]="mode() === 'edit'"
+      [initialData]="seating()!"
+      [showHeader]="true"
+      [showFooter]="true"
+      [headerTitle]="mode() === 'create' ? 'Nueva ubicación' : 'Editar ubicación'"
+      [submitButtonLabel]="mode() === 'create' ? 'Crear ubicación' : 'Guardar'"
+      (formSubmit)="onSubmit($event)"
+      (formCancel)="onCancel()"
+      (formClose)="onClose()">
+    </app-form>
+  }
+
+  @if (showAlert()) {
+  
+  }
+</div>

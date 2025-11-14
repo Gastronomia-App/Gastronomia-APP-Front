@@ -98,7 +98,7 @@ export class EmployeesDetail {
             booleanLabels: {
               true: 'Inactivo',
               false: 'Activo'
-            }
+            },
           }
         ]
       }

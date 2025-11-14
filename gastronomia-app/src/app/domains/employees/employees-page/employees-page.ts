@@ -28,7 +28,7 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
   currentEmployeeId: number | null = null;
 
   ngOnInit(): void {
-    // Subscribe to employee form service events
+    // Edit employee
     this.subscriptions.add(
       this.employeeFormService.editEmployee$.subscribe((employee) => {
         this.showEmployeeDetails.set(false);
@@ -38,9 +38,10 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
+    // View details
     this.subscriptions.add(
       this.employeeFormService.viewEmployeeDetails$.subscribe((employee) => {
-        // Toggle details if same employee
+        // Toggle if clicking the same employee while details are open
         if (this.currentEmployeeId === employee.id && this.showEmployeeDetails()) {
           this.closeEmployeeDetails();
         } else {
@@ -53,6 +54,7 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
+    // Close details
     this.subscriptions.add(
       this.employeeFormService.closeDetails$.subscribe(() => {
         this.showEmployeeDetails.set(false);
@@ -61,14 +63,30 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
         this.employeeFormService.setActiveEmployeeId(null);
       })
     );
+
+    // Reload table after employee creation
+    this.subscriptions.add(
+      this.employeeFormService.employeeCreated$.subscribe(() => {
+        this.employeeTable?.reloadFromPage();
+      })
+    );
+
+    // Reload table after employee update
+    this.subscriptions.add(
+      this.employeeFormService.employeeUpdated$.subscribe(() => {
+        this.employeeTable?.reloadFromPage();
+      })
+    );
   }
 
   ngAfterViewChecked(): void {
+    // Load pending form data
     if (this.pendingEmployee && this.employeeFormComponent) {
       this.employeeFormComponent.loadEmployee(this.pendingEmployee);
       this.pendingEmployee = undefined;
     }
 
+    // Load pending detail data
     if (this.pendingDetailsEmployee && this.employeeDetailsComponent) {
       this.employeeDetailsComponent.loadEmployee(this.pendingDetailsEmployee);
       this.pendingDetailsEmployee = undefined;
@@ -87,6 +105,7 @@ export class EmployeesPage implements OnInit, OnDestroy, AfterViewChecked {
     this.currentEmployeeId = null;
     this.employeeFormService.setActiveEmployeeId(null);
     
+    // Reset form if returning from an edit
     setTimeout(() => {
       if (this.employeeFormComponent) {
         this.employeeFormComponent.resetForm();

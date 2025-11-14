@@ -15,46 +15,37 @@ import { Form } from '../../../shared/components/form/form';
 import { ExpenseService, ExpenseFormService } from '../services';
 import { SupplierService } from '../../../services/supplier.service';
 import { Expense, Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-expense-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './expense-form.html',
   styleUrl: './expense-form.css',
 })
 export class ExpenseForm implements OnInit {
-  // ==================== Dependency Injection ====================
-  
+
   private expenseService = inject(ExpenseService);
   private supplierService = inject(SupplierService);
   private expenseFormService = inject(ExpenseFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
-  // ==================== ViewChild Reference ====================
-  
-  // Reference to the generic Form component - REQUIRED for manual operations
   formComponent = viewChild(Form);
 
-  // ==================== Outputs ====================
-  
   onFormClosed = output<void>();
 
-  // ==================== Signals for Reactive Data ====================
-  
-  // Data sources for select fields - Use SIGNALS for reactivity
   suppliers = signal<Supplier[]>([]);
-  
-  // Loading states
   isLoadingSuppliers = signal<boolean>(false);
 
-  // Edit mode state
   editingExpenseId: number | null = null;
   isEditMode = false;
 
-  // ==================== Form Configuration ====================
-  
+  // Alerts
+  showAlert = signal(false);
+  alertMessage = signal('');
+
   formConfig: FormConfig<Expense> = {
     sections: [
       {
@@ -76,7 +67,7 @@ export class ExpenseForm implements OnInit {
             label: 'Proveedor',
             type: 'select',
             required: true,
-            options: [], // Will be populated from signal
+            options: [],
             fullWidth: false
           },
           {
@@ -107,14 +98,10 @@ export class ExpenseForm implements OnInit {
     ]
   };
 
-  // ==================== Lifecycle Hooks ====================
-  
   ngOnInit(): void {
     this.loadSuppliers();
   }
 
-  // ==================== Helper Methods ====================
-  
   private getCurrentDateTime(): string {
     const now = new Date();
     const year = now.getFullYear();
@@ -125,10 +112,9 @@ export class ExpenseForm implements OnInit {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
-  // ==================== Data Loading Methods ====================
-  
   private loadSuppliers(): void {
     this.isLoadingSuppliers.set(true);
+
     this.supplierService.getSuppliers({ size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -138,22 +124,22 @@ export class ExpenseForm implements OnInit {
           this.updateSupplierOptions();
           this.isLoadingSuppliers.set(false);
         },
-        error: (error) => {
-          console.error('Error loading suppliers:', error);
+        error: () => {
           this.isLoadingSuppliers.set(false);
           this.suppliers.set([]);
-          
+
           const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
           if (supplierField) {
             supplierField.options = [];
             supplierField.helpText = 'Error al cargar proveedores';
           }
+
+          this.alertMessage.set('Error al cargar proveedores.');
+          this.showAlert.set(true);
         }
       });
   }
 
-  // ==================== Update Select Options ====================
-  
   private updateSupplierOptions(): void {
     const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
     if (supplierField) {
@@ -164,34 +150,28 @@ export class ExpenseForm implements OnInit {
     }
   }
 
-  // ==================== Form Submission Handler ====================
-  
   onFormSubmit(event: FormSubmitEvent<Expense>): void {
-    // Ensure dateTime has a valid value
     let dateTimeValue = event.data.date;
     if (!dateTimeValue) {
       dateTimeValue = this.getCurrentDateTime();
     }
-    
-    // HTML datetime-local returns format: "YYYY-MM-DDTHH:mm"
-    // Java LocalDateTime expects: "YYYY-MM-DDTHH:mm:ss"
+
     if (dateTimeValue && !dateTimeValue.includes(':00', dateTimeValue.length - 3)) {
       dateTimeValue = dateTimeValue + ':00';
     }
-    
-    // Transform form data to match API expectations
+
     const formData: any = {
       supplierId: Number((event.data as any).supplierId),
       amount: Number(event.data.amount),
       dateTime: dateTimeValue
     };
-    
-    if (event.data.comment && event.data.comment.trim() !== '') {
-      formData.comment = event.data.comment.trim();
+
+    const comment = (event.data.comment ?? '').trim();
+    if (comment !== '') {
+      formData.comment = comment;
     }
 
     if (event.isEditMode && event.editingId) {
-      // UPDATE operation
       this.expenseService.updateExpense(Number(event.editingId), formData)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
@@ -202,59 +182,53 @@ export class ExpenseForm implements OnInit {
             this.expenseFormService.viewExpenseDetails(expense);
           },
           error: (error) => {
-            console.error('Error updating expense:', error);
-            alert(`Error al actualizar el gasto: ${error.error?.message || error.message || 'Error desconocido'}`);
+            this.alertMessage.set(error.error?.message || 'Error al actualizar el gasto.');
+            this.showAlert.set(true);
           }
         });
-    } else {
-      // CREATE operation
-      this.expenseService.createExpense(formData)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (expense) => {
-            this.expenseFormService.notifyExpenseCreated(expense);
-            this.resetForm();
-            this.onClose();
-            this.expenseFormService.viewExpenseDetails(expense);
-          },
-          error: (error) => {
-            console.error('Error creating expense:', error);
-            alert(`Error al crear el gasto: ${error.error?.message || error.message || 'Error desconocido'}`);
-          }
-        });
+
+      return;
     }
+
+    this.expenseService.createExpense(formData)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (expense) => {
+          this.expenseFormService.notifyExpenseCreated(expense);
+          this.resetForm();
+          this.onClose();
+          this.expenseFormService.viewExpenseDetails(expense);
+        },
+        error: (error) => {
+          this.alertMessage.set(error.error?.message || 'Error al crear el gasto.');
+          this.showAlert.set(true);
+        }
+      });
   }
 
-  // ==================== Load Expense for Edit ====================
-  
   loadExpense(expense: Expense): void {
     this.isEditMode = true;
     this.editingExpenseId = expense.id;
 
-    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
     let formattedDate = expense.date;
     if (formattedDate && formattedDate.includes(':')) {
-      // Remove seconds if present
       const parts = formattedDate.split(':');
       if (parts.length >= 3) {
-        formattedDate = `${parts[0]}:${parts[1]}`; // Keep only YYYY-MM-DDTHH:mm
+        formattedDate = `${parts[0]}:${parts[1]}`;
       }
     }
 
-    // Prepare data for form - only form fields
     const expenseData: Partial<Expense> = {
       date: formattedDate,
       amount: expense.amount,
       comment: expense.comment || ''
     };
 
-    // Add supplierId to the data
     const dataWithSupplier: any = {
       ...expenseData,
       supplierId: expense.supplier?.id
     };
 
-    // Load data into form component
     const formComp = this.formComponent();
     if (formComp) {
       formComp.loadData(dataWithSupplier);
@@ -263,8 +237,6 @@ export class ExpenseForm implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // ==================== Reset Form ====================
-  
   resetForm(): void {
     this.isEditMode = false;
     this.editingExpenseId = null;
@@ -275,8 +247,6 @@ export class ExpenseForm implements OnInit {
     }
   }
 
-  // ==================== Form Actions ====================
-  
   onFormCancel(): void {
     this.resetForm();
     this.onClose();

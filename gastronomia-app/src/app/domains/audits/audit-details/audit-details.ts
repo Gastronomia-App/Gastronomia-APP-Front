@@ -7,11 +7,12 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { AuditFormService } from '../services/audit-form.service';
 import { AuditService } from '../../../services/audit.service';
 import { Audit, DetailConfig } from '../../../shared/models';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-audit-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, Detail, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, Detail, ConfirmationModalComponent, AlertComponent],
   templateUrl: './audit-details.html',
   styleUrl: './audit-details.css',
   host: {
@@ -22,23 +23,25 @@ export class AuditDetails {
   private auditFormService = inject(AuditFormService);
   private auditService = inject(AuditService);
   private destroyRef = inject(DestroyRef);
-  
+  readonly showAlert = signal(false);
+  readonly alertMessage = signal('');
+
   onDetailsClosed = output<void>();
-  
+
   // Reference to the generic Detail component
   detailComponent = viewChild(Detail);
-  
+
   // Signals
   audit = signal<Audit | null>(null);
   realCash = signal<number>(0);
   showFinalizeModal = signal<boolean>(false);
   showCancelModal = signal<boolean>(false);
-  
+
   // Computed
   formattedStartTime = computed(() => {
     const currentAudit = this.audit();
     if (!currentAudit?.startTime) return '-';
-    
+
     const date = new Date(currentAudit.startTime);
     return date.toLocaleString('es-AR', {
       day: '2-digit',
@@ -52,7 +55,7 @@ export class AuditDetails {
   formattedCloseTime = computed(() => {
     const currentAudit = this.audit();
     if (!currentAudit?.closeTime) return '-';
-    
+
     const date = new Date(currentAudit.closeTime);
     return date.toLocaleString('es-AR', {
       day: '2-digit',
@@ -66,7 +69,7 @@ export class AuditDetails {
   formattedInitialCash = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.initialCash == null) return '-';
-    
+
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
@@ -76,7 +79,7 @@ export class AuditDetails {
   formattedTotalExpensed = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.totalExpensed == null) return '-';
-    
+
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
@@ -86,7 +89,7 @@ export class AuditDetails {
   formattedTotal = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.total == null) return '-';
-    
+
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
@@ -96,7 +99,7 @@ export class AuditDetails {
   formattedRealCash = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.realCash == null) return '-';
-    
+
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
@@ -106,13 +109,13 @@ export class AuditDetails {
   formattedBalanceGap = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.balanceGap == null) return '-';
-    
+
     const value = currentAudit.balanceGap;
     const formatted = new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
     }).format(value);
-    
+
     if (value > 0) return `+${formatted}`;
     if (value < 0) return formatted;
     return formatted;
@@ -121,7 +124,7 @@ export class AuditDetails {
   balanceGapClass = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.balanceGap == null) return '';
-    
+
     const value = currentAudit.balanceGap;
     if (value > 0) return 'balance-positive';
     if (value < 0) return 'balance-negative';
@@ -278,12 +281,13 @@ export class AuditDetails {
           this.showCancelModal.set(false);
           this.audit.set(canceledAudit);
           this.auditFormService.notifyAuditUpdated(canceledAudit);
-          
+
           // Optionally close the details panel
           this.onClose();
         },
         error: (error) => {
-          console.error('Error canceling audit:', error);
+          this.alertMessage.set(error.error?.message || 'No se pudo cancelar la auditoría.');
+          this.showAlert.set(true);
         }
       });
   }
@@ -293,7 +297,7 @@ export class AuditDetails {
     if (!currentAudit) return;
 
     const realCashValue = this.realCash();
-    
+
     // Validation
     if (realCashValue == null || realCashValue < 0) {
       console.error('El efectivo final no puede estar vacío y debe ser mayor o igual a 0.');
@@ -308,12 +312,13 @@ export class AuditDetails {
           this.showFinalizeModal.set(false);
           this.audit.set(finalizedAudit);
           this.auditFormService.notifyAuditFinalized(finalizedAudit);
-          
+
           // Close the details panel after successful finalization
           this.onClose();
         },
         error: (error) => {
-          console.error('Error finalizing audit:', error);
+          this.alertMessage.set(error.error?.message || 'No se pudo finalizar la auditoría.');
+          this.showAlert.set(true);
         }
       });
   }

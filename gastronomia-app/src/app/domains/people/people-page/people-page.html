@@ -1,0 +1,10 @@
+
+<!-- Sub-header for People domain -->
+<app-sub-header
+  [tabs]="subHeaderTabs()"
+  (tabClick)="onTabClick($event)">
+</app-sub-header>
+
+<!-- Router outlet for child routes (customers, employees) -->
+<router-outlet></router-outlet>
+

@@ -53,7 +53,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Custom delete confirmation dialog */
+
+
 .confirm-backdrop {
   position: fixed;
   top: 0;
@@ -126,3 +127,39 @@
   cursor: not-allowed;
 }
 
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.action-btn.edit {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.action-btn.edit:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.action-btn.delete {
+  background-color: var(--color-danger);
+  color: #fff;
+}
+
+.action-btn.delete:hover {
+  background-color: #d13b3b;
+  transform: translateY(-1px);
+}

@@ -8,8 +8,9 @@ import { CommonModule } from '@angular/common';
 import { HasRoleDirective } from '../../directives/has-role.directive';
 import { UserRole } from '../../models/auth.model';
 import { HeaderDropdownComponent } from '../header-dropdown/header-dropdown';
-import { UserDropdownComponent } from '../../../domains/layout/user-dropdown/user-dropdown';
-import { NotificationDropdownComponent } from '../../../domains/layout/notification-dropdown/notification-dropdown';
+import { NotificationDropdownComponent } from '../notification-dropdown/notification-dropdown';
+import { BusinessStateService } from '../../../domains/business/services/business-state-service';
+import { UserDropdownComponent } from '../user-dropdown/user-dropdown';
 
 @Component({
   selector: 'app-header',
@@ -29,7 +30,7 @@ export class Header {
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
-
+  private businessState = inject(BusinessStateService);
   UserRole = UserRole;
 
   isMobileMenuOpen = signal(false);
@@ -38,7 +39,7 @@ export class Header {
 
   employeeName = this.authService.employeeName;
   
-  businessName = this.authService.businessName;
+  business = this.businessState.business;
   
   currentDateTime = signal(new Date());
 
@@ -48,9 +49,9 @@ export class Header {
   });
   
   displayBusinessName = computed(() => {
-    const name = this.businessName();
-    return name || 'Mi Negocio';
-  });
+  const b = this.business();
+  return b?.name;
+});
 
   dayOfWeek = computed(() => {
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];

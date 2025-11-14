@@ -1,33 +1,40 @@
-import { Component, inject, ViewChild, output, DestroyRef, signal, OnInit } from '@angular/core';
+import { Component, inject, DestroyRef, signal, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmployeeService } from '../services/employee.service';
 import { EmployeeFormService } from '../services/employee-form.service';
 import { Employee, TableColumn, TableFilter } from '../../../shared/models';
 import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Confirm } from "../../../shared/components/confirm";
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-employees-table',
-  imports: [CommonModule, Table, Confirm],
+  imports: [CommonModule, Table, ConfirmationModalComponent],
   templateUrl: './employees-table.html',
   styleUrl: './employees-table.css',
-  host: {
-    class: 'entity-table'
-  }
+  host: { class: 'entity-table' }
 })
-export class EmployeesTable extends BaseTable<Employee> implements OnInit {
+export class EmployeesTable extends BaseTable<Employee> {
+
   private employeeService = inject(EmployeeService);
   private employeeFormService = inject(EmployeeFormService);
   private authService = inject(AuthService);
   public override destroyRef: DestroyRef = inject(DestroyRef);
 
-  // Output events para comunicación con el padre
-  onEmployeeSelected = output<Employee>();
   onNewEmployeeClick = output<void>();
 
-  // Filters configuration
+  // Modal data
+  showDeleteModal = signal(false);
+  override itemToDelete: { id: number, name: string } | null = null;
+
+  // Delete message
+  get deleteConfirmationMessage(): string {
+    if (!this.itemToDelete) return '';
+    return `¿Estás seguro de eliminar al empleado "${this.itemToDelete.name}"?`;
+  }
+
+  // Filters
   filters: TableFilter<Employee>[] = [
     {
       label: 'Rol',
@@ -38,10 +45,8 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
         { value: 'CASHIER', label: 'Cajero' },
         { value: 'WAITER', label: 'Mozo' }
       ],
-      filterFn: (employee, value) => {
-        if (!value || value === '') return true;
-        return employee.role === value;
-      }
+      filterFn: (employee, value) =>
+        !value || value === '' ? true : employee.role === value
     },
     {
       label: 'Estado',
@@ -51,91 +56,51 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
         { value: 'false', label: 'Activo' },
         { value: 'true', label: 'Inactivo' }
       ],
-      filterFn: (employee, value) => {
-        if (!value || value === '') return true;
-        return (employee.deleted ?? false).toString() === value;
-      }
+      filterFn: (employee, value) =>
+        !value || value === '' ? true : (employee.deleted ?? false).toString() === value
     }
   ];
-  
-  confirmDialogVisible = false;
-  confirmDialogDataValue: any = null;
-  confirmDialogAction: (() => void) | null = null;
-
-  // Signal para paginación
-  override pagination = signal<any>({
-    page: 1,
-    pageSize: 1000,
-    total: 0
-  });
 
   constructor() {
     super();
-
     this.tableService.setPageSize(1000);
-    
-    // Set custom filter function for employees
     this.tableService.setFilterFunction((employee, term) => {
-      const searchTerm = term.toLowerCase();
+      const s = term.toLowerCase();
       return (
-        employee.name.toLowerCase().includes(searchTerm) ||
-        employee.lastName.toLowerCase().includes(searchTerm) ||
-        (employee.email?.toLowerCase().includes(searchTerm) ?? false)
+        employee.name.toLowerCase().includes(s) ||
+        employee.lastName.toLowerCase().includes(s) ||
+        (employee.email?.toLowerCase().includes(s) ?? false)
       );
     });
   }
 
-  override ngOnInit(): void {
-    super.ngOnInit();
-  }
-
-  // ==================== Required Abstract Method Implementations ====================
-
+  // ============================
+  // Required BaseTable methods
+  // ============================
   protected getColumns(): TableColumn<Employee>[] {
     return [
-      {
-        header: 'Nombre',
-        field: 'name',
-        sortable: true,
-        align: 'left'
-      },
-      {
-        header: 'Apellido',
-        field: 'lastName',
-        sortable: true,
-        align: 'left'
-      },
-      {
-        header: 'Email',
-        field: 'email',
-        sortable: true,
-        align: 'left'
-      },
-      {
-        header: 'Teléfono',
-        field: 'phoneNumber',
-        sortable: false,
-        align: 'left'
-      },
+      { header: 'Nombre', field: 'name', sortable: true },
+      { header: 'Apellido', field: 'lastName', sortable: true },
+      { header: 'Email', field: 'email', sortable: true },
+      { header: 'Teléfono', field: 'phoneNumber' },
       {
         header: 'Rol',
         field: 'role',
         sortable: true,
-        align: 'left',
         formatter: (value: string) => {
           const roleLabels: Record<string, string> = {
-            'OWNER': 'Propietario',
-            'ADMIN': 'Administrador',
-            'CASHIER': 'Cajero',
-            'WAITER': 'Mozo'
+            OWNER: 'Propietario',
+            ADMIN: 'Administrador',
+            CASHIER: 'Cajero',
+            WAITER: 'Mozo'
           };
-          return roleLabels[value] || value;
+
+          return roleLabels[value as keyof typeof roleLabels] ?? value;
         }
       },
       {
         header: 'Estado',
         field: 'deleted',
-        align: 'left',
         template: 'badge',
         badgeConfig: {
           field: 'deleted',
@@ -148,8 +113,8 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
     ];
   }
 
-  protected fetchData(page: number, size: number) {
-    return this.employeeService.getEmployeesPage(page, size, 'id,asc');
+  protected fetchData(p: number, s: number) {
+    return this.employeeService.getEmployeesPage(p, s, 'id,asc');
   }
 
   protected fetchItemById(id: number) {
@@ -160,38 +125,51 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
     return this.employeeService.deleteEmployee(id);
   }
 
-  protected getItemDisplayName(employee: Employee): string {
-    return `${employee.name} ${employee.lastName}`;
+  protected getItemName(emp: Employee): string {
+    return `${emp.name} ${emp.lastName}`;
   }
 
-  protected getItemName(employee: Employee): string {
-    return `${employee.name} ${employee.lastName}`;
+  protected getItemId(emp: Employee): number {
+    return emp.id!;
   }
 
-  protected getItemId(employee: Employee): number {
-    return employee.id!;
+  // ============================
+  // Delete (modified)
+  // ============================
+  override onTableDelete(employee: Employee) {
+    this.itemToDelete = {
+      id: employee.id!,
+      name: `${employee.name} ${employee.lastName}`
+    };
+
+    this.showDeleteModal.set(true);
   }
 
-  /**
-   * Override onEditItem para validar permisos antes de abrir formulario de edición
-   * Un ADMIN no puede editar empleados OWNER ni ADMIN
-   */
+  override onConfirmDelete() {
+    if (!this.itemToDelete) return;
+
+    this.deleteItem(this.itemToDelete.id).subscribe(() => {
+      this.refreshData();
+      this.showDeleteModal.set(false);
+      this.itemToDelete = null;
+    });
+  }
+
+  override onCancelDelete() {
+    this.showDeleteModal.set(false);
+    this.itemToDelete = null;
+  }
+
+  // ============================
+  // Edit / Details
+  // ============================
   protected onEditItem(employee: Employee): void {
-    const loggedRole = this.authService.role();
-    const employeeRole = employee.role;
-    
-    // Normalizar roles (quitar prefijo ROLE_)
-    const normalizeRole = (role: string | null) => role?.replace('ROLE_', '') || '';
-    const loggedRoleNormalized = normalizeRole(loggedRole);
-    const employeeRoleNormalized = normalizeRole(employeeRole);
-    
-    // Si el logueado es ADMIN y el empleado es OWNER o ADMIN, no puede editar
-    if (loggedRoleNormalized === 'ADMIN' && 
-        (employeeRoleNormalized === 'OWNER' || employeeRoleNormalized === 'ADMIN')) {
-      return;
-    }
-    
-    // Si tiene permisos, abrir formulario de edición
+    const logged = (this.authService.role() ?? '').replace('ROLE_', '');
+    const target = (employee.role ?? '').replace('ROLE_', '');
+
+    // Admin cannot edit Owner or Admin
+    if (logged === 'ADMIN' && (target === 'OWNER' || target === 'ADMIN')) return;
+
     this.employeeFormService.editEmployee(employee);
   }
 
@@ -199,64 +177,14 @@ export class EmployeesTable extends BaseTable<Employee> implements OnInit {
     this.employeeFormService.viewEmployeeDetails(employee);
   }
 
-  // ==================== Custom Subscriptions ====================
-
-  protected override setupCustomSubscriptions(): void {
-    this.employeeFormService.activeEmployeeId$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((id) => {
-        this.highlightedRowId = id;
-      });
-
-    this.employeeFormService.employeeCreated$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.onItemCreated();
-      });
-
-    this.employeeFormService.employeeUpdated$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.onItemUpdated();
-      });
-  }
-
-  // ==================== Public API for Parent Component ====================
-
   public onNewEmployee(): void {
     this.onNewEmployeeClick.emit();
   }
 
-  public refreshList(): void {
+  // ============================
+  // Public method to reload table from outside
+  // ============================
+  public reloadFromPage(): void {
     this.refreshData();
-  }
-
-  public setSearchTerm(term: string): void {
-    this.searchTerm.set(term);
-    this.onSearch();
-  }
-
-  public clearSearchTerm(): void {
-    this.clearSearch();
-  }
-
-  showConfirmDialog() {
-    return !!this.confirmDialogVisible;
-  }
-
-  confirmDialogData() {
-    return this.confirmDialogDataValue || {};
-  }
-
-  onConfirmDialogConfirm() {
-    if (this.confirmDialogAction) {
-      this.confirmDialogAction();
-    }
-    this.confirmDialogVisible = false;
-  }
-
-  onConfirmDialogCancel() {
-    this.confirmDialogVisible = false;
-    this.confirmDialogAction = null;
   }
 }

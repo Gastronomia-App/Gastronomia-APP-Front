@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, output, ChangeDetectorRef, viewChild, signal, computed, effect, afterNextRender, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, output, ChangeDetectorRef, viewChild, signal, computed, effect, DestroyRef } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
@@ -11,11 +11,12 @@ import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
 import { ProductGroupService } from '../../product-groups/services/product-group.service';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, AlertComponent],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
   host: {
@@ -30,23 +31,20 @@ export class ProductForm implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
-  // Reference to the generic Form component
-  formComponent = viewChild(Form);
+  showAlert = signal(false);
+  alertMessage = signal('');
 
+  formComponent = viewChild(Form);
   onFormClosed = output<void>();
 
-  // Data for form fields - Using SIGNALS for reactivity
   categories = signal<Category[]>([]);
   availableComponents = signal<Product[]>([]);
   availableProductGroups = signal<ProductGroup[]>([]);
 
   selectedComponents = signal<ProductComponent[]>([]);
-  // Only id and name are required for assignments
   selectedProductGroups = signal<Pick<ProductGroup, 'id' | 'name'>[]>([]);
 
-  // Track original state for edit mode (to detect changes)
   originalComponents: ProductComponent[] = [];
-  // Only id and name are needed for comparison
   originalProductGroups: Pick<ProductGroup, 'id' | 'name'>[] = [];
 
   isLoadingCategories = signal<boolean>(false);
@@ -56,9 +54,7 @@ export class ProductForm implements OnInit {
   editingProductId: number | null = null;
   isEditMode = false;
 
-  // Computed inputs for dynamic components - REACTIVE
   componentsInputs = computed(() => {
-    // Filter components: exclude selected ones and current product
     const allComponents = this.availableComponents();
     const selected = this.selectedComponents();
     const currentProductId = this.editingProductId;
@@ -74,15 +70,23 @@ export class ProductForm implements OnInit {
       availableItems: filteredComponents,
       selectedItems: this.selectedComponents(),
       isLoading: this.isLoadingComponents(),
-      allowQuantitySelection: true
+      allowQuantitySelection: true,
+      customFields: [
+        {
+          key: 'quantity',
+          label: 'Cantidad',
+          type: 'number' as const,
+          editable: true
+        }
+      ],
+      editableFields: true
     };
   });
 
   productGroupsInputs = computed(() => {
-    // Filter groups: exclude selected ones
     const allGroups = this.availableProductGroups();
     const selected = this.selectedProductGroups();
-    
+
     const filteredGroups = allGroups.filter(group => {
       return !selected.some(s => s.id === group.id);
     });
@@ -95,7 +99,6 @@ export class ProductForm implements OnInit {
     };
   });
 
-  // Form configuration
   formConfig: FormConfig<Product> = {
     sections: [
       {
@@ -211,26 +214,19 @@ export class ProductForm implements OnInit {
       }
     ]
   };
-  
+
   constructor() {
-    // Watch for changes in computed inputs and update form
     effect(() => {
       const componentsInputs = this.componentsInputs();
       const groupsInputs = this.productGroupsInputs();
       
-      // Update the formConfig with new inputs
       const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
       if (compositionSection) {
         const componentsField = compositionSection.fields.find(f => f.name === 'components');
         const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
         
-        if (componentsField) {
-          componentsField.customInputs = componentsInputs;
-        }
-        
-        if (groupsField) {
-          groupsField.customInputs = groupsInputs;
-        }
+        if (componentsField) componentsField.customInputs = componentsInputs;
+        if (groupsField) groupsField.customInputs = groupsInputs;
         
         setTimeout(() => {
           this.formComponent()?.renderDynamicComponents();
@@ -246,19 +242,13 @@ export class ProductForm implements OnInit {
     this.setupProductDeletedSubscription();
   }
 
-  /**
-   * Listen for product deletion to auto-close form
-   */
-  private setupProductDeletedSubscription(): void {
+  setupProductDeletedSubscription(): void {
     this.productFormService.productDeleted$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        // Close form when any product is deleted
-        this.onClose();
-      });
+      .subscribe(() => this.onClose());
   }
 
-  private loadCategories(): void {
+  loadCategories(): void {
     this.isLoadingCategories.set(true);
     this.categoryService.getCategories().subscribe({
       next: (categories) => {
@@ -267,24 +257,26 @@ export class ProductForm implements OnInit {
         this.isLoadingCategories.set(false);
       },
       error: (error) => {
-        console.error('❌ GET /api/categories - Error:', error);
+        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando categorías.');
+        this.showAlert.set(true);
+
         this.isLoadingCategories.set(false);
         this.categories.set([]);
       }
     });
   }
 
-  private updateCategoryOptions(): void {
-    const categoryField = this.formConfig.sections[0].fields.find(f => f.name === 'categoryId');
-    if (categoryField) {
-      categoryField.options = this.categories().map(cat => ({
+  updateCategoryOptions(): void {
+    const field = this.formConfig.sections[0].fields.find(f => f.name === 'categoryId');
+    if (field) {
+      field.options = this.categories().map(cat => ({
         label: cat.name,
         value: cat.id
       }));
     }
   }
 
-  private loadAvailableComponents(): void {
+  loadAvailableComponents(): void {
     this.isLoadingComponents.set(true);
     this.productService.getProducts().subscribe({
       next: (products) => {
@@ -293,7 +285,9 @@ export class ProductForm implements OnInit {
         this.isLoadingComponents.set(false);
       },
       error: (error) => {
-        console.error('❌ GET /api/products (components) - Error:', error);
+        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando componentes.');
+        this.showAlert.set(true);
+
         this.isLoadingComponents.set(false);
         this.availableComponents.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -301,7 +295,7 @@ export class ProductForm implements OnInit {
     });
   }
 
-  private loadProductGroups(): void {
+  loadProductGroups(): void {
     this.isLoadingGroups.set(true);
     this.productGroupService.getProductGroups().subscribe({
       next: (groups) => {
@@ -310,7 +304,9 @@ export class ProductForm implements OnInit {
         this.isLoadingGroups.set(false);
       },
       error: (error) => {
-        console.error('❌ GET /api/groups - Error:', error);
+        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando grupos de opciones.');
+        this.showAlert.set(true);
+
         this.isLoadingGroups.set(false);
         this.availableProductGroups.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -318,31 +314,23 @@ export class ProductForm implements OnInit {
     });
   }
 
-  private updateDynamicFieldsAndRerender(): void {
+  updateDynamicFieldsAndRerender(): void {
     const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
     if (compositionSection) {
       const componentsField = compositionSection.fields.find(f => f.name === 'components');
       const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
-      
-      if (componentsField) {
-        componentsField.customInputs = this.componentsInputs();
-      }
-      
-      if (groupsField) {
-        groupsField.customInputs = this.productGroupsInputs();
-      }
-      
+
+      if (componentsField) componentsField.customInputs = this.componentsInputs();
+      if (groupsField) groupsField.customInputs = this.productGroupsInputs();
+
       setTimeout(() => {
-          this.formComponent()?.renderDynamicComponents();
-        }, 0);
-      
+        this.formComponent()?.renderDynamicComponents();
+      }, 0);
     }
   }
 
   onComponentAdded(item: Product | any): void {
-    // Si el item viene con cantidad desde searchable-list, usarla
     const quantity = item.quantity || 1;
-    
     const component: ProductComponent = {
       productId: item.id,
       name: item.name,
@@ -363,7 +351,7 @@ export class ProductForm implements OnInit {
       if (index !== -1) {
         const updated = [...items];
         updated[index] = {
-          id: updated[index].id,  // Mantener el ID de relación si existe
+          id: updated[index].id,
           productId: item.id,
           name: item.name,
           quantity: item.quantity || 1
@@ -375,7 +363,6 @@ export class ProductForm implements OnInit {
   }
 
   onProductGroupAdded(item: ProductGroup): void {
-    // Only store id and name for assignments
     this.selectedProductGroups.update(groups => [...groups, { id: item.id, name: item.name }]);
   }
 
@@ -384,7 +371,6 @@ export class ProductForm implements OnInit {
   }
 
   onFormSubmit(event: FormSubmitEvent<any>): void {
-    // Basic product data (without components and groups)
     const formData: any = {
       name: event.data.name || '',
       categoryId: event.data.categoryId || 0,
@@ -403,32 +389,21 @@ export class ProductForm implements OnInit {
     }
   }
 
-  /**
-   * Create new product and then add components and groups
-   */
-  private createProduct(formData: any): void {
-    console.log('📤 POST /api/products - Request:', formData);
-    
+  createProduct(formData: any): void {
     this.productService.createProduct(formData).subscribe({
       next: (product) => {
-        console.log('📥 POST /api/products - Response:', product);
-        
-        // Now add components and groups
         this.addComponentsAndGroups(product.id).subscribe({
           next: () => {
-            console.log('✅ Product created with components and groups');
-            
-            // Reload the product to get the complete version with all components and groups
             this.productService.getProductById(product.id).subscribe({
               next: (createdProduct) => {
-                console.log('📥 GET /api/products/' + product.id + ' - Created product:', createdProduct);
                 this.productFormService.notifyProductCreated(createdProduct);
                 this.resetForm();
                 this.onClose();
               },
-              error: (error) => {
-                console.error('❌ Error reloading created product:', error);
-                // Fallback: use the product from the POST response
+              error: () => {
+                this.alertMessage.set('Error recargando el producto.');
+                this.showAlert.set(true);
+
                 this.productFormService.notifyProductCreated(product);
                 this.resetForm();
                 this.onClose();
@@ -436,43 +411,34 @@ export class ProductForm implements OnInit {
             });
           },
           error: (error) => {
-            console.error('❌ Error adding components/groups:', error);
+            this.alertMessage.set(error?.error?.message || error?.message || 'Error agregando componentes o grupos.');
+            this.showAlert.set(true);
           }
         });
       },
       error: (error) => {
-        console.error('❌ POST /api/products - Error:', error);
+        this.alertMessage.set(error?.error?.message || error?.message || 'No se pudo crear el producto.');
+        this.showAlert.set(true);
       }
     });
   }
 
-  /**
-   * Update product and then sync components and groups
-   */
-  private updateProduct(productId: number, formData: any): void {
-    console.log(`📤 PUT /api/products/${productId} - Request:`, formData);
-    
+  updateProduct(productId: number, formData: any): void {
     this.productService.updateProduct(productId, formData).subscribe({
       next: (product) => {
-        console.log(`📥 PUT /api/products/${productId} - Response:`, product);
-        
-        // Sync components and groups
         this.syncComponentsAndGroups(productId).subscribe({
           next: () => {
-            console.log('✅ Product updated with components and groups synced');
-            
-            // Reload the product to get the updated version with all components and groups
             this.productService.getProductById(productId).subscribe({
               next: (updatedProduct) => {
-                console.log('📥 GET /api/products/' + productId + ' - Updated product:', updatedProduct);
                 this.productFormService.notifyProductUpdated(updatedProduct);
                 this.resetForm();
                 this.onClose();
                 this.productFormService.viewProductDetails(updatedProduct);
               },
-              error: (error) => {
-                console.error('❌ Error reloading product:', error);
-                // Fallback: use the product from the PUT response
+              error: () => {
+                this.alertMessage.set('Error recargando el producto.');
+                this.showAlert.set(true);
+
                 this.productFormService.notifyProductUpdated(product);
                 this.resetForm();
                 this.onClose();
@@ -481,42 +447,38 @@ export class ProductForm implements OnInit {
             });
           },
           error: (error) => {
-            console.error('❌ Error syncing components/groups:', error);
+            this.alertMessage.set(error?.error?.message || error?.message || 'Error sincronizando componentes o grupos.');
+            this.showAlert.set(true);
           }
         });
       },
       error: (error) => {
-        console.error(`❌ PUT /api/products/${productId} - Error:`, error);
+        this.alertMessage.set(error?.error?.message || error?.message || 'No se pudo actualizar el producto.');
+        this.showAlert.set(true);
       }
     });
   }
 
-  /**
-   * Add all components and groups to a newly created product
-   */
-  private addComponentsAndGroups(productId: number): Observable<any> {
+  addComponentsAndGroups(productId: number): Observable<any> {
     const operations: Observable<any>[] = [];
 
-    // Add ALL components in a single call (backend expects a list)
     const componentsToAdd = this.selectedComponents().map(c => ({
       productId: c.productId,
       quantity: c.quantity || 1
     }));
-    
+
     if (componentsToAdd.length > 0) {
       operations.push(
         this.productService.addProductComponents(productId, componentsToAdd)
       );
     }
 
-    // Add product groups (one by one)
     this.selectedProductGroups().forEach(group => {
       operations.push(
         this.productService.assignProductGroup(productId, group.id)
       );
     });
 
-    // Execute all operations in parallel
     return operations.length > 0 
       ? new Observable(observer => {
           let completed = 0;
@@ -536,18 +498,11 @@ export class ProductForm implements OnInit {
       : new Observable(observer => { observer.next(true); observer.complete(); });
   }
 
-  /**
-   * Sync components and groups for an updated product
-   * Detects: additions, updates, and deletions
-   */
-  private syncComponentsAndGroups(productId: number): Observable<any> {
+  syncComponentsAndGroups(productId: number): Observable<any> {
     const operations: Observable<any>[] = [];
 
-    // ========== COMPONENTS SYNC ==========
-    
     const currentComponents = this.selectedComponents();
-    
-    // Find components to ADD (no id) - Send all at once
+
     const componentsToAdd = currentComponents
       .filter(c => !c.id)
       .map(c => ({
@@ -561,7 +516,6 @@ export class ProductForm implements OnInit {
       );
     }
 
-    // Find components to UPDATE (id exists and quantity changed)
     const componentsToUpdate = currentComponents.filter(c => {
       if (!c.id) return false;
       const original = this.originalComponents.find(oc => oc.id === c.id);
@@ -573,7 +527,6 @@ export class ProductForm implements OnInit {
       );
     });
 
-    // Find components to DELETE (in original but not in current)
     const componentsToDelete = this.originalComponents.filter(oc => 
       !currentComponents.find(c => c.id === oc.id)
     );
@@ -583,11 +536,8 @@ export class ProductForm implements OnInit {
       );
     });
 
-    // ========== PRODUCT GROUPS SYNC ==========
-    
     const currentGroups = this.selectedProductGroups();
-    
-    // Find groups to ADD
+
     const groupsToAdd = currentGroups.filter(g => 
       !this.originalProductGroups.find(og => og.id === g.id)
     );
@@ -597,7 +547,6 @@ export class ProductForm implements OnInit {
       );
     });
 
-    // Find groups to DELETE
     const groupsToDelete = this.originalProductGroups.filter(og =>
       !currentGroups.find(g => g.id === og.id)
     );
@@ -607,15 +556,6 @@ export class ProductForm implements OnInit {
       );
     });
 
-    console.log('🔄 Sync operations:', {
-      componentsToAdd: componentsToAdd.length,
-      componentsToUpdate: componentsToUpdate.length,
-      componentsToDelete: componentsToDelete.length,
-      groupsToAdd: groupsToAdd.length,
-      groupsToDelete: groupsToDelete.length
-    });
-
-    // Execute all operations in parallel
     return operations.length > 0 
       ? new Observable(observer => {
           let completed = 0;
@@ -632,6 +572,8 @@ export class ProductForm implements OnInit {
               },
               error: (err: any) => {
                 hasError = true;
+                this.alertMessage.set(err?.error?.message || err?.message || 'Error sincronizando componentes o grupos.');
+                this.showAlert.set(true);
                 observer.error(err);
               }
             });
@@ -662,13 +604,12 @@ export class ProductForm implements OnInit {
 
     if (product.components && product.components.length > 0) {
       const components = product.components.map(c => ({
-        id: c.id,           // ID de la relación (si existe)
-        productId: c.productId,  // ID del producto componente
+        id: c.id,
+        productId: c.productId,
         name: c.name,
         quantity: c.quantity || 1
       }));
       this.selectedComponents.set(components);
-      // Save original state for comparison
       this.originalComponents = JSON.parse(JSON.stringify(components));
     }
 
@@ -678,11 +619,9 @@ export class ProductForm implements OnInit {
         name: g.name
       }));
       this.selectedProductGroups.set(groups);
-      // Save original state for comparison
       this.originalProductGroups = JSON.parse(JSON.stringify(groups));
     }
 
-    // Load data into form component
     const formComp = this.formComponent();
     if (formComp) {
       formComp.loadData(productData);

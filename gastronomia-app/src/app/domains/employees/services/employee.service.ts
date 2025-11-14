@@ -9,7 +9,7 @@ import { PageResponse } from '../../../shared/models';
 export class EmployeeService {
   private base = `${environment.apiBaseUrl}/employees`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Get all employees (without pagination)
   getEmployees(): Observable<Employee[]> {
@@ -42,5 +42,13 @@ export class EmployeeService {
   // Delete employee
   deleteEmployee(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
+  getCurrentEmployee(): Observable<Employee> {
+    return this.http.get<Employee>(`${this.base}/me`);
+  }
+
+  updateCurrentEmployee(data: Partial<Employee>): Observable<Employee> {
+    return this.http.patch<Employee>(`${this.base}/me`, data);
   }
 }

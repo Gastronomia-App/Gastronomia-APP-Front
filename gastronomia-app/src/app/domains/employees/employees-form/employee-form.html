@@ -1,8 +1,6 @@
-<!-- employee-form.html -->
 <aside class="aside-panel">
-  <!-- Generic Form Component with integrated header and footer -->
   <app-form
-    [config]="formConfig"
+    [config]="formConfig()"
     [isEditMode]="isEditMode"
     [editingId]="editingEmployeeId"
     [showHeader]="true"
@@ -15,6 +13,16 @@
     [hideSubmitButton]="isReadOnlyForAdmin"
     (formSubmit)="onFormSubmit($event)"
     (formCancel)="onFormCancel()"
-    (formClose)="onClose()">
+    (formClose)="onClose()"
+  >
   </app-form>
 </aside>
+@if (showAlert()) {
+  <app-alert
+    type="error"
+    title="Error"
+    [message]="alertMessage()"
+    (onAccept)="showAlert.set(false)"
+    (onClose)="showAlert.set(false)"
+  />
+}

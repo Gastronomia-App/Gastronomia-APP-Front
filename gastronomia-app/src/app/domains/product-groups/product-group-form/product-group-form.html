@@ -1,3 +1,11 @@
+@if (showAlert()) {
+  <app-alert
+    [title]="'Error'"
+    [message]="alertMessage()"
+    (onAccept)="showAlert.set(false)"
+    (onClose)="showAlert.set(false)"
+  />
+}
 <!-- Aside panel container -->
 <aside class="aside-panel">
     <!-- Generic Form Component with integrated header and footer -->
