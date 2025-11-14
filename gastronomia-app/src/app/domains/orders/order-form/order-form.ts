@@ -1,7 +1,6 @@
 import {
   Component, inject, input, output, OnInit, AfterViewInit,
-  signal, viewChild,
-  SimpleChanges
+  signal, viewChild, SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { take } from 'rxjs';
@@ -21,9 +20,12 @@ import { FormControl } from '@angular/forms';
   styleUrl: './order-form.css'
 })
 export class OrderForm implements OnInit, AfterViewInit {
+
   private readonly customerService = inject(CustomersService);
   private readonly employeeService = inject(EmployeeService);
   private readonly orderService = inject(OrderService);
+
+  editingOrder = input<Order | null>(null);
 
   orderClosed = output<void>();
   orderCreated = output<void>();
@@ -51,14 +53,12 @@ export class OrderForm implements OnInit, AfterViewInit {
             required: true,
             min: 1,
             max: 20,
-            step: 1,
-            helpText: 'Número de personas en la mesa.'
+            step: 1
           },
           {
             name: 'customerId',
             label: 'Cliente (opcional)',
             type: 'custom',
-            // required: true,  // <-- removed: customer is optional now
             fullWidth: true,
             customComponent: SearchableEntity,
             customInputs: {
@@ -68,7 +68,8 @@ export class OrderForm implements OnInit, AfterViewInit {
               isLoading: this.isLoadingCustomers()
             },
             customOutputs: {
-              itemSelected: (customer: Customer & { name: string }) => this.onCustomerSelected(customer),
+              itemSelected: (customer: Customer & { name: string }) =>
+                this.onCustomerSelected(customer),
               itemCleared: () => this.onCustomerCleared()
             }
           },
@@ -97,18 +98,38 @@ export class OrderForm implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    queueMicrotask(() => {
-      this.formRef()?.renderDynamicComponents();
+  queueMicrotask(() => {
+    this.formRef()?.renderDynamicComponents();
+    const form = this.formRef()?.form;
+    if (!form) return;
 
-      // Create 'customerId' control WITHOUT validators (optional field)
-      const form = this.formRef()?.form;
-      if (form && !form.get('customerId')) {
-        form.addControl('customerId', new FormControl<number | null>(null));
+    if (!form.get('customerId')) {
+      form.addControl('customerId', new FormControl<number | null>(null));
+    }
+
+    if (this.editingOrder()) {
+      const order = this.editingOrder()!;
+
+      form.patchValue({
+        peopleCount: order.peopleCount,
+        customerId: order.customerId ?? null,
+        employeeId: order.employeeId ?? null,
+        orderType: order.orderType
+      });
+
+      if (order.customerId) {
+        const found = this.customers().find(c => c.id === order.customerId);
+        if (found) this.selectedCustomer.set(found);
       }
 
-      this.refreshCustomerSearchInput();
-    });
-  }
+      this.formConfig.update(cfg => ({
+        ...cfg,
+        title: 'Editar Orden',
+        submitLabel: 'Guardar Cambios'
+      }));
+    }
+  });
+}
 
   private loadEmployees(): void {
     this.isLoadingEmployees.set(true);
@@ -117,6 +138,7 @@ export class OrderForm implements OnInit, AfterViewInit {
         this.employees.set(emps ?? []);
         const cfg = this.formConfig();
         const empField = cfg.sections[0].fields.find(f => f.name === 'employeeId');
+
         if (empField) {
           empField.options = this.employees().map(e => ({
             label: `${e.name} ${e.lastName}`,
@@ -147,10 +169,6 @@ export class OrderForm implements OnInit, AfterViewInit {
     });
   }
 
-  onCancel(): void {
-    this.orderClosed.emit();
-  }
-
   private refreshCustomerSearchInput(): void {
     const cfg = this.formConfig();
     const field = cfg.sections[0].fields.find(f => f.name === 'customerId');
@@ -169,146 +187,60 @@ export class OrderForm implements OnInit, AfterViewInit {
   private onCustomerSelected(customer: Customer): void {
     this.selectedCustomer.set(customer);
     const form = this.formRef()?.form;
-    const id = Number((customer as any).id);
-    form?.get('customerId')?.setValue(id);
-    form?.get('customerId')?.markAsDirty();
-    form?.get('customerId')?.markAsTouched();
+    form?.get('customerId')?.setValue(customer.id);
   }
 
   private onCustomerCleared(): void {
     this.selectedCustomer.set(null);
     const form = this.formRef()?.form;
     form?.get('customerId')?.setValue(null);
-    form?.get('customerId')?.markAsDirty();
-    form?.get('customerId')?.markAsTouched();
   }
 
   onSubmit(event: { data: Order }): void {
     const form = this.formRef()?.form;
+    if (!form) return;
 
-    // Read and normalize values
-    const customerIdCtrl = form?.get('customerId')?.value;
-    const employeeIdRaw = (event.data as any).employeeId;
+    const customerIdCtrl = form.get('customerId')?.value;
+    const employeeIdRaw = event.data.employeeId;
 
-    // Build payload: omit customerId if empty
     const payload: any = {
       ...event.data,
       seatingId: this.seatingId(),
       orderType: 'TABLE',
-      employeeId: employeeIdRaw != null ? Number(employeeIdRaw) : undefined
+      customerId: customerIdCtrl ?? null,
+      employeeId: employeeIdRaw != null ? Number(employeeIdRaw) : null
     };
 
-    if (customerIdCtrl == null) {
-      // Do not send customerId at all if user didn't pick one
-      delete payload.customerId;
-    } else {
-      payload.customerId = Number(customerIdCtrl);
+    // --- EDIT MODE ---
+    if (this.editingOrder()) {
+      this.orderService.updateOrder(
+        Number(this.editingOrder()!.id),
+        payload
+      )
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.orderCreated.emit(),
+        error: (err) => console.error('Error updating order', err)
+      });
+      return;
     }
 
-    this.orderService.createOrder(payload).pipe(take(1)).subscribe({
-      next: () => this.orderCreated.emit(),
-      error: (err) => console.error('Error creating order', err)
-    });
+    // --- CREATE MODE ---
+    this.orderService.createOrder(payload)
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.orderCreated.emit(),
+        error: (err) => console.error('Error creating order', err)
+      });
+  }
+
+  onCancel(): void {
+    this.orderClosed.emit();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['seatingId'] && !changes['seatingId'].firstChange) {
       this.selectedCustomer.set(null);
-      this.rebuildFormConfig();
     }
-  }
-
-  private clearFormForNewSeating(): void {
-    const form = this.formRef()?.form;
-    if (!form) return;
-
-    // Reset with defaults; customer remains null (optional)
-    form.reset({
-      orderType: 'TABLE',
-      peopleCount: null,
-      employeeId: null,
-      customerId: null
-    });
-
-    const customerCtrl = form.get('customerId');
-    if (customerCtrl) {
-      customerCtrl.setValue(null);
-      customerCtrl.markAsPristine();
-      customerCtrl.markAsUntouched();
-      customerCtrl.updateValueAndValidity({ emitEvent: false });
-    }
-  }
-
-  private rebuildFormConfig(): void {
-    const newConfig: FormConfig<Order> = {
-      title: 'Nueva Orden',
-      submitLabel: 'Crear Orden',
-      sections: [
-        {
-          fields: [
-            {
-              name: 'peopleCount',
-              label: 'Cantidad de personas',
-              type: 'number',
-              required: true,
-              min: 1,
-              max: 20,
-              step: 1,
-              helpText: 'Número de personas en la mesa.'
-            },
-            {
-              name: 'customerId',
-              label: 'Cliente (opcional)',
-              type: 'custom',
-              // required: true, // <-- keep it optional
-              fullWidth: true,
-              customComponent: SearchableEntity,
-              customInputs: {
-                placeholder: 'Buscar cliente...',
-                availableItems: this.customers(),
-                selectedItem: this.selectedCustomer(),
-                isLoading: this.isLoadingCustomers()
-              },
-              customOutputs: {
-                itemSelected: (customer: Customer & { name: string }) =>
-                  this.onCustomerSelected(customer),
-                itemCleared: () => this.onCustomerCleared()
-              }
-            },
-            {
-              name: 'employeeId',
-              label: 'Camarero',
-              type: 'select',
-              required: true,
-              options: this.employees().map(e => ({
-                label: `${e.name} ${e.lastName}`,
-                value: e.id
-              }))
-            },
-            {
-              name: 'orderType',
-              label: 'Tipo de orden',
-              type: 'text',
-              readonly: true,
-              defaultValue: 'TABLE'
-            }
-          ]
-        }
-      ]
-    };
-
-    this.formConfig.set(newConfig);
-
-    queueMicrotask(() => {
-      this.formRef()?.renderDynamicComponents();
-
-      const form = this.formRef()?.form;
-      // Recreate optional control (no validators)
-      if (form && !form.get('customerId')) {
-        form.addControl('customerId', new FormControl<number | null>(null));
-      }
-
-      this.clearFormForNewSeating();
-    });
   }
 }

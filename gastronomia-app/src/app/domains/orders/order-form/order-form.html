@@ -1,7 +1,7 @@
 <app-form
   [config]="formConfig()"
   [showHeader]="true"
-  [headerTitle]="'Crear nueva orden'"
+  [headerTitle]="editingOrder() ? 'Editar orden' : 'Crear nueva orden'"
   [showFooter]="true"
   (formSubmit)="onSubmit($event)"
   (formCancel)="onCancel()"

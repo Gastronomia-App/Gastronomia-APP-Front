@@ -27,12 +27,14 @@ import { OrderItemsForm } from '../../orders/order-items-form/order-items-form';
   styleUrl: './seating-view-page.css'
 })
 export class SeatingViewPage implements AfterViewInit {
-
+  readonly renderKey = signal(0);
   private readonly seatingService = inject(SeatingsService);
   private readonly zoomState = inject(ZoomStateService);
   private readonly envInjector = inject(EnvironmentInjector);
 
-  readonly currentMode = signal<'none' | 'createOrder' | 'occupiedDetail' | 'billing'>('none');
+  readonly currentMode = signal<
+    'none' | 'createOrder' | 'occupiedDetail' | 'billing' | 'editOrder'
+  >('none');
 
   readonly seatings = signal<Seating[]>([]);
   readonly loading = signal(true);
@@ -80,6 +82,10 @@ export class SeatingViewPage implements AfterViewInit {
         this.loading.set(false);
       }
     });
+  }
+  
+  onEditOrder(): void {
+  this.currentMode.set('editOrder');
   }
 
   increaseZoom(): void {
@@ -129,12 +135,44 @@ export class SeatingViewPage implements AfterViewInit {
   }
 
   onOrderClosed(): void {
-    this.selectedSeating.set(null);
+  if (this.currentMode() === 'editOrder') {
+    this.currentMode.set('none');
+    this.selectedSeating.set(null);  
+    return;
   }
 
+  this.selectedSeating.set(null);
+}
+
   onOrderUpdated(): void {
-    this.loadSeatings();
-  }
+  const seatingId = this.selectedSeating()?.id;
+  if (!seatingId) return;
+
+  // Cerrar el detail viejo
+  this.currentMode.set('none');
+  this.selectedSeating.set(null);
+
+  // Esperar a que backend actualice seating
+  this.seatingService.getById(seatingId).subscribe({
+    next: (updatedSeating) => {
+
+      // Recargar grid usando tu método oficial
+      this.loadSeatings();   // <-- ESTA LÍNEA ES LO QUE TE FALTABA
+
+      // Si la mesa aún tiene activeOrder, reabrimos el detail
+      if (updatedSeating.activeOrder) {
+        this.selectedSeating.set(updatedSeating);
+        this.currentMode.set('occupiedDetail');
+      }
+    },
+
+    error: () => {
+      this.currentMode.set('none');
+    }
+  });
+}
+
+
 
   onOrderCreated(): void {
     const currentSeatingId = this.selectedSeating()?.id;

@@ -19,6 +19,7 @@ import { Order, Product, Item } from '../../../shared/models';
 export class OrderItemsForm implements OnInit {
   private orderService = inject(OrderService);
   private productService = inject(ProductService);
+  editRequested = output<void>();
 
   // Input para recibir la orden completa (más eficiente que solo el ID)
   order = input.required<Order>();

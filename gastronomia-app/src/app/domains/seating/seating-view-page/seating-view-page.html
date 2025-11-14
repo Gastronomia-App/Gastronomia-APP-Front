@@ -28,11 +28,19 @@
       }
       @else if ((currentMode() === 'occupiedDetail' || currentMode() === 'billing') && selectedSeating()?.activeOrder) {
         <app-order-items-form
-          [order]="selectedSeating()!.activeOrder!"
-          (orderClosed)="onOrderClosed()"
-          (orderUpdated)="onOrderUpdated()">
-        </app-order-items-form>
-      }
+  [order]="selectedSeating()!.activeOrder!"
+  (orderClosed)="onOrderClosed()"
+  (orderUpdated)="onOrderUpdated()"
+  (editRequested)="onEditOrder()">
+</app-order-items-form>
+      }@else if (currentMode() === 'editOrder' && selectedSeating()?.activeOrder) {
+  <app-order-form
+    [seatingId]="selectedSeating()!.id"
+    [editingOrder]="selectedSeating()!.activeOrder ?? null"
+    (orderClosed)="onOrderClosed()"
+    (orderCreated)="onOrderUpdated()">
+  </app-order-form>
+}
       @else {
         <div class="aside-panel-header"><h2>Vista del salón</h2></div>
         <div class="aside-panel-container">

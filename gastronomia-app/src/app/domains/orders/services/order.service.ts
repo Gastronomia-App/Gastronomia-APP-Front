@@ -120,4 +120,8 @@ export class OrderService {
   splitOrder(orderId: number, request: any): Observable<Order[]> {
     return this.http.patch<Order[]>(`${this.apiUrl}/${orderId}/split`, request);
   }
+
+  updateOrder(orderId: number, payload: any) {
+  return this.http.put<Order>(`${this.apiUrl}/${orderId}`, payload);
+}
 }
