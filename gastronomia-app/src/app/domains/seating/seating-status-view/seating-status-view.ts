@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Seating } from '../../../../shared/models/seating';
+import { Seating } from '../../../shared/models/seating';
 
 @Component({
   selector: 'app-seating-status-view',

@@ -1,11 +1,11 @@
 import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SeatingsService } from '../../services/seating-service';
-import { Seating } from '../../../../shared/models/seating';
-import { SeatingForm } from '../../components/seating-form/seating-form';
-import { SeatingGridEditor } from '../../components/seating-grid-editor/seating-grid-editor';
-import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
-import { ZoomStateService } from '../../services/zoom-state-service';
+import { SeatingGridEditor } from '../seating-grid-editor/seating-grid-editor';
+import { SeatingForm } from '../seating-form/seating-form';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
+import { SeatingsService } from '../services/seating-service';
+import { ZoomStateService } from '../services/zoom-state-service';
+import { Seating } from '../../../shared/models/seating';
 
 @Component({
   selector: 'app-seating-config-page',

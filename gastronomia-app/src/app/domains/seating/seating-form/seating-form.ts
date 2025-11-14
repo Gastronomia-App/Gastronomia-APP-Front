@@ -13,18 +13,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Form } from '../../../shared/components/form';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
+import { SeatingsService } from '../services/seating-service';
+import { Seating, SeatingCreateRequest, SeatingUpdateRequest } from '../../../shared/models/seating';
+import { FormConfig, FormSubmitEvent } from '../../../shared/models';
 
-import { Form } from '../../../../shared/components/form/form';
-import { Confirm } from '../../../../shared/components/confirm/confirm';
-import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
-import {
-  Seating,
-  SeatingCreateRequest,
-  SeatingUpdateRequest,
-} from '../../../../shared/models/seating';
-import { FormConfig, FormSubmitEvent } from '../../../../shared/models/form-config.model';
-import { SeatingsService } from '../../services/seating-service';
 
 @Component({
   selector: 'app-seating-form',

@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { SeatingStatusView } from '../../components/seating-status-view/seating-status-view';
-import { SeatingsService } from '../../services/seating-service';
-import { Seating } from '../../../../shared/models/seating';
+import { Seating } from '../../../shared/models/seating';
+import { SeatingsService } from '../services/seating-service';
+import { SeatingStatusView } from '../seating-status-view/seating-status-view';
+
 
 @Component({
   selector: 'app-seating-status-page',

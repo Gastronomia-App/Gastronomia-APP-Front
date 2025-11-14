@@ -15,12 +15,6 @@
   }
 
   @if (showAlert()) {
-    <app-alert
-      [title]="alertTitle()"
-      [message]="alertMessage()"
-      [details]="alertDetails()"
-      confirmLabel="Aceptar"
-      detailsLabel="Detalles"
-      (onConfirm)="showAlert.set(false)" />
+  
   }
 </div>

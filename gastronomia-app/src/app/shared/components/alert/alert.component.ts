@@ -1,48 +1,69 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, HostListener, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+type AlertType = 'success' | 'error';
+
 @Component({
   selector: 'app-alert',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './alert.component.html',
-  styleUrl: './alert.component.css',
+  styleUrl: './alert.component.css'
 })
 export class AlertComponent {
-  // ========== Inputs ==========
-  title = input<string>('Alerta');
-  message = input<string>('Ocurrió un error.');
-  details = input<any>(null);
-  confirmLabel = input<string>('Aceptar');
-  detailsLabel = input<string>('Detalles');
 
-  // ========== Outputs ==========
-  onConfirm = output<void>();
-  onToggleDetails = output<void>();
+  // ========= Inputs =========
+  type = input<AlertType>('success');
+  title = input<string>('Operación Exitosa');
+  message = input<string>('');
+  timestamp = input<string | null>(null);        // formato ISO o null
+  showCancel = input<boolean>(false);            // opcional
 
-  // ========== Signals internas ==========
-  readonly showDetails = signal(false);
+  // ========= Outputs =========
+  onAccept = output<void>();
+  onCancel = output<void>();
+  onClose = output<void>();
 
-  // ========== Métodos ==========
-  confirm() {
-    this.onConfirm.emit();
+  // ========= Computed =========
+
+  get formattedTime(): string {
+    if (!this.timestamp()) return '';
+    try {
+      const date = new Date(this.timestamp()!);
+      return date.toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return '';
+    }
   }
 
-  toggleDetails() {
-    this.showDetails.set(!this.showDetails());
-    this.onToggleDetails.emit();
+  // ========= Methods =========
+  accept() {
+    this.onAccept.emit();
+    this.close();
   }
 
+  cancel() {
+    this.onCancel.emit();
+    this.close();
+  }
+
+  close() {
+    this.onClose.emit();
+  }
+
+  // click fuera cierra
   onBackdropClick(event: MouseEvent) {
     if (event.target === event.currentTarget) {
-      this.confirm(); // también se cierra si hace click fuera
+      this.close();
     }
   }
 
-  formattedDetails() {
-    try {
-      return JSON.stringify(this.details(), null, 2);
-    } catch {
-      return String(this.details());
-    }
+  // cerrar con ESC
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    this.close();
   }
 }

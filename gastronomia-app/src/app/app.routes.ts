@@ -113,19 +113,19 @@ export const routes: Routes = [
       {
         path: 'view',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-view-page/seating-view-page')
+          import('./domains/seating/seating-view-page/seating-view-page')
             .then(m => m.SeatingViewPage)
       },
       {
         path: 'status',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-status-page/seating-status-page')
+          import('./domains/seating/seating-status-page/seating-status-page')
             .then(m => m.SeatingStatusPage)
       },
       {
         path: 'config',
         loadComponent: () =>
-          import('./domains/seating/pages/seating-config-page/seating-config-page')
+          import('./domains/seating/seating-config-page/seating-config-page')
             .then(m => m.SeatingConfigPage),
         canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])]
       }

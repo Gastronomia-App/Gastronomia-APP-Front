@@ -13,11 +13,9 @@ import {
   EnvironmentInjector
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Seating } from '../../../../shared/models/seating';
-import { SeatingsService } from '../../services/seating-service';
-import { ZoomStateService } from '../../services/zoom-state-service';
-import { fromEvent } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SeatingsService } from '../services/seating-service';
+import { ZoomStateService } from '../services/zoom-state-service';
+import { Seating } from '../../../shared/models/seating';
 
 @Component({
   selector: 'app-seating-grid-view',

@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, effect, ElementRef, EnvironmentInjector, inject, runInInjectionContext, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SeatingGridView } from '../../components/seating-grid-view/seating-grid-view';
-import { SeatingsService } from '../../services/seating-service';
-import { Seating } from '../../../../shared/models/seating';
-import { ZoomStateService } from '../../services/zoom-state-service';
+import { SeatingGridView } from '../seating-grid-view/seating-grid-view';
+import { SeatingsService } from '../services/seating-service';
+import { Seating } from '../../../shared/models/seating';
+import { ZoomStateService } from '../services/zoom-state-service';
+
 
 @Component({
   selector: 'app-seating-view-page',

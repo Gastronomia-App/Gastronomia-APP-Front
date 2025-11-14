@@ -19,10 +19,11 @@ import {
   DestroyRef
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SeatingsService } from '../../services/seating-service';
-import { Seating } from '../../../../shared/models/seating';
+import { SeatingsService } from '../services/seating-service';
+import { ZoomStateService } from '../services/zoom-state-service';
+import { Seating } from '../../../shared/models/seating';
 import { fromEvent, Subject, throttleTime } from 'rxjs';
-import { ZoomStateService } from '../../services/zoom-state-service';
+
 
 type Shape = 'ROUND' | 'SQUARE';
 type Size = 'SMALL' | 'MEDIUM' | 'LARGE';
