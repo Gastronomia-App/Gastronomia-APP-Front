@@ -216,7 +216,9 @@
 .seat.small { inset: 18px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
 .seat.medium { inset: 12px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
 .seat.large { inset: 6px; animation: resizeSeat 250ms cubic-bezier(0.36, 0, 0.66, -0.56); }
-
+.seat.small .seat-number {
+  font-size: calc(0.8rem * (1 + (var(--zoom, 1) - 1) * 0.18));
+}
 @keyframes resizeSeat {
   0% { transform: scale(0.9); }
   50% { transform: scale(1.05); }
@@ -374,3 +376,28 @@
   stroke: none; /* 🔸 Evita el halo o borde oscuro */
 }
 
+@media (max-width: 1400px) {
+  .seat-number {
+    font-size: calc(1.8rem * (1 + (var(--zoom, 1) - 1) * 0.22));
+  }
+  .seat.small .seat-number {
+    font-size: calc(1.4rem * (1 + (var(--zoom, 1) - 1) * 0.22));
+  }
+}
+
+@media (max-width: 1000px) {
+  .seat-number {
+    font-size: calc(2.2rem * (1 + (var(--zoom, 1) - 1) * 0.25));
+  }
+  .seat.small .seat-number {
+    font-size: calc(1.7rem * (1 + (var(--zoom, 1) - 1) * 0.25));
+  }
+}
+@media (min-width: 3500px) {
+  .seat-number {
+    font-size: calc(6.6rem * (1 + (var(--zoom, 1) - 1) * 0.18));
+  }
+  .seat.small .seat-number {
+    font-size: calc(6.3rem * (1 + (var(--zoom, 1) - 1) * 0.18));
+  }
+}

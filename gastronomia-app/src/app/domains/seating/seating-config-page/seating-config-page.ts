@@ -6,6 +6,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { SeatingsService } from '../services/seating-service';
 import { ZoomStateService } from '../services/zoom-state-service';
 import { Seating } from '../../../shared/models/seating';
+import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-seating-config-page',
@@ -14,7 +15,8 @@ import { Seating } from '../../../shared/models/seating';
     CommonModule,
     SeatingGridEditor,
     SeatingForm,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    AlertComponent
   ],
   templateUrl: './seating-config-page.html',
   styleUrl: './seating-config-page.css'
@@ -22,7 +24,9 @@ import { Seating } from '../../../shared/models/seating';
 export class SeatingConfigPage{
   private readonly seatingService = inject(SeatingsService);
   @ViewChild('gridEditor') gridEditor!: SeatingGridEditor;
-
+  readonly showAlert = signal(false);
+  readonly alertTitle = signal('');
+  readonly alertMessage = signal('');
   private zoomState = inject(ZoomStateService);
   readonly seatings = signal<Seating[]>([]);
   readonly loading = signal(true);
@@ -43,6 +47,17 @@ export class SeatingConfigPage{
     this.loadSeatings();
   }
 
+  private showError(title: string, err: any) {
+  const backendMsg =
+    err?.error?.message ||
+    err?.message ||
+    'Ocurrió un error inesperado.';
+
+  this.alertTitle.set(title);
+  this.alertMessage.set(backendMsg);
+  this.showAlert.set(true);
+  }
+
   private loadSeatings(): void {
     this.loading.set(true);
     this.seatingService.getAll().subscribe({
@@ -50,10 +65,10 @@ export class SeatingConfigPage{
         this.seatings.set(data);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('No se pudieron cargar las ubicaciones del salón');
-        this.loading.set(false);
-      }
+      error: (err) => {
+     this.showError('No se pudieron cargar las ubicaciones del salón', err);
+     this.loading.set(false);
+    }
     });
   }
 
@@ -66,7 +81,7 @@ export class SeatingConfigPage{
         current.splice(0, current.length, ...data);
         this.seatings.set(current);
       },
-      error: (err) => console.error('❌ Error al refrescar grilla', err),
+      error: (err) => this.showError('No se pudo refrescar la grilla', err),
     });
   }
 
@@ -114,9 +129,9 @@ export class SeatingConfigPage{
       .subscribe({
         next: () => this.refreshGridWithoutFlicker(),
         error: (err) => {
-          console.error('❌ Error al mover ubicación', err);
-          this.seatings.set(prev);
-        },
+  this.showError('No se pudo mover la mesa', err);
+  this.seatings.set(prev);
+},
       });
   }
 
@@ -161,10 +176,10 @@ onDraftCleared(): void {
         this.seatToDelete.set(null);
         this.refreshGridWithoutFlicker();
       },
-      error: () => {
-        alert('No se pudo eliminar la mesa.');
-        this.showDeleteModal.set(false);
-      },
+      error: (err) => {
+  this.showError('No se pudo eliminar la mesa', err);
+  this.showDeleteModal.set(false);
+},
     });
   }
 

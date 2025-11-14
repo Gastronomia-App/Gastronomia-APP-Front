@@ -149,7 +149,9 @@
 .seat.small { inset: 18px; }
 .seat.medium { inset: 12px; }
 .seat.large { inset: 6px; }
-
+.seat.small .seat-number {
+  font-size: calc(0.8rem * (1 + (var(--zoom, 1) - 1) * 0.18));
+}
 /* =========================================================
    🔢 SEAT NUMBER DISPLAY
    ========================================================= */

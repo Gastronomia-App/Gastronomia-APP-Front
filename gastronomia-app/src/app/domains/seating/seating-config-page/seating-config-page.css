@@ -673,3 +673,7 @@
     height: 16px;
   }
 }
+.aside-panel-wrapper {
+  overflow-y: auto;
+  max-height: 100%;
+}
