@@ -2,7 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../enviroments/environment';
-import { Order, PageResponse } from '../../../shared/models';
+import { Order, PageResponse, Item } from '../../../shared/models';
+
+// Item Request DTO for adding items to an order
+export interface ItemRequest {
+  productId: number;
+  quantity: number;
+  selectedOptions?: Array<{ optionId: number; quantity: number }>;
+  comment?: string;
+}
 
 interface OrderFilters {
     status?: string | null;
@@ -74,5 +82,38 @@ export class OrderService {
 
   createOrder(order: Order): Observable<Order> {
     return this.http.post<Order>(this.apiUrl, order);
+  }
+
+  // Add items to an order
+  addItems(orderId: number, items: ItemRequest[]): Observable<Order> {
+    return this.http.post<Order>(`${this.apiUrl}/${orderId}/items`, items);
+  }
+
+  // Get items from an order
+  getItems(orderId: number): Observable<Item[]> {
+    return this.http.get<Item[]>(`${this.apiUrl}/${orderId}/items`);
+  }
+
+  // Update an item in an order
+  updateItem(orderId: number, itemId: number, item: ItemRequest): Observable<Item> {
+    return this.http.put<Item>(`${this.apiUrl}/${orderId}/items/${itemId}`, item);
+  }
+
+  // Remove an item from an order
+  removeItem(orderId: number, itemId: number): Observable<Item> {
+    return this.http.delete<Item>(`${this.apiUrl}/${orderId}/items/${itemId}`);
+  }
+
+  // Update discount
+  updateDiscount(orderId: number, discount: number): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}?discount=${discount}`, {});
+  }
+
+  finalizeOrder(orderId: number): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/finalize`, {});
+  }
+
+  billOrder(orderId: number): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/bill`, {});
   }
 }

@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Form } from '../../../shared/components/form';
-import { SearchableList } from '../../../shared/components/searchable-list';
+import { ProductComponentsSelector } from '../components/product-components-selector/product-components-selector';
+import { ProductGroupsSelector } from '../components/product-groups-selector/product-groups-selector';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubmitEvent } from '../../../shared/models';
@@ -57,17 +58,14 @@ export class ProductForm implements OnInit {
 
   // Computed inputs for dynamic components - REACTIVE
   componentsInputs = computed(() => {
-    // Filtrar componentes: excluir los ya seleccionados y el producto actual
+    // Filter components: exclude selected ones and current product
     const allComponents = this.availableComponents();
     const selected = this.selectedComponents();
     const currentProductId = this.editingProductId;
     
     const filteredComponents = allComponents.filter(component => {
-      // Excluir si ya está seleccionado
       const isSelected = selected.some(s => s.productId === component.id);
-      // Excluir si es el producto actual que se está editando
       const isSelfReference = currentProductId !== null && component.id === currentProductId;
-      
       return !isSelected && !isSelfReference;
     });
 
@@ -76,21 +74,12 @@ export class ProductForm implements OnInit {
       availableItems: filteredComponents,
       selectedItems: this.selectedComponents(),
       isLoading: this.isLoadingComponents(),
-      allowQuantitySelection: true, // Habilitar selección de cantidad con flechas
-      customFields: [
-        {
-          key: 'quantity',
-          label: 'Cantidad',
-          type: 'number' as const,
-          editable: true
-        }
-      ],
-      editableFields: true
+      allowQuantitySelection: true
     };
   });
 
   productGroupsInputs = computed(() => {
-    // Filtrar grupos: excluir los ya seleccionados
+    // Filter groups: exclude selected ones
     const allGroups = this.availableProductGroups();
     const selected = this.selectedProductGroups();
     
@@ -102,9 +91,7 @@ export class ProductForm implements OnInit {
       placeholder: 'Buscar grupo...',
       availableItems: filteredGroups,
       selectedItems: this.selectedProductGroups(),
-      isLoading: this.isLoadingGroups(),
-      customFields: [],
-      editableFields: false
+      isLoading: this.isLoadingGroups()
     };
   });
 
@@ -197,10 +184,10 @@ export class ProductForm implements OnInit {
         fields: [
           {
             name: 'components',
-            label: 'Componentes',  // Label shown by Form component
+            label: 'Componentes',
             type: 'custom',
             fullWidth: true,
-            customComponent: SearchableList,
+            customComponent: ProductComponentsSelector,
             customInputs: this.componentsInputs(),
             customOutputs: {
               itemAdded: (item: Product) => this.onComponentAdded(item),
@@ -210,10 +197,10 @@ export class ProductForm implements OnInit {
           },
           {
             name: 'productGroups',
-            label: 'Grupos de opciones',  // Label shown by Form component
+            label: 'Grupos de opciones',
             type: 'custom',
             fullWidth: true,
-            customComponent: SearchableList,
+            customComponent: ProductGroupsSelector,
             customInputs: this.productGroupsInputs(),
             customOutputs: {
               itemAdded: (item: ProductGroup) => this.onProductGroupAdded(item),

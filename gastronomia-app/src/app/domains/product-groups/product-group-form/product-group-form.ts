@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Form } from '../../../shared/components/form';
-import { SearchableList } from '../../../shared/components/searchable-list';
+import { ProductOptionsSelector } from '../components/product-options-selector/product-options-selector';
 import { ProductGroupService } from '../services/product-group.service';
 import { ProductGroupFormService } from '../services/product-group-form.service';
 import { ProductService } from '../../products/services/product.service';
@@ -48,24 +48,9 @@ export class ProductGroupForm implements OnInit {
   optionsInputs = computed(() => ({
     placeholder: 'Buscar producto...',
     availableItems: this.availableProducts(),
-    selectedItems: this.enrichOptionsWithNames(this.selectedOptions()),
+    selectedItems: this.selectedOptions(),
     isLoading: this.isLoadingProducts(),
-    customFields: [
-      {
-        key: 'maxQuantity',
-        label: 'Máx. cantidad',
-        type: 'number' as const,
-        editable: true
-      },
-      {
-        key: 'priceIncrease',
-        label: 'Incremento',
-        type: 'currency' as const,
-        editable: true,
-        suffix: '$'
-      }
-    ],
-    editableFields: true
+    nameResolver: (option: ProductOption) => this.getProductNameById(option.productId)
   }));
 
   // Form configuration
@@ -112,7 +97,7 @@ export class ProductGroupForm implements OnInit {
             label: 'Productos opcionales',
             type: 'custom',
             fullWidth: true,
-            customComponent: SearchableList,
+            customComponent: ProductOptionsSelector,
             customInputs: this.optionsInputs(),
             customOutputs: {
               itemAdded: (item: Product) => this.onOptionAdded(item),
@@ -193,6 +178,14 @@ export class ProductGroupForm implements OnInit {
         this.formComponent()?.renderDynamicComponents();
       }, 0);
     }
+  }
+
+  /**
+   * Get product name by ID (for nameResolver)
+   */
+  private getProductNameById(productId: number): string {
+    const product = this.availableProducts().find(p => p.id === productId);
+    return product ? product.name : `Producto #${productId}`;
   }
 
   /**

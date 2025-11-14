@@ -13,4 +13,17 @@
       <p>No hay ubicaciones registradas en el salón.</p>
     }
   </div>
+
+  <!-- Aside panel for order items -->
+  @if (showOrderItems() && selectedSeating()?.activeOrder) {
+    <aside class="aside-panel seating-aside">
+      <div class="aside-panel-wrapper">
+        <app-order-items-form
+          [order]="selectedSeating()!.activeOrder!"
+          (orderClosed)="onOrderItemsClosed()"
+          (orderUpdated)="onOrderUpdated()">
+        </app-order-items-form>
+      </div>
+    </aside>
+  }
 </div>
