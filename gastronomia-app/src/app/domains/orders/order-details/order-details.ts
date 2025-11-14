@@ -2,7 +2,8 @@ import { Component, inject, output, signal, computed, viewChild, effect } from '
 import { CommonModule } from '@angular/common';
 import { Detail } from '../../../shared/components/detail/detail';
 import { OrderFormService } from '../services/order-form.service';
-import { Order, DetailConfig } from '../../../shared/models';
+import { Order, DetailConfig, Item } from '../../../shared/models';
+import { ProductService } from '../../products/services/product.service';
 
 @Component({
   selector: 'app-order-details',
@@ -16,6 +17,7 @@ import { Order, DetailConfig } from '../../../shared/models';
 })
 export class OrderDetails {
   private orderFormService = inject(OrderFormService);
+  private productService = inject(ProductService);
   
   onDetailsClosed = output<void>();
   
@@ -24,6 +26,7 @@ export class OrderDetails {
   
   // Signals
   order = signal<Order | null>(null);
+  isLoadingProducts = signal(false);
   
   // Computed
   customerName = computed(() => {
@@ -252,7 +255,49 @@ export class OrderDetails {
     console.log('Seating Number:', order.seatingNumber);
     console.log('Order Type:', order.orderType);
     console.log('Items:', order.items);
-    this.order.set(order);
+    
+    // Verificar si los items tienen product populado o solo productId
+    if (order.items && order.items.length > 0) {
+      const needsProductLoading = order.items.some(item => !item.product && item.productId);
+      
+      if (needsProductLoading) {
+        // Cargar productos para popular los items
+        this.loadProductsForItems(order);
+      } else {
+        this.order.set(order);
+      }
+    } else {
+      this.order.set(order);
+    }
+  }
+
+  /**
+   * Cargar productos y popular los items que solo tienen productId
+   */
+  private loadProductsForItems(order: Order): void {
+    this.isLoadingProducts.set(true);
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        // Popular los items con los productos
+        const itemsWithProducts = order.items!.map(item => {
+          if (!item.product && item.productId) {
+            const product = products.find(p => p.id === item.productId);
+            return { ...item, product };
+          }
+          return item;
+        });
+        
+        // Actualizar la orden con los items populados
+        this.order.set({ ...order, items: itemsWithProducts });
+        this.isLoadingProducts.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading products for items:', error);
+        this.isLoadingProducts.set(false);
+        // Aún así setear la orden aunque no se carguen los productos
+        this.order.set(order);
+      }
+    });
   }
 
   onClose(): void {
