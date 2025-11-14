@@ -116,4 +116,8 @@ export class OrderService {
   billOrder(orderId: number): Observable<Order> {
     return this.http.patch<Order>(`${this.apiUrl}/${orderId}/bill`, {});
   }
+
+  splitOrder(orderId: number, request: any): Observable<Order[]> {
+    return this.http.patch<Order[]>(`${this.apiUrl}/${orderId}/split`, request);
+  }
 }

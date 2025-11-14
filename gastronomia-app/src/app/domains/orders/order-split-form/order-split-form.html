@@ -1,0 +1,106 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Dividir Orden - Mesa {{ order().seatingNumber }}</h2>
+      <button type="button" class="btn-close" (click)="onCancel()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="split-form">
+        <div class="destination-info">
+          <h3>Configurar Nueva Orden</h3>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label>Mesa Destino *</label>
+              <select [(ngModel)]="selectedSeatingId" required>
+                <option [value]="null">Seleccionar...</option>
+                @for (seating of availableSeatings(); track seating.id) {
+                  <option [value]="seating.id">Mesa {{ seating.number }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Personas</label>
+              <input 
+                type="number" 
+                [(ngModel)]="peopleCount"
+                min="1"
+                max="10">
+            </div>
+
+            <div class="form-field">
+              <label>Camarero *</label>
+              <select [(ngModel)]="selectedEmployeeId" required>
+                <option [value]="null">Seleccionar...</option>
+                @for (emp of employees(); track emp.id) {
+                  <option [value]="emp.id">{{ emp.name }} {{ emp.lastName }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Cliente</label>
+              <select [(ngModel)]="selectedCustomerId">
+                <option [value]="null">Sin asignar</option>
+                @for (customer of customers(); track customer.id) {
+                  <option [value]="customer.id">{{ customer.name }} {{ customer.lastName }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+          <div class="items-transfer">
+            <div class="items-column">
+              <h4>Orden Original ({{ remainingItems().length }})</h4>
+              <div class="items-list">
+                @for (item of remainingItems(); track item.id) {
+                  <div class="item-card" (click)="moveToDestination(item.id!)">
+                    <span class="item-name">{{ item.product.name }}</span>
+                    <span class="item-quantity">x{{ item.quantity }}</span>
+                    <span class="item-price">${{ item.totalPrice.toFixed(2) }}</span>
+                  </div>
+                }
+                @empty {
+                  <p class="empty-message">Todos los items fueron transferidos</p>
+                }
+              </div>
+            </div>
+
+            <div class="transfer-arrow">→</div>
+
+            <div class="items-column">
+              <h4>Orden Destino ({{ destinationItems().length }})</h4>
+              <div class="items-list">
+                @for (item of destinationItems(); track item.id) {
+                  <div class="item-card destination" (click)="moveToSource(item.id!)">
+                    <span class="item-name">{{ item.product.name }}</span>
+                    <span class="item-quantity">x{{ item.quantity }}</span>
+                    <span class="item-price">${{ item.totalPrice.toFixed(2) }}</span>
+                  </div>
+                }
+                @empty {
+                  <p class="empty-message">Click en los items para transferir</p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button 
+        type="button" 
+        class="btn-primary" 
+        [disabled]="!canSubmit()"
+        (click)="onSubmit()">
+        {{ isSubmitting() ? 'Dividiendo...' : 'Dividir Orden' }}
+      </button>
+    </div>
+  </div>
+</div>

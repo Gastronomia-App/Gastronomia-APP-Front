@@ -11,6 +11,12 @@
           <polyline points="10 9 9 9 8 9"/>
         </svg>
       </button>
+      <button type="button" class="btn-icon" (click)="onSplitOrder()" title="Dividir orden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="2" y1="2" x2="22" y2="22"/>
+        </svg>
+      </button>
       <button type="button" class="btn-close" (click)="onClose()">✕</button>
     </div>
   </header>
@@ -32,7 +38,7 @@
       </div>
       <div class="info-item">
         <span class="info-label">Fecha:</span>
-        <span class="info-value">{{ order().dateTime || 'N/A' }}</span>
+        <span class="info-value">{{ order().dateTime ? (order().dateTime | date:'yyyy-MM-dd HH:mm') : 'N/A' }}</span>
       </div>
     </div>
 
@@ -160,3 +166,11 @@
   (confirm)="confirmDeleteItem()"
   (cancel)="cancelDeleteItem()">
 </app-confirmation-modal>
+
+@if (showSplitForm()) {
+  <app-order-split-form
+    [order]="currentOrder()!"
+    (splitCompleted)="onSplitCompleted()"
+    (splitCanceled)="onSplitFormClosed()">
+  </app-order-split-form>
+}

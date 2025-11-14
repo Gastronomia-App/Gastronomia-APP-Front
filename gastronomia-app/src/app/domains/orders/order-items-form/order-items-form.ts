@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal, computed, input, output } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, input, output, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchableList } from '../../../shared/components/searchable-list';
 import { ItemCard } from '../../../shared/components/item-card';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
+import { OrderSplitForm } from '../order-split-form/order-split-form';
 import { OrderService, ItemRequest } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
 import { Order, Product, Item } from '../../../shared/models';
@@ -11,7 +12,7 @@ import { Order, Product, Item } from '../../../shared/models';
 @Component({
   selector: 'app-order-items-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableList, ItemCard, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, SearchableList, ItemCard, ConfirmationModalComponent, OrderSplitForm],
   templateUrl: './order-items-form.html',
   styleUrl: './order-items-form.css',
 })
@@ -34,6 +35,24 @@ export class OrderItemsForm implements OnInit {
   discount = signal(0);
   showDeleteConfirmation = signal(false);
   itemToDelete = signal<number | null>(null);
+  showSplitForm = signal(false);
+  isSelectingDestination = signal(false);
+  currentOrder = signal<Order | null>(null);
+
+  constructor() {
+    // Effect para detectar cambios en el input order()
+    effect(() => {
+      const orderData = this.order();
+      this.currentOrder.set(orderData);
+      this.discount.set(orderData.discount || 0);
+      
+      if (orderData.items && orderData.items.length > 0) {
+        this.confirmedItems.set([...orderData.items]);
+      } else {
+        this.confirmedItems.set([]);
+      }
+    });
+  }
 
   // Computed signals
   subtotal = computed(() => {
@@ -66,67 +85,14 @@ export class OrderItemsForm implements OnInit {
   });
 
   ngOnInit(): void {
-    // Inicializar con los datos del order recibido
-    this.discount.set(this.order().discount || 0);
-    
-    if (this.order().items && this.order().items!.length > 0) {
-      const items = this.order().items!;
-      
-      // Verificar si los items tienen product populado o solo productId
-      const needsProductLoading = items.some(item => !item.product && item.productId);
-      
-      if (needsProductLoading) {
-        // Cargar productos para popular los items
-        this.loadProductsForItems(items);
-      } else {
-        this.confirmedItems.set(items);
-      }
-    }
-    
-    // NO cargar productos aquí - se cargarán cuando el usuario haga focus en el input
+    // La inicialización ahora se maneja en el effect del constructor
   }
 
-  /**
-   * Cargar productos y popular los items que solo tienen productId
-   */
-  private loadProductsForItems(items: Item[]): void {
-    this.isLoadingProducts.set(true);
-    this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.availableProducts.set(products);
-        
-        // Popular los items con los productos
-        const itemsWithProducts = items.map(item => {
-          if (!item.product && item.productId) {
-            const product = products.find(p => p.id === item.productId);
-            return { ...item, product };
-          }
-          return item;
-        });
-        
-        this.confirmedItems.set(itemsWithProducts);
-        this.isLoadingProducts.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading products for items:', error);
-        this.isLoadingProducts.set(false);
-        // Aún así setear los items aunque no se carguen los productos
-        this.confirmedItems.set(items);
-      }
-    });
-  }
-
-  /**
-   * Cargar productos cuando el usuario intente buscar (lazy loading)
-   */
   onSearchFocus(): void {
-    // Solo cargar productos si no están ya cargados
     if (this.availableProducts().length === 0 && !this.isLoadingProducts()) {
       this.loadProducts();
     }
   }
-
-
 
   private loadProducts(): void {
     this.isLoadingProducts.set(true);
@@ -184,28 +150,11 @@ export class OrderItemsForm implements OnInit {
 
     this.orderService.addItems(this.order().id!, itemsToAdd).subscribe({
       next: (updatedOrder) => {
-        this.pendingItems.set([]); // Limpiar pendientes
+        this.pendingItems.set([]);
+        this.currentOrder.set(updatedOrder);
         
-        // Usar items del order actualizado
         if (updatedOrder.items && updatedOrder.items.length > 0) {
-          const items = updatedOrder.items;
-          
-          // Verificar si necesitamos popular los productos
-          const needsProductLoading = items.some(item => !item.product && item.productId);
-          
-          if (needsProductLoading && this.availableProducts().length > 0) {
-            // Popular con productos ya cargados
-            const itemsWithProducts = items.map(item => {
-              if (!item.product && item.productId) {
-                const product = this.availableProducts().find(p => p.id === item.productId);
-                return { ...item, product };
-              }
-              return item;
-            });
-            this.confirmedItems.set(itemsWithProducts);
-          } else {
-            this.confirmedItems.set(items);
-          }
+          this.confirmedItems.set(updatedOrder.items);
         }
       },
       error: (error) => {
@@ -221,24 +170,12 @@ export class OrderItemsForm implements OnInit {
     this.pendingItems.set([]);
   }
 
-  /**
-   * Actualizar item confirmado
-   */
   onUpdateConfirmedItem(updatedItem: any): void {
-    // Buscar el item original en la lista
     const originalItem = this.confirmedItems().find(i => i.id === updatedItem.id);
-    if (!originalItem) return;
+    if (!originalItem || !originalItem.product?.id) return;
 
-    // Obtener productId del item (puede estar en product.id o productId)
-    const productId = originalItem.product?.id || originalItem.productId;
-    if (!productId) {
-      console.error('Cannot update item: no productId found');
-      return;
-    }
-
-    // Crear el request con los datos actualizados
     const itemRequest: ItemRequest = {
-      productId: productId,
+      productId: originalItem.product.id,
       quantity: updatedItem.quantity,
       selectedOptions: originalItem.selectedOptions?.map(opt => ({
         optionId: opt.id,
@@ -249,7 +186,6 @@ export class OrderItemsForm implements OnInit {
 
     this.orderService.updateItem(this.order().id!, updatedItem.id, itemRequest).subscribe({
       next: () => {
-        // Actualizar estado local
         this.confirmedItems.update(items =>
           items.map(i => i.id === updatedItem.id 
             ? { ...i, quantity: updatedItem.quantity, totalPrice: i.unitPrice * updatedItem.quantity }
@@ -328,6 +264,20 @@ export class OrderItemsForm implements OnInit {
         console.error('Error marking order as billed:', error);
       }
     });
+  }
+
+  onSplitOrder(): void {
+    this.showSplitForm.set(true);
+  }
+
+  onSplitFormClosed(): void {
+    this.showSplitForm.set(false);
+  }
+
+  onSplitCompleted(): void {
+    this.showSplitForm.set(false);
+    this.orderUpdated.emit();
+    this.onClose();
   }
 
   /**
