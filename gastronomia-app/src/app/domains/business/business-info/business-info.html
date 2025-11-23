@@ -1,0 +1,122 @@
+@if (business(); as business) {
+<section class="business-info">
+
+  <!-- Business summary tiles -->
+  <article class="card business-summary-card">
+    <div class="info-grid">
+
+      <!-- Business name -->
+      <div class="info-tile">
+        <div class="icon">
+          <!-- Building icon -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M8 2h8a1 1 0 0 1 1 1v18h-4v-4h-4v4H7V3a1 1 0 0 1 1-1Zm1 4v2h2V6H9Zm0 4v2h2v-2H9Zm0 4v2h2v-2H9Zm6-8h-2v2h2V6Zm-2 4v2h2v-2h-2Z"
+            />
+          </svg>
+        </div>
+        <div class="meta">
+          <span class="label">Nombre del negocio</span>
+          <span class="value">{{ business.name }}</span>
+        </div>
+      </div>
+
+      <!-- CUIT -->
+      <div class="info-tile">
+        <div class="icon">
+          <!-- ID card icon -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="14" rx="2" ry="2"
+                  fill="none" stroke="currentColor" stroke-width="1.8" />
+            <line x1="6" y1="8" x2="18" y2="8"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <line x1="6" y1="14.5" x2="18" y2="14.5"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="meta">
+          <span class="label">CUIT</span>
+          <span class="value">{{ business.cuit }}</span>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="info-tile info-tile-wide">
+        <div class="icon">
+          <!-- Map pin -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"
+            />
+          </svg>
+        </div>
+        <div class="meta">
+          <span class="label">Dirección del negocio</span>
+          <span class="value">
+            {{ business.address?.street }}
+          </span>
+          <span class="value">
+            {{ business.address?.city }} – {{ business.address?.province }} – CP {{ business.address?.zipCode }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </article>
+
+  <!-- Owner information block -->
+  <section class="card owner-info-card">
+  <header class="owner-info-header">
+    <div class="owner-info-title">
+      <div class="owner-dot"></div>
+      <h3>Información del propietario</h3>
+    </div>
+  </header>
+
+  <!-- Row principal: avatar + nombre + pill -->
+  <div class="owner-row">
+    <div class="owner-main">
+      <div class="owner-avatar">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6Z"
+          />
+        </svg>
+      </div>
+      <div class="owner-data">
+        <span class="owner-label">Propietario</span>
+        <span class="owner-name">
+          {{ business.owner?.name }} {{ business.owner?.lastName }}
+        </span>
+      </div>
+    </div>
+
+    <span class="owner-role-pill">Propietario</span>
+  </div>
+
+  <!-- Datos adicionales del propietario -->
+  <div class="owner-extra">
+    <div class="owner-extra-item">
+      <span class="owner-extra-label">DNI</span>
+      <span class="owner-extra-value">{{ business.owner?.dni }}</span>
+    </div>
+
+    <div class="owner-extra-item">
+      <span class="owner-extra-label">Teléfono</span>
+      <span class="owner-extra-value">{{ business.owner?.phoneNumber }}</span>
+    </div>
+
+    <div class="owner-extra-item">
+      <span class="owner-extra-label">Correo electrónico</span>
+      <span class="owner-extra-value">{{ business.owner?.email }}</span>
+    </div>
+
+    <div class="owner-extra-item">
+      <span class="owner-extra-label">Usuario</span>
+      <span class="owner-extra-value">{{ business.owner?.username }}</span>
+    </div>
+  </div>
+</section>
+
+</section>
+}

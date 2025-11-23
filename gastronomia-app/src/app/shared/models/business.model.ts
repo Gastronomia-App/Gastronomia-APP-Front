@@ -11,4 +11,7 @@ export interface Business {
   description?: string;
   deleted?: boolean;
   owner?: Partial<Employee>;
+   employeesCount?: number;
+  activeEmployeesCount?: number;
+  inactiveEmployeesCount?: number;
 }

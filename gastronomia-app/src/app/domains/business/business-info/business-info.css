@@ -1,0 +1,259 @@
+:host {
+  --accent-1: var(--color-primary-secondary);
+  --accent-2: var(--color-primary);
+  --accent-3: var(--color-primary-light);
+
+  display: block;
+  width: 100%;
+}
+
+/* Wrapper para la columna izquierda */
+.business-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Base card style */
+.card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--color-border);
+}
+
+/* ---------- Business summary (tiles) ---------- */
+
+.business-summary-card {
+  padding: 0.75rem 1.25rem 1.25rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.info-tile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+.info-tile-wide {
+  grid-column: 1 / -1;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e7f5f3;
+  display: grid;
+  place-items: center;
+}
+
+.icon svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--color-primary);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Labels / values alineados con el resto de la página */
+.label {
+  font-size: 0.8rem;
+  color: var(--color-primary-light);
+}
+
+.value {
+  font-size: 0.95rem;
+  color: var(--color-primary-dark);
+}
+
+.value-strong {
+  font-weight: 600;
+}
+
+.subvalue {
+  font-size: 0.9rem;
+  color: var(--color-primary-light);
+}
+
+/* ---------- Owner information block ---------- */
+
+.owner-info-card {
+  padding: 0.95rem 1.25rem 1.05rem;
+}
+
+.owner-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0.9rem;
+}
+
+.owner-info-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.owner-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary-light);
+}
+
+.owner-info-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+/* fila principal */
+.owner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.owner-main {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.owner-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e7f5f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.owner-avatar svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.owner-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.owner-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary-light);
+}
+
+.owner-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.owner-role-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #defcf0;
+  color: #0a7b4b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* bloque inferior datos extra */
+.owner-extra {
+  margin-top: 0.4rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1.8rem;
+}
+
+.owner-extra-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.owner-extra-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary-light);
+}
+
+.owner-extra-value {
+  font-size: 0.95rem;
+  color: var(--color-primary-dark);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+  .business-summary-card {
+    padding: 0.75rem 1rem 1.1rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-info-card {
+    padding: 0.9rem 1rem 1rem;
+  }
+
+  .owner-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .owner-role-pill {
+    margin-left: 56px;
+  }
+
+  .owner-extra {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-tile {
+    padding: 0.7rem;
+  }
+
+  .icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .owner-avatar {
+    width: 44px;
+    height: 44px;
+  }
+}

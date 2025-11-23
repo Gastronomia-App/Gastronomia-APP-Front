@@ -1,0 +1,202 @@
+<section class="del-modal-root" tabindex="0">
+  <!-- Backdrop -->
+  <div class="del-overlay" (click)="onCancel()"></div>
+
+  <!-- Dialog -->
+  <form
+    class="del-dialog"
+    [formGroup]="form"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <header class="del-header">
+      <div class="del-header-left">
+        <div class="del-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 7v6" />
+            <circle cx="12" cy="16" r="1.1" />
+          </svg>
+        </div>
+        <div class="del-header-text">
+          <h2>Eliminar Negocio</h2>
+          <p>Esta acción no se puede revertir</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="del-close-btn"
+        aria-label="Cerrar"
+        (click)="onCancel()">
+        <svg viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Body -->
+    <main class="del-body">
+      <!-- Business summary -->
+      <section class="del-warning-box">
+        <div class="del-warning-label">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2 2 20h20L12 2Zm0 7v5M12 17.5a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Z" />
+          </svg>
+          <span class="del-business-cuit">Estás a punto de eliminar:</span>
+        </div>
+
+        <p class="del-business-name">{{ businessName }}</p>
+
+        @if (businessCuit) {
+          <p class="del-business-cuit">
+            CUIT: {{ businessCuit }}
+          </p>
+        }
+      </section>
+
+      <!-- Check items -->
+      <section class="del-section">
+        <p class="del-section-title">
+          Confirma que entiendes las consecuencias:
+        </p>
+
+        <div
+          class="del-check-item"
+          [class.checked]="irreversibleChecked">
+          <label>
+            <input
+              type="checkbox"
+              formControlName="irreversible" />
+            <span class="del-check-content">
+              <span class="del-check-title">
+                Entiendo que esta acción es irreversible
+              </span>
+              <span class="del-check-sub">
+                No habrá forma de recuperar esta información
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <div
+          class="del-check-item"
+          [class.checked]="dataLossChecked">
+          <label>
+            <input
+              type="checkbox"
+              formControlName="dataLoss" />
+            <span class="del-check-content">
+              <span class="del-check-title">
+                Se eliminarán todos los datos del negocio
+              </span>
+              <span class="del-check-sub">
+                Información, configuración y registros asociados
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <div
+          class="del-check-item"
+          [class.checked]="permanentChecked">
+          <label>
+            <input
+              type="checkbox"
+              formControlName="permanent" />
+            <span class="del-check-content">
+              <span class="del-check-title">
+                Acepto la eliminación permanente
+              </span>
+              <span class="del-check-sub">
+                He leído y comprendo todas las advertencias
+              </span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Verification panel -->
+      @if (showVerificationPanel) {
+        <section class="del-verification">
+          <div class="del-code-card">
+            <div class="del-code-header">
+              <span class="del-code-label">CÓDIGO DE VERIFICACIÓN</span>
+              <button
+                type="button"
+                class="del-copy-btn"
+                (click)="copyCode()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="8" y="8" width="11" height="13" rx="2" ry="2" />
+                  <rect x="5" y="3" width="11" height="13" rx="2" ry="2" />
+                </svg>
+                <span>Copiar</span>
+              </button>
+            </div>
+            <p class="del-code-value">
+              {{ verificationCode }}
+            </p>
+          </div>
+
+          <div class="del-input-block">
+            <label for="codeInput">Escribe el código para confirmar</label>
+            <input
+              id="codeInput"
+              type="text"
+              autocomplete="off"
+              formControlName="codeInput"
+              placeholder="Ingresa el código" />
+          </div>
+        </section>
+      }
+    </main>
+
+    <!-- Footer -->
+    <footer class="del-footer">
+      <button
+        type="button"
+        class="del-btn del-btn-ghost"
+        (click)="onCancel()">
+        <span class="icon-x">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </span>
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="del-btn del-btn-danger"
+        [disabled]="isDeleteDisabled"
+        (click)="onConfirmDelete()">
+        Eliminar Definitivamente
+      </button>
+    </footer>
+  </form>
+  @if (deleteRedirect) {
+    <div class="security-redirect-overlay">
+      <div class="security-redirect-card">
+        <img
+          src="assets/images/gastronomia-logo-g-black.png"
+          alt="Gastronomía Logo"
+          class="security-logo" />
+
+        <h3>Eliminación de negocio</h3>
+        <p>Tu negocio se ha eliminado correctamente.</p>
+
+        <div class="countdown-text">
+          Redirigiendo en {{ deleteRedirectCountdown }} segundos…
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

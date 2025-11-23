@@ -1,38 +1,42 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
 import { BusinessService } from '../services';
 import { Business } from '../../../shared/models';
-import { Confirm } from '../../../shared/components/confirm';
-import { BusinessForm } from '../business-form/business-form';
 import { BusinessStateService } from '../services/business-state-service';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
+import { BusinessInfo } from '../business-info/business-info';
+import { BusinessForm } from '../business-form/business-form';
+import { BusinessDelete } from '../business-delete/business-delete';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-business-page',
-  imports: [CommonModule, FormsModule, BusinessForm, Confirm, AlertComponent],
+  standalone: true,
+  imports: [CommonModule, FormsModule, AlertComponent, BusinessInfo, BusinessForm, BusinessDelete],
   templateUrl: './business-page.html',
-  styleUrl: './business-page.css',
+  styleUrl: './business-page.css'
 })
 export class BusinessPage implements OnInit {
-  private businessService = inject(BusinessService);
-  private businessState = inject(BusinessStateService);
-  showAlert = signal(false);
-alertMessage = signal<string | null>(null);
-  // UI state
-  myBusiness = signal<Business | null>(null);
-  isLoading = signal(true);
-  errorMessage = signal<string | null>(null);
-  isEditMode = signal(false);
+  private readonly businessService = inject(BusinessService);
+  private readonly businessState = inject(BusinessStateService);
+  private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
-  // Confirm dialogs
-  showDeleteConfirm = signal(false);
-  showSaveConfirm = signal(false);
-  pendingFormData: any = null;
+  // Alert
+  readonly showAlert = signal(false);
+  readonly alertMessage = signal<string | null>(null);
+
+  // UI state
+  readonly myBusiness = signal<Business | null>(null);
+  readonly isLoading = signal(true);
+  readonly errorMessage = signal<string | null>(null);
+  readonly isEditMode = signal(false);
 
   // Delete confirmation
-  deleteConfirmText = '';
-  isDeleteConfirmed = signal(false);
+  readonly showDeleteConfirm = signal(false);
 
   ngOnInit(): void {
     this.loadMyBusiness();
@@ -47,7 +51,7 @@ alertMessage = signal<string | null>(null);
     this.businessService.getMyBusiness().subscribe({
       next: (business) => {
         this.myBusiness.set(business);
-        this.businessState.set(business);  // ← IMPORTANT
+        this.businessState.set(business);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -67,97 +71,83 @@ alertMessage = signal<string | null>(null);
   // ==================== Actions ====================
 
   onEditClick(): void {
+    if (!this.myBusiness()) {
+      return;
+    }
     this.isEditMode.set(true);
   }
 
   onCancelEdit(): void {
     this.isEditMode.set(false);
-    this.pendingFormData = null;
   }
 
-  onFormSubmit(event: any): void {
-    this.pendingFormData = event.data;
-    this.showSaveConfirm.set(true);
-  }
-
-  onConfirmSave(): void {
-    if (!this.myBusiness() || !this.pendingFormData) return;
+  onFormSubmit(dto: any): void {
+    if (!this.myBusiness()) {
+      return;
+    }
 
     const businessId = this.myBusiness()!.id!;
 
-    this.businessService.updateBusiness(businessId, this.pendingFormData).subscribe({
+    this.showAlert.set(false);
+
+    this.businessService.updateBusiness(businessId, dto).subscribe({
       next: (updated) => {
         this.myBusiness.set(updated);
         this.businessState.set(updated);
         this.isEditMode.set(false);
-        this.showSaveConfirm.set(false);
-        this.pendingFormData = null;
       },
-       error: (error) => {
-      console.error('Error updating business:', error);
-
-      this.showSaveConfirm.set(false);
-
-      if (error.status === 403) {
-        this.alertMessage.set('No tienes permiso para modificar este negocio.');
-      } else {
-        this.alertMessage.set('Error al actualizar el negocio.');
+      error: (error) => {
+        if (error.status === 403) {
+          this.alertMessage.set('No tienes permiso para modificar este negocio.');
+        } else {
+          this.alertMessage.set('Error al actualizar el negocio.');
+        }
+        this.showAlert.set(true);
       }
-
-      this.showAlert.set(true);
-    }
     });
   }
 
-  onCancelSave(): void {
-    this.showSaveConfirm.set(false);
-    this.pendingFormData = null;
-  }
+  // ==================== Delete ====================
 
   onDeleteClick(): void {
-    this.deleteConfirmText = '';
-    this.isDeleteConfirmed.set(false);
+    if (!this.myBusiness()) {
+      return;
+    }
     this.showDeleteConfirm.set(true);
   }
 
-  onDeleteInputChange(): void {
-    this.isDeleteConfirmed.set(this.deleteConfirmText.toLowerCase() === 'eliminar');
-  }
-
   onConfirmDelete(): void {
-    if (!this.myBusiness() || !this.isDeleteConfirmed()) return;
+    if (!this.myBusiness()) {
+      return;
+    }
 
     const businessId = this.myBusiness()!.id!;
 
     this.businessService.deleteBusiness(businessId).subscribe({
       next: () => {
-        this.showDeleteConfirm.set(false);
-        window.location.href = '/';
+        // The child already shows the countdown overlay.
+        // We just keep the modal abierto hasta que el hijo emita redirectAfterDelete.
       },
       error: (error) => {
-      this.showDeleteConfirm.set(false);
+        this.showDeleteConfirm.set(false);
 
-      if (error.status === 403) {
-        this.alertMessage.set('No tienes permiso para eliminar este negocio.');
-      } else {
-        this.alertMessage.set('Error al eliminar el negocio.');
+        if (error.status === 403) {
+          this.alertMessage.set('No tienes permiso para eliminar este negocio.');
+        } else {
+          this.alertMessage.set('Error al eliminar el negocio.');
+        }
+
+        this.showAlert.set(true);
       }
-
-      this.showAlert.set(true);
-    }
     });
+  }
+
+  onRedirectAfterDelete(): void {
+    this.auth.logout();
+    this.router.navigate(['']);
   }
 
   onCancelDelete(): void {
     this.showDeleteConfirm.set(false);
-    this.deleteConfirmText = '';
-    this.isDeleteConfirmed.set(false);
-  }
-
-  onBackdropClick(event: MouseEvent): void {
-    // Solo cerrar si se hace click directamente en el backdrop
-    if (event.target === event.currentTarget) {
-      this.onCancelDelete();
-    }
   }
 }

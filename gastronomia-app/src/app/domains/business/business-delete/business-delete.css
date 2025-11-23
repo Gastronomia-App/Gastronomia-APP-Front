@@ -1,0 +1,441 @@
+:host {
+  display: block;
+}
+
+/* Fullscreen overlay container (same idea as .biz-modal-root) */
+.del-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+}
+
+/* Dark backdrop */
+.del-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+/* Dialog */
+.del-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 96vw);
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+  padding: 1.6rem 1.8rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+
+.del-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.del-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.del-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #fee2e2;
+  display: grid;
+  place-items: center;
+  color: #b91c1c;
+}
+
+.del-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.del-header-text h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.del-header-text p {
+  margin: 0.1rem 0 0 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.del-close-btn {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.del-close-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.del-close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Body */
+
+.del-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+/* Warning box */
+
+.del-warning-box {
+  border-radius: 16px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.del-warning-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: #b91c1c;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.del-warning-label svg {
+  width: 18px;
+  height: 18px;
+  fill: #f97373;
+}
+
+.del-business-name {
+  margin: 0;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.del-business-cuit {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.85rem;
+  color: #9f1239;
+}
+
+/* Section with checkboxes */
+
+.del-section {
+  margin-bottom: 1.2rem;
+}
+
+.del-section-title {
+  margin: 0 0 0.6rem 0;
+  font-size: 0.95rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+.del-check-item {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.6rem;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.del-check-item:hover {
+  border-color: #fecaca;
+  background: #fff7f7;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+}
+
+.del-check-item.checked {
+  border-color: #f97373;
+  background: #fef2f2;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.35);
+}
+
+.del-check-item label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.del-check-item input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.2rem;
+  accent-color: #b91c1c;
+}
+
+.del-check-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.del-check-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.del-check-sub {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+/* Verification */
+
+.del-verification {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.del-code-card {
+  border-radius: 16px;
+  background: #020617;
+  color: #f9fafb;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.del-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.del-code-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.del-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 999px;
+  border: 0;
+  padding: 0.25rem 0.55rem;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.del-copy-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.del-copy-btn:hover {
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.del-code-value {
+  margin: 0.2rem 0 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-align: center;
+}
+
+/* Code input */
+
+.del-input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.del-input-block label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.del-input-block input {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.del-input-block input::placeholder {
+  color: #9ca3af;
+}
+
+.del-input-block input:focus {
+  border-color: #f97373;
+}
+
+/* Footer */
+
+.del-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.del-btn {
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.del-btn-ghost {
+  background: #ffffff;
+  color: #111827;
+  border-color: #e5e7eb;
+}
+
+.del-btn-ghost:hover {
+  background: #f9fafb;
+}
+
+.del-btn-danger {
+  background: #fecaca;
+  color: #7f1d1d;
+  border-color: #fecaca;
+}
+
+.del-btn-danger:hover:not(:disabled) {
+  background: #f97373;
+  border-color: #f97373;
+  color: #ffffff;
+}
+
+.del-btn-danger:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+.icon-trash svg,
+.icon-x svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.security-logo {
+  width: 64px;
+  height: 64px;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.security-redirect-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 99999;
+  backdrop-filter: blur(2px);
+}
+
+.security-redirect-card {
+  width: 360px;
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.countdown-text {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+  animation: shrinkBar 5s linear forwards;
+}
+
+@keyframes shrinkBar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+/* Responsive */
+
+@media (max-width: 600px) {
+  .del-dialog {
+    padding: 1.2rem 1.1rem 1rem;
+    border-radius: 16px;
+  }
+
+  .del-code-card {
+    padding: 0.8rem 0.85rem 0.9rem;
+  }
+
+  .del-code-value {
+    font-size: 1.7rem;
+  }
+}

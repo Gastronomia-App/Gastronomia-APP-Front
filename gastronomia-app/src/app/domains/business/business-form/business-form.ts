@@ -1,160 +1,133 @@
-import { Component, inject, input, output, viewChild, OnInit, effect } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  inject,
+  OnInit,
+  OnChanges,
+  Input,
+  HostListener,
+  SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Form } from '../../../shared/components/form';
-import { FormConfig, FormSubmitEvent, Business } from '../../../shared/models';
-import { BusinessService } from '../services/business.service';
-import { BusinessFormService } from '../services/business-form.service';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Business } from '../../../shared/models';
 
 @Component({
   selector: 'app-business-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './business-form.html',
-  styleUrl: './business-form.css',
-  host: {
-    class: 'entity-form'
-  }
+  styleUrl: './business-form.css'
 })
-export class BusinessForm implements OnInit {
-  private businessService = inject(BusinessService);
-  private businessFormService = inject(BusinessFormService);
+export class BusinessForm implements OnInit, OnChanges {
+  @Input() business: Business | null = null;
 
-  // Reference to the generic Form component
-  formComponent = viewChild(Form);
+  @Output() submitForm = new EventEmitter<any>();
+  @Output() cancel = new EventEmitter<void>();
 
-  constructor() {
-    // Control form disabled state based on edit mode
-    effect(() => {
-      const formComp = this.formComponent();
-      const editMode = this.isEditMode();
-      
-      if (formComp?.form) {
-        if (editMode) {
-          formComp.form.enable();
-        } else {
-          formComp.form.disable();
-        }
-      }
-    });
-  }
+  private readonly fb = inject(FormBuilder);
 
-  // Inputs
-  isEditMode = input<boolean>(false);
-  editingBusinessId = input<number | null>(null);
-  businessData = input<Business | null>(null);
-
-  // Outputs
-  formSubmit = output<FormSubmitEvent<Partial<Business>>>();
-  formCancel = output<void>();
-
-  // Form configuration
-  formConfig: FormConfig<Partial<Business>> = {
-    sections: [
-      {
-        title: 'Datos del negocio',
-        fields: [
-          {
-            name: 'name',
-            label: 'Nombre del negocio',
-            type: 'text',
-            required: true,
-            placeholder: 'Ej: Café Central',
-            helpText: 'Nombre que identificará tu negocio',
-            fullWidth: true,
-          },
-          {
-            name: 'cuit',
-            label: 'CUIT',
-            type: 'text',
-            required: true,
-            placeholder: '20123456789',
-            helpText: 'Introducir números sin espacios ni guiones',
-            fullWidth: true,
-          },
-        ],
-      },
-      {
-        title: 'Dirección',
-        fields: [
-          {
-            name: 'address.street',
-            label: 'Calle',
-            type: 'text',
-            required: true,
-            placeholder: 'Av. Corrientes 1234',
-            fullWidth: true,
-          },
-          {
-            name: 'address.city',
-            label: 'Ciudad',
-            type: 'text',
-            required: true,
-            placeholder: 'Buenos Aires',
-          },
-          {
-            name: 'address.province',
-            label: 'Provincia',
-            type: 'text',
-            required: true,
-            placeholder: 'Buenos Aires',
-          },
-          {
-            name: 'address.zipCode',
-            label: 'Código Postal',
-            type: 'text',
-            required: true,
-            placeholder: '1406',
-            helpText: 'Código postal de 4 dígitos',
-          },
-        ],
-      },
-    ],
-    submitLabel: 'Crear',
-    cancelLabel: 'Cancelar',
-    showCancelButton: true,
-    title: 'Nuevo negocio',
-    editTitle: 'Editar negocio',
-  };
+  form = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(80)]],
+    cuit: ['', [Validators.required, Validators.maxLength(20)]],
+    street: ['', [Validators.required, Validators.maxLength(50)]],
+    city: ['', [Validators.required, Validators.maxLength(50)]],
+    province: ['', [Validators.required, Validators.maxLength(50)]],
+    zipCode: [
+      '',
+      [
+        Validators.required,
+        Validators.pattern(/^[0-9]{4,8}$/)
+      ]
+    ]
+  });
 
   ngOnInit(): void {
-    // Load business data when component initializes
-    const business = this.businessData();
-    if (business) {
-      const data: any = {
-        name: business.name,
-        cuit: business.cuit,
-        'address.street': business.address.street,
-        'address.city': business.address.city,
-        'address.province': business.address.province,
-        'address.zipCode': business.address.zipCode
-      };
+    this.patchFromBusiness();
+  }
 
-      // Load data into form component and set initial disabled state
-      setTimeout(() => {
-        const formComp = this.formComponent();
-        if (formComp) {
-          formComp.loadData(data);
-          
-          // Set initial disabled state
-          if (!this.isEditMode()) {
-            formComp.form.disable();
-          }
-        }
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['business']) {
+      this.patchFromBusiness();
     }
   }
 
-  /**
-   * Manejar el envío del formulario - emit to parent
-   */
-  handleFormSubmit(event: FormSubmitEvent<Partial<Business>>): void {
-    this.formSubmit.emit(event);
+  private patchFromBusiness(): void {
+    if (!this.business) {
+      return;
+    }
+
+    const addr = this.business.address || {};
+
+    this.form.patchValue({
+      name: this.business.name ?? '',
+      cuit: this.business.cuit ?? '',
+      street: addr.street ?? '',
+      city: addr.city ?? '',
+      province: addr.province ?? '',
+      zipCode: addr.zipCode ?? ''
+    });
   }
 
-  /**
-   * Cancelar edición - emit to parent
-   */
-  handleFormCancel(): void {
-    this.formCancel.emit();
+  hasError(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!control && control.invalid && (control.dirty || control.touched);
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control || !control.errors) return '';
+
+    const errors = control.errors;
+
+    if (errors['required']) {
+      return 'Este campo es obligatorio.';
+    }
+
+    if (errors['maxlength']) {
+      const required = errors['maxlength'].requiredLength;
+      return `Máximo ${required} caracteres.`;
+    }
+
+    if (errors['pattern']) {
+      if (controlName === 'zipCode') {
+        return 'El código postal debe tener entre 4 y 8 dígitos.';
+      }
+      return 'Formato inválido.';
+    }
+
+    return 'Dato inválido.';
+  }
+
+  onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.value;
+
+    const dto = {
+      name: (value.name ?? '').trim(),
+      cuit: (value.cuit ?? '').trim(),
+      address: {
+        street: (value.street ?? '').trim(),
+        city: (value.city ?? '').trim(),
+        province: (value.province ?? '').trim(),
+        zipCode: (value.zipCode ?? '').trim()
+      }
+    };
+
+    this.submitForm.emit(dto);
+  }
+
+  onCancel(): void {
+    this.cancel.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  handleEscape(): void {
+    this.onCancel();
   }
 }
