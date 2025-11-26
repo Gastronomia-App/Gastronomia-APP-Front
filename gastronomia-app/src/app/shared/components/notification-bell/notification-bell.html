@@ -1,0 +1,82 @@
+<div class="notification-bell-container">
+  <!-- Bell Icon Button -->
+  <button 
+    class="notification-bell-button" 
+    (click)="togglePanel()"
+    [class.has-notifications]="unreadCount() > 0"
+    type="button"
+    aria-label="Notificaciones">
+    <svg class="bell-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+      <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+    </svg>
+    @if (unreadCount() > 0) {
+      <span class="notification-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
+    }
+    @if (!isConnected()) {
+      <span class="connection-indicator disconnected" title="Desconectado"></span>
+    }
+  </button>
+
+  <!-- Notification Panel -->
+  @if (isOpen()) {
+    <div class="notification-panel">
+      <div class="notification-header">
+        <h3>Notificaciones</h3>
+        @if (notifications().length > 0) {
+          <button 
+            class="clear-button" 
+            (click)="clearAll()"
+            type="button">
+            Limpiar todo
+          </button>
+        }
+      </div>
+
+      <div class="notification-list">
+        @if (notifications().length === 0) {
+          <div class="empty-state">
+            <p>No hay notificaciones</p>
+          </div>
+        } @else {
+          @for (notification of notifications(); track notification.id) {
+            <div 
+              class="notification-item"
+              [style.border-left-color]="getNotificationConfig(notification.type).color">
+              <div class="notification-content">
+                <div class="notification-type">
+                  {{ getTypeLabel(notification.type) }}
+                </div>
+                <div class="notification-message">
+                  {{ notification.message }}
+                </div>
+                <div class="notification-time">
+                  {{ formatTime(notification.timestamp) }}
+                </div>
+              </div>
+              <button 
+                class="mark-read-button"
+                (click)="markAsRead(notification.id, $event)"
+                type="button"
+                title="Marcar como leída">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+              </button>
+            </div>
+          }
+        }
+      </div>
+
+      @if (!isConnected()) {
+        <div class="connection-warning">
+          <span>Conexión perdida. Intentando reconectar...</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Backdrop to close panel when clicking outside -->
+  @if (isOpen()) {
+    <div class="notification-backdrop" (click)="closePanel()"></div>
+  }
+</div>

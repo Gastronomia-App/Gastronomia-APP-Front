@@ -37,3 +37,5 @@ export type {
   DetailConfig,
   DetailActionConfig
 } from './detail-config.model'
+export type { Notification } from './notification.model';
+export { NotificationType, getNotificationConfig } from './notification.model';
