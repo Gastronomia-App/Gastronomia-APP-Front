@@ -50,10 +50,6 @@ export class ProductGroupForm implements OnInit {
     selectedItems: this.selectedOptions(),
     isLoading: this.isLoadingProducts(),
 
-    // Ambos: nameResolver + customFields (DEBEN convivir)
-    nameResolver: (option: ProductOption) =>
-      this.getProductNameById(option.productId),
-
     customFields: [
       {
         key: 'maxQuantity',
@@ -194,26 +190,6 @@ export class ProductGroupForm implements OnInit {
   }
 
   // ----------------------
-  // MÉTODOS DE NOMBRE
-  // ----------------------
-
-  private getProductNameById(productId: number): string {
-    const product = this.availableProducts().find(p => p.id === productId);
-    return product ? product.name : `Producto #${productId}`;
-  }
-
-  private enrichOptionsWithNames(options: ProductOption[]): any[] {
-    return options.map(option => {
-      const product = this.availableProducts().find(p => p.id === option.productId);
-      return {
-        ...option,
-        id: option.productId,
-        name: product ? product.name : `Producto #${option.productId}`,
-      };
-    });
-  }
-
-  // ----------------------
   // OPCIONES
   // ----------------------
 
@@ -221,6 +197,7 @@ export class ProductGroupForm implements OnInit {
     const option: ProductOption = {
       id: 0,
       productId: item.id,
+      productName: item.name,
       maxQuantity: 1,
       priceIncrease: 0
     };
@@ -242,9 +219,13 @@ export class ProductGroupForm implements OnInit {
 
       if (index !== -1) {
         const updated = [...items];
+        const productId = item.productId ?? item.id;
+        const product = this.availableProducts().find(p => p.id === productId);
+        
         updated[index] = {
           id: updated[index].id,
-          productId: item.productId ?? item.id,
+          productId: productId,
+          productName: product?.name || updated[index].productName || `Producto #${productId}`,
           maxQuantity: Number(item.maxQuantity) || 1,
           priceIncrease: Number(item.priceIncrease) || 0
         };
@@ -451,6 +432,7 @@ export class ProductGroupForm implements OnInit {
       const options = productGroup.options.map(o => ({
         id: o.id,
         productId: o.productId,
+        productName: o.productName,
         maxQuantity: o.maxQuantity,
         priceIncrease: o.priceIncrease
       }));

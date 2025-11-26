@@ -9,12 +9,13 @@ export interface ProductGroup {
 export interface ProductOption {
     id: number;
     productId: number;
+    productName: string;
     maxQuantity: number;
     priceIncrease: number;
 }
 
 export interface SelectedProductOption {
     id: number;
-    productOptionId: number;
+    productOption: ProductOption;
     quantity: number;
 }

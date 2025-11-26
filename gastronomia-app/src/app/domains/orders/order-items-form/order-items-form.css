@@ -127,6 +127,69 @@ section {
     border: 2px dashed var(--color-primary-light);
 }
 
+.pending-item-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.product-options-section {
+    background-color: var(--color-surface);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-light);
+}
+
+.options-title {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.product-group {
+    margin-bottom: var(--spacing-sm);
+}
+
+.product-group:last-child {
+    margin-bottom: 0;
+}
+
+.group-label {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.required-indicator {
+    color: var(--color-error);
+    margin-left: 2px;
+}
+
+.group-select {
+    width: 100%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.group-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(100, 217, 172, 0.2);
+}
+
+.group-select:hover {
+    border-color: var(--color-primary-light);
+}
+
 .pending-actions {
     margin-top: var(--spacing-sm);
     display: flex;
@@ -142,6 +205,42 @@ section {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+}
+
+.confirmed-item-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.selected-options-display {
+    background-color: var(--color-primary-lightest);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--color-primary);
+    font-size: var(--font-sm);
+}
+
+.options-label {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-right: var(--spacing-xs);
+}
+
+.options-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.option-item {
+    background-color: var(--color-surface);
+    padding: 2px var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text);
+    font-size: var(--font-xs);
 }
 
 .empty-message {

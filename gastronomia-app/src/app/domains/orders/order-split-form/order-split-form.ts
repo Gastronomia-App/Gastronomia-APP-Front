@@ -5,11 +5,12 @@ import { OrderService } from '../services/order.service';
 import { SeatingsService } from '../../seating/services/seating-service';
 import { EmployeeService } from '../../employees';
 import { CustomersService } from '../../customer/services/customers-service';
-import { Order, Item, Customer, Employee, Seating } from '../../../shared/models';
+import { Order, Item, Customer, Employee, Seating, SelectedProductOption } from '../../../shared/models';
 
 export interface ItemTransferDto {
   itemId: number;
   quantity: number;
+  selectedOptions?: Array<{ productOptionId: number; quantity: number }>;
 }
 
 export interface OrderSplitRequest {
@@ -176,7 +177,17 @@ export class OrderSplitForm implements OnInit {
 
     const itemsToMove: ItemTransferDto[] = [];
     this.itemsToTransfer().forEach((quantity, itemId) => {
-      itemsToMove.push({ itemId, quantity });
+      const originalItem = this.sourceItems().find(i => i.id === itemId);
+      if (originalItem) {
+        itemsToMove.push({
+          itemId,
+          quantity,
+          selectedOptions: originalItem.selectedOptions?.map(opt => ({
+            productOptionId: opt.productOption.id,
+            quantity: opt.quantity
+          }))
+        });
+      }
     });
 
     const request: OrderSplitRequest = {
