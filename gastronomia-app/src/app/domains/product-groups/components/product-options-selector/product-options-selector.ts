@@ -1,13 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SearchableList } from '../../../../shared/components/searchable-list';
 import { ItemCard, CustomField } from '../../../../shared/components/item-card';
 import { Product, ProductOption } from '../../../../shared/models';
-
-// Extended ProductOption for display in ItemCard
-interface ProductOptionWithName extends ProductOption {
-  name: string; // Product name for display
-}
 
 @Component({
   selector: 'app-product-options-selector',
@@ -18,7 +13,7 @@ interface ProductOptionWithName extends ProductOption {
     <app-searchable-list
       [placeholder]="placeholder()"
       [availableItems]="availableItems()"
-      [selectedItems]="selectedItemsWithNames()"
+      [selectedItems]="selectedProductsForFiltering()"
       [isLoading]="isLoading()"
       [allowQuantitySelection]="false"
       (itemAdded)="itemAdded.emit($event)">
@@ -27,7 +22,7 @@ interface ProductOptionWithName extends ProductOption {
     <!-- Selected items rendered with ItemCard -->
     @if (selectedItems().length > 0) {
       <div class="selected-items">
-        @for (item of selectedItemsWithNames(); track item.id) {
+        @for (item of selectedItemsWithNames(); track item.productId) {
           <app-item-card
             [item]="item"
             [customFields]="customFields()"
@@ -72,26 +67,37 @@ export class ProductOptionsSelector {
   ]);
   editableFields = input<boolean>(true);
 
-  // Name resolver function
-  nameResolver = input<(option: ProductOption) => string>();
-
   // Outputs
   itemAdded = output<Product>();
   itemRemoved = output<number>();
   itemUpdated = output<ProductOption>();
 
-  // Helper to enrich options with product names
-  selectedItemsWithNames(): ProductOptionWithName[] {
-    const resolver = this.nameResolver();
+  // Convert selected ProductOptions to Products for searchable-list filtering (using computed for caching)
+  selectedProductsForFiltering = computed(() => {
+    return this.selectedItems().map(option => {
+      const product = this.availableItems().find(p => p.id === option.productId);
+      if (product) {
+        return product;
+      }
+      // Fallback if product not found
+      return {
+        id: option.productId,
+        name: option.productName
+      } as Product;
+    });
+  });
+
+  // Helper to add name property for ItemCard (uses productName from ProductOption)
+  selectedItemsWithNames() {
     return this.selectedItems().map(option => ({
       ...option,
-      name: resolver ? resolver(option) : `Producto ${option.productId}`
+      name: option.productName
     }));
   }
 
   // Handle item update and transform back to ProductOption
-  onItemUpdated(item: ProductOptionWithName): void {
-    const originalOption = this.selectedItems().find(o => o.id === item.id);
+  onItemUpdated(item: any): void {
+    const originalOption = this.selectedItems().find(o => o.productId === item.productId || o.id === item.id);
     if (originalOption) {
       this.itemUpdated.emit({
         ...originalOption,

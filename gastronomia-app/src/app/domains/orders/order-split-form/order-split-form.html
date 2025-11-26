@@ -58,7 +58,16 @@
               <div class="items-list">
                 @for (item of remainingItems(); track item.id) {
                   <div class="item-card" (click)="moveToDestination(item.id!)">
-                    <span class="item-name">{{ item.product.name }}</span>
+                    <div class="item-info">
+                      <span class="item-name">{{ item.product.name }}</span>
+                      @if (item.selectedOptions && item.selectedOptions.length > 0) {
+                        <div class="item-options">
+                          @for (option of item.selectedOptions; track option.id) {
+                            <span class="option-badge">{{ option.productOption.productName }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
                     <span class="item-quantity">x{{ item.quantity }}</span>
                     <span class="item-price">${{ item.totalPrice.toFixed(2) }}</span>
                   </div>
@@ -76,7 +85,16 @@
               <div class="items-list">
                 @for (item of destinationItems(); track item.id) {
                   <div class="item-card destination" (click)="moveToSource(item.id!)">
-                    <span class="item-name">{{ item.product.name }}</span>
+                    <div class="item-info">
+                      <span class="item-name">{{ item.product.name }}</span>
+                      @if (item.selectedOptions && item.selectedOptions.length > 0) {
+                        <div class="item-options">
+                          @for (option of item.selectedOptions; track option.id) {
+                            <span class="option-badge">{{ option.productOption.productName }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
                     <span class="item-quantity">x{{ item.quantity }}</span>
                     <span class="item-price">${{ item.totalPrice.toFixed(2) }}</span>
                   </div>

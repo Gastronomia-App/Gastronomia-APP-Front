@@ -14,6 +14,7 @@ export interface Product {
     deleted: boolean;
     components: ProductComponent[];
     productGroups: ProductGroup[];
+    compositionType?: 'NONE' | 'SELECTABLE' | 'FIXED_SELECTABLE';
 }
 
 export interface ProductComponent {

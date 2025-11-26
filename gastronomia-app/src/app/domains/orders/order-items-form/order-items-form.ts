@@ -7,7 +7,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { OrderSplitForm } from '../order-split-form/order-split-form';
 import { OrderService, ItemRequest } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
-import { Order, Product, Item } from '../../../shared/models';
+import { Order, Product, Item, SelectedProductOption, ProductGroup, ProductOption } from '../../../shared/models';
 
 @Component({
   selector: 'app-order-items-form',
@@ -39,6 +39,8 @@ export class OrderItemsForm implements OnInit {
   showSplitForm = signal(false);
   isSelectingDestination = signal(false);
   currentOrder = signal<Order | null>(null);
+  // Map para almacenar las opciones seleccionadas por producto pendiente
+  pendingItemsSelectedOptions = signal<Map<number, SelectedProductOption[]>>(new Map());
 
   constructor() {
     // Effect para detectar cambios en el input order()
@@ -125,6 +127,12 @@ export class OrderItemsForm implements OnInit {
    */
   onRemovePendingItem(productId: number): void {
     this.pendingItems.update(items => items.filter(p => p.id !== productId));
+    // Limpiar las opciones seleccionadas de este producto
+    this.pendingItemsSelectedOptions.update(map => {
+      const newMap = new Map(map);
+      newMap.delete(productId);
+      return newMap;
+    });
   }
 
   /**
@@ -140,18 +148,26 @@ export class OrderItemsForm implements OnInit {
    * Confirmar todos los items pendientes (enviarlos al backend)
    */
   confirmPendingItems(): void {
-    const itemsToAdd: ItemRequest[] = this.pendingItems().map(p => ({
-      productId: p.id,
-      quantity: (p as any).quantity || 1,
-      selectedOptions: [],
-      comment: ''
-    }));
+    const itemsToAdd: ItemRequest[] = this.pendingItems().map(p => {
+      const selectedOptions = this.pendingItemsSelectedOptions().get(p.id) || [];
+      
+      return {
+        productId: p.id,
+        quantity: (p as any).quantity || 1,
+        selectedOptions: selectedOptions.map(opt => ({
+          productOptionId: opt.productOption.id,
+          quantity: opt.quantity
+        })),
+        comment: ''
+      };
+    });
 
     if (itemsToAdd.length === 0) return;
 
     this.orderService.addItems(this.order().id!, itemsToAdd).subscribe({
       next: (updatedOrder) => {
         this.pendingItems.set([]);
+        this.pendingItemsSelectedOptions.set(new Map());
         this.currentOrder.set(updatedOrder);
         
         if (updatedOrder.items && updatedOrder.items.length > 0) {
@@ -169,6 +185,7 @@ export class OrderItemsForm implements OnInit {
    */
   cancelPendingItems(): void {
     this.pendingItems.set([]);
+    this.pendingItemsSelectedOptions.set(new Map());
   }
 
   onUpdateConfirmedItem(updatedItem: any): void {
@@ -178,10 +195,10 @@ export class OrderItemsForm implements OnInit {
     const itemRequest: ItemRequest = {
       productId: originalItem.product.id,
       quantity: updatedItem.quantity,
-      selectedOptions: originalItem.selectedOptions?.map(opt => ({
-        optionId: opt.id,
+      selectedOptions: (originalItem.selectedOptions || []).map(opt => ({
+        productOptionId: opt.productOption.id,
         quantity: opt.quantity
-      })) || [],
+      })),
       comment: originalItem.comment || ''
     };
 
@@ -286,5 +303,67 @@ export class OrderItemsForm implements OnInit {
    */
   onClose(): void {
     this.orderClosed.emit();
+  }
+
+  /**
+   * Obtener grupos de productos para un producto pendiente si es SELECTABLE o FIXED_SELECTABLE
+   */
+  getProductGroups(product: Product): ProductGroup[] {
+    if (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE') {
+      return product.productGroups || [];
+    }
+    return [];
+  }
+
+  /**
+   * Verificar si un producto tiene grupos de productos seleccionables
+   */
+  hasSelectableGroups(product: Product): boolean {
+    return (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE') 
+      && (product.productGroups?.length || 0) > 0;
+  }
+
+  /**
+   * Manejar cambio en selección de opción de producto
+   */
+  onProductOptionChange(productId: number, group: ProductGroup, option: ProductOption): void {
+    this.pendingItemsSelectedOptions.update(map => {
+      const newMap = new Map(map);
+      const currentSelections = newMap.get(productId) || [];
+      
+      // Remover selección anterior del mismo grupo
+      const filteredSelections = currentSelections.filter(s => s.productOption.id !== option.id && 
+        !group.options.some(opt => opt.id === s.productOption.id));
+      
+      // Agregar nueva selección con el objeto ProductOption completo
+      if (option.id > 0) {
+        filteredSelections.push({
+          id: 0, // Temporal, se asignará en el backend
+          productOption: option,
+          quantity: 1
+        });
+      }
+      
+      newMap.set(productId, filteredSelections);
+      return newMap;
+    });
+  }
+
+  /**
+   * Obtener opción seleccionada para un grupo específico de un producto
+   */
+  getSelectedOptionForGroup(productId: number, group: ProductGroup): number {
+    const selections = this.pendingItemsSelectedOptions().get(productId) || [];
+    const selected = selections.find(s => 
+      group.options.some(opt => opt.id === s.productOption.id)
+    );
+    return selected?.productOption.id || 0;
+  }
+
+  /**
+   * Obtener ProductOption completo desde un grupo por su ID
+   */
+  getProductOptionById(group: ProductGroup, optionId: number): ProductOption | null {
+    return group.options.find(opt => opt.id === optionId) || null;
   }
 }
