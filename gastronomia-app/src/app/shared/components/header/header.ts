@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { HasRoleDirective } from '../../directives/has-role.directive';
 import { UserRole } from '../../models/auth.model';
 import { HeaderDropdownComponent } from '../header-dropdown/header-dropdown';
-import { NotificationDropdownComponent } from '../notification-dropdown/notification-dropdown';
+import { NotificationBell } from '../notification-bell/notification-bell';
 import { BusinessStateService } from '../../../domains/business/services/business-state-service';
 import { UserDropdownComponent } from '../user-dropdown/user-dropdown';
 
@@ -21,7 +21,7 @@ import { UserDropdownComponent } from '../user-dropdown/user-dropdown';
     HasRoleDirective,
     HeaderDropdownComponent,
     UserDropdownComponent,
-    NotificationDropdownComponent,
+    NotificationBell,
   ],
   templateUrl: './header.html',
   styleUrl: './header.css',
