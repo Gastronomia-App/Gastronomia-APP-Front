@@ -1,85 +1,237 @@
 /* ============================================
-   ITEM CARD - Reusable card component
+   ITEM CARD - Aligned with SelectableItemCard
    ============================================ */
 
+/* Main card container - matches SelectableItemCard structure */
 .item-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-lg);
-    background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 5px;
+  padding: var(--spacing-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+}
+
+/* Header Row: Name, Quantity, Price, Actions */
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Item Info */
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .item-name {
-    flex: 1;
-    font-size: var(--font-sm);
-    color: var(--color-text-muted) !important;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  font-weight: 500;
 }
 
+/* Quantity Display/Input */
+.item-quantity {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.quantity-input,
+.field-input {
+  width: 45px;
+  height: 24px;
+  text-align: center;
+  padding: 2px var(--spacing-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: all var(--transition-fast);
+}
+
+.quantity-input:focus,
+.field-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+/* Remove number input spinners */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button,
+.field-input::-webkit-outer-spin-button,
+.field-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input,
+.field-input {
+  -moz-appearance: textfield;
+}
+
+/* Field Value Display */
+.field-value {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  font-weight: 500;
+  min-width: 40px;
+  text-align: center;
+}
+
+.field-value.field-quantity {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.field-value.field-price {
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Price */
+.item-price {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Actions Container */
 .item-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
-/* Custom fields */
-.custom-field {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+/* Comment Button */
+.btn-comment {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
-.field-label {
-    font-size: var(--font-xs);
-    color: var(--color-text-muted);
-    align-self: center;
+.btn-comment:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-lightest);
 }
 
-.field-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+.btn-comment svg {
+  display: block;
 }
 
-.custom-input {
-    height: 24px;
-    max-width: 60px;
-    text-align: center;
-    padding: var(--spacing-xs);
-    border: 1px solid var(--color-border);
-    border-radius: 3px;
-    font-size: var(--font-sm);
+/* Remove Button */
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 1.2rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  line-height: 1;
 }
 
-.custom-input:disabled {
-    background-color: var(--color-bg-secondary);
-    color: var(--color-text-muted);
+.btn-remove:hover {
+  color: var(--color-red);
+  background: var(--color-red-light);
 }
 
-.field-suffix {
-    font-size: var(--font-sm);
-    color: var(--color-text-muted);
-    font-weight: 500;
+/* Sub-content: Options + Comment */
+.item-subcontent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid var(--color-border-light);
 }
 
-/* Remove number input spinners for custom inputs */
-.custom-input::-webkit-outer-spin-button,
-.custom-input::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    margin: 0 !important;
-    display: none !important;
+/* Badge List - Generic (selected options, components, etc.) */
+.selected-options,
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.custom-input {
-    -moz-appearance: textfield !important;
-    appearance: textfield !important;
+.option-badge,
+.badge-item {
+  background-color: var(--color-primary-lightest);
+  border: 1px solid var(--color-primary-light);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
-.btn-reset {
-    font-size: 1.2rem;
-    flex-shrink: 0;
+.badge-quantity {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Comment Display */
+.item-comment {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.comment-icon {
+  font-size: var(--font-xs);
+  flex-shrink: 0;
+}
+
+.comment-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Comment Edit Mode: Full-width input */
+.comment-input-full {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-focus);
+  transition: all var(--transition-fast);
+}
+
+.comment-input-full:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.comment-input-full::placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
 }

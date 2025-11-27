@@ -80,6 +80,7 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   @Output() itemRemoved = new EventEmitter<number>();
   @Output() itemUpdated = new EventEmitter<TSelected>();
   @Output() searchFocus = new EventEmitter<void>(); // Evento cuando el input recibe focus
+  @Output() confirm = new EventEmitter<void>(); // Evento para confirmar selección pendiente
 
   searchQuery = '';
   filteredItems: TAvailable[] = [];
@@ -110,7 +111,7 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     }
 
     const lowerQuery = this.searchQuery.toLowerCase();
-    
+
     // Si allowDuplicates es true, no filtrar por selectedItems
     if (this.allowDuplicates) {
       this.filteredItems = this.availableItems.filter(item =>
@@ -142,9 +143,9 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   }
 
   onKeyDown(event: KeyboardEvent): void {
-    if (this.filteredItems.length === 0) return;
+    if (this.filteredItems.length === 0 && event.key !== 'Enter') return;
 
-    switch(event.key) {
+    switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
         this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filteredItems.length - 1);
@@ -174,10 +175,14 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
 
       case 'Enter':
         event.preventDefault();
-        if (this.highlightedIndex >= 0 && this.highlightedIndex < this.filteredItems.length) {
-          this.addItem(this.filteredItems[this.highlightedIndex]);
-        } else if (this.filteredItems.length > 0) {
-          this.addItem(this.filteredItems[0]);
+        if (this.searchQuery.trim() === '') {
+          this.confirm.emit();
+        } else {
+          if (this.highlightedIndex >= 0 && this.highlightedIndex < this.filteredItems.length) {
+            this.addItem(this.filteredItems[this.highlightedIndex]);
+          } else if (this.filteredItems.length > 0) {
+            this.addItem(this.filteredItems[0]);
+          }
         }
         break;
 
@@ -220,7 +225,7 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
     } else {
       this.itemAdded.emit(item);
     }
-    
+
     this.searchQuery = '';
     this.filteredItems = [];
     this.highlightedIndex = -1;

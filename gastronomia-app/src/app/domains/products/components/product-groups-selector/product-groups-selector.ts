@@ -25,10 +25,10 @@ import { ProductGroup } from '../../../../shared/models';
         @for (item of selectedItems(); track item.id) {
           <app-item-card
             [item]="item"
-            [customFields]="[]"
-            [editableFields]="false"
-            [showRemoveButton]="true"
-            (itemRemoved)="itemRemoved.emit($event)">
+            [displayFields]="[]"
+            [editable]="false"
+            [deletable]="true"
+            (remove)="itemRemoved.emit($event)">
           </app-item-card>
         }
       </div>

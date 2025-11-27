@@ -1,30 +1,68 @@
-<div class="item-card">
-    <span class="item-name">{{ displayName() }}</span>
-    
-    <div class="item-actions">
-        <!-- Custom fields -->
-        @for(field of customFields; track field.key) {
-            <div class="custom-field">
-                <label class="field-label">{{ field.label }}</label>
-                <div class="field-input-wrapper">
-                    <input 
-                        type="number" 
-                        [value]="getCustomFieldValue(field)"
-                        (input)="setCustomFieldValue(field, $any($event.target).value); onCustomFieldChange(field)"
-                        [disabled]="!field.editable && !editableFields"
-                        class="custom-input"
-                        [placeholder]="field.label" />
-                    @if(field.suffix) {
-                        <span class="field-suffix">{{ field.suffix }}</span>
-                    }
-                </div>
-            </div>
+<div class="item-card" >
+    @if (isEditingComment()) {
+    <!-- Comment Edit Mode: Full-width input replaces header -->
+    <input #commentInput type="text" class="comment-input-full" [(ngModel)]="commentDraft"
+        (keydown)="onCommentKeydown($event)" (blur)="onCommentBlur()" placeholder="Agregar comentario..." />
+    } @else {
+    <!-- View Mode: Normal header row -->
+    <div class="item-header">
+        <div class="item-info">
+            <span class="item-name">{{ itemName() }}</span>
+        </div>
+
+        <!-- Dynamic Fields -->
+        @for (field of visibleFields(); track field.key) {
+        @if (field.editable && editable()) {
+        <!-- Editable Field -->
+        <input type="number" class="field-input" [value]="getFieldValue(field)"
+            (change)="setFieldValue(field, $any($event.target).value)" min="1" />
+        } @else {
+        <!-- Read-only Field Display -->
+        <span class="field-value" [class.field-quantity]="field.type === 'number'"
+            [class.field-price]="field.type === 'currency'">
+            {{ formatFieldValue(field, getFieldValue(field)) }}
+        </span>
         }
-        
-        @if(showRemoveButton) {
-            <button type="button" class="btn-reset" (click)="onRemove()">
+        }
+
+        <!-- Actions -->
+        <div class="item-actions">
+            <!-- Custom Actions Slot (e.g., comment, edit, info buttons) -->
+            <ng-content select="[custom-actions]"></ng-content>
+
+            <!-- Delete Button (built-in) -->
+            @if (deletable()) {
+            <button type="button" class="btn-remove" (click)="onRemove()" title="Eliminar item">
                 ✕
             </button>
+            }
+        </div>
+    </div>
+
+    <!-- Sub-content: Badges + Comment -->
+    @if (hasBadges() || hasComment()) {
+    <div class="item-subcontent">
+        <!-- Badge List (for selectedOptions, components, etc) -->
+        @if (hasBadges()) {
+        <div class="badge-list">
+            @for (badge of badgeItems(); track $index) {
+            <span class="badge-item">
+                {{ getBadgeName(badge) }}
+                @if (getBadgeQuantity(badge); as qty) {
+                <span class="badge-quantity">(x{{ qty }})</span>
+                }
+            </span>
+            }
+        </div>
+        }
+
+        <!-- Comment Display -->
+        @if (hasComment()) {
+        <div class="item-comment">
+            <span class="comment-text">{{ commentText() }}</span>
+        </div>
         }
     </div>
+    }
+    }
 </div>

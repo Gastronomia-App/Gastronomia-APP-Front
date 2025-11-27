@@ -1,0 +1,16 @@
+<div 
+  class="item-card" 
+  [class.selected]="isSelected()"
+  (click)="onRemove()">
+  <div class="item-info">
+    <span class="item-name">{{ name() }}</span>
+  </div>
+  
+  @if (quantity()) {
+    <span class="item-quantity">x{{ quantity() }}</span>
+  }
+  
+  @if (price()) {
+    <span class="item-price">${{ price()!.toFixed(2) }}</span>
+  }
+</div>

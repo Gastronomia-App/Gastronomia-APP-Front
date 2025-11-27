@@ -57,51 +57,37 @@
 
       <app-searchable-list placeholder="Buscar producto..." [availableItems]="availableProducts()"
         [selectedItems]="pendingItems()" [isLoading]="isLoadingProducts()" [allowQuantitySelection]="true"
-        [allowDuplicates]="true" (searchFocus)="onSearchFocus()" (itemAdded)="onProductAdded($event)">
+        [allowDuplicates]="true" (searchFocus)="onSearchFocus()" (itemAdded)="onProductAdded($event)" (confirm)="confirmPendingItems()">
       </app-searchable-list>
 
       <!-- Items pendientes a confirmar -->
       @if (pendingItems().length > 0) {
       <div class="pending-items">
-        @for (item of pendingItems(); track item.id) {
-        <div class="pending-item-container">
-          <app-item-card [item]="item" [customFields]="[
-                { key: 'quantity', label: 'Cantidad', type: 'number', editable: true }
-              ]" [editableFields]="true" [showRemoveButton]="true" (itemUpdated)="onUpdatePendingItem($event)"
-            (itemRemoved)="onRemovePendingItem($event)">
+        @for (product of pendingItemsForCard(); track product.id) {
+          <app-item-card
+            #pendingCard
+            [item]="product"
+            [displayFields]="pendingProductDisplayFields"
+            [badgeListConfig]="pendingProductBadgeConfig"
+            [commentField]="'comment'"
+            [editable]="true"
+            [deletable]="true"
+            (fieldUpdated)="onPendingFieldUpdate($event)"
+            (commentUpdated)="onPendingCommentUpdate($event)"
+            (remove)="onRemovePendingItem($event)">
+            
+            <!-- Custom Comment Action Button -->
+            <button 
+              custom-actions
+              type="button"
+              class="btn-comment"
+              (click)="pendingCard.enableCommentEditMode()"
+              [title]="product.comment ? 'Editar comentario' : 'Agregar comentario'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
           </app-item-card>
-          
-          <!-- Selección de opciones de producto grupos (SELECTABLE/FIXED_SELECTABLE) -->
-          @if (hasSelectableGroups(item)) {
-          <div class="product-options-section">
-            <h4 class="options-title">Seleccionar opciones:</h4>
-            @for (group of getProductGroups(item); track group.id) {
-            <div class="product-group">
-              <label class="group-label">
-                {{ group.name }}
-                @if (group.minQuantity > 0) {
-                <span class="required-indicator">*</span>
-                }
-              </label>
-              <select 
-                class="group-select"
-                [value]="getSelectedOptionForGroup(item.id, group)"
-                (change)="onProductOptionChange(item.id, group, getProductOptionById(group, +$any($event.target).value)!)">
-                <option value="0">-- Seleccionar --</option>
-                @for (option of group.options; track option.id) {
-                <option [value]="option.id">
-                  {{ option.productName }}
-                  @if (option.priceIncrease > 0) {
-                  (+${{ option.priceIncrease }})
-                  }
-                </option>
-                }
-              </select>
-            </div>
-            }
-          </div>
-          }
-        </div>
         }
       </div>
 
@@ -128,34 +114,14 @@
       } @else {
       <div class="confirmed-items-list">
         @for (item of confirmedItemsWithName(); track item.id) {
-        <div class="confirmed-item-container">
-          <app-item-card [item]="item" [customFields]="[
-                { key: 'quantity', label: 'Cantidad', type: 'number' },
-                { key: 'totalPrice', label: 'Total', type: 'currency', suffix: '$' }
-              ]" [editableFields]="false" [showRemoveButton]="true" (itemUpdated)="onUpdateConfirmedItem($event)"
-            (itemRemoved)="onRemoveConfirmedItem($event)">
+          <app-item-card 
+            [item]="item" 
+            [displayFields]="itemDisplayFields"
+            [badgeListConfig]="itemBadgeConfig"
+            [commentField]="'comment'"
+            [editable]="false"
+            (remove)="onRemoveConfirmedItem($event)">
           </app-item-card>
-          
-          <!-- Display selected product options -->
-          @if (item.selectedOptions && item.selectedOptions.length > 0) {
-          <div class="selected-options-display">
-            <span class="options-label">Opciones:</span>
-            <div class="options-list">
-              @for (option of item.selectedOptions; track option.id) {
-              <span class="option-item">
-                {{ option.productOption.productName }}
-                @if (option.quantity > 1) {
-                (x{{ option.quantity }})
-                }
-                @if (option.productOption.priceIncrease > 0) {
-                (+${{ option.productOption.priceIncrease }})
-                }
-              </span>
-              }
-            </div>
-          </div>
-          }
-        </div>
         }
       </div>
       }
@@ -206,4 +172,13 @@
 <app-order-split-form [order]="currentOrder()!" (splitCompleted)="onSplitCompleted()"
   (splitCanceled)="onSplitFormClosed()">
 </app-order-split-form>
+}
+<!-- Product Options Modal -->
+@if (showOptionsModal() && modalProduct()) {
+<app-product-options-modal 
+  [product]="modalProduct()!" 
+  [quantity]="modalQuantity()"
+  (confirmed)="onOptionsConfirmed($event)"
+  (cancelled)="onOptionsCancelled()">
+</app-product-options-modal>
 }
