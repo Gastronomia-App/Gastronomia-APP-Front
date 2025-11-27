@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ItemCard, CustomField } from '../../../shared/components/item-card';
+import { ItemCard, CardField } from '../../../shared/components/item-card';
 import { Item } from '../../../shared/models';
 
 // Extend Item to be compatible with ItemCard
@@ -20,11 +20,11 @@ interface ItemCardCompatible extends Item {
         @for (item of itemsWithName(); track item.id) {
           <app-item-card
             [item]="item"
-            [customFields]="customFields()"
-            [editableFields]="editableFields()"
-            [showRemoveButton]="showRemoveButton()"
-            (itemUpdated)="onItemUpdated($event)"
-            (itemRemoved)="itemRemoved.emit($event)">
+            [displayFields]="displayFields()"
+            [editable]="editable()"
+            [deletable]="deletable()"
+            (fieldUpdated)="onFieldUpdated($event)"
+            (remove)="itemRemoved.emit($event)">
           </app-item-card>
         }
       </div>
@@ -49,9 +49,9 @@ interface ItemCardCompatible extends Item {
 export class OrderItemsList {
   // Inputs
   items = input.required<Item[]>();
-  customFields = input<CustomField[]>([]);
-  editableFields = input<boolean>(true);
-  showRemoveButton = input<boolean>(true);
+  displayFields = input<CardField[]>([]);
+  editable = input<boolean>(true);
+  deletable = input<boolean>(true);
 
   // Outputs
   itemUpdated = output<Item>();
@@ -65,15 +65,13 @@ export class OrderItemsList {
     }));
   }
 
-  // Handle item update and transform back to Item
-  onItemUpdated(item: ItemCardCompatible): void {
-    // Find original item and emit with updated values
-    const originalItem = this.items().find(i => i.id === item.id);
+  // Handle field update and emit updated Item
+  onFieldUpdated(event: { id: number; field: string; value: any }): void {
+    const originalItem = this.items().find(i => i.id === event.id);
     if (originalItem) {
       this.itemUpdated.emit({
         ...originalItem,
-        quantity: item.quantity,
-        totalPrice: item.totalPrice
+        [event.field]: event.value
       });
     }
   }

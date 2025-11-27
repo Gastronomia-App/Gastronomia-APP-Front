@@ -1,7 +1,7 @@
 import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SearchableList } from '../../../../shared/components/searchable-list';
-import { ItemCard, CustomField } from '../../../../shared/components/item-card';
+import { ItemCard, CardField } from '../../../../shared/components/item-card';
 import { Product, ProductOption } from '../../../../shared/models';
 
 @Component({
@@ -25,11 +25,11 @@ import { Product, ProductOption } from '../../../../shared/models';
         @for (item of selectedItemsWithNames(); track item.productId) {
           <app-item-card
             [item]="item"
-            [customFields]="customFields()"
-            [editableFields]="editableFields()"
-            [showRemoveButton]="true"
-            (itemUpdated)="onItemUpdated($event)"
-            (itemRemoved)="itemRemoved.emit($event)">
+            [displayFields]="displayFields()"
+            [editable]="editable()"
+            [deletable]="true"
+            (fieldUpdated)="onFieldUpdated($event)"
+            (remove)="itemRemoved.emit($event)">
           </app-item-card>
         }
       </div>
@@ -50,22 +50,22 @@ export class ProductOptionsSelector {
   availableItems = input.required<Product[]>();
   selectedItems = input.required<ProductOption[]>();
   isLoading = input<boolean>(false);
-  customFields = input<CustomField[]>([
+  displayFields = input<CardField[]>([
     {
       key: 'maxQuantity',
       label: 'Máx. cantidad',
-      type: 'number' as const,
+      type: 'number',
       editable: true
     },
     {
       key: 'priceIncrease',
       label: 'Incremento',
-      type: 'currency' as const,
+      type: 'currency',
       editable: true,
-      suffix: '$'
+      prefix: '$'
     }
   ]);
-  editableFields = input<boolean>(true);
+  editable = input<boolean>(true);
 
   // Outputs
   itemAdded = output<Product>();
@@ -95,14 +95,13 @@ export class ProductOptionsSelector {
     }));
   }
 
-  // Handle item update and transform back to ProductOption
-  onItemUpdated(item: any): void {
-    const originalOption = this.selectedItems().find(o => o.productId === item.productId || o.id === item.id);
+  // Handle field update and emit updated ProductOption
+  onFieldUpdated(event: { id: number; field: string; value: any }): void {
+    const originalOption = this.selectedItems().find(o => o.productId === event.id || o.id === event.id);
     if (originalOption) {
       this.itemUpdated.emit({
         ...originalOption,
-        maxQuantity: item.maxQuantity,
-        priceIncrease: item.priceIncrease
+        [event.field]: event.value
       });
     }
   }

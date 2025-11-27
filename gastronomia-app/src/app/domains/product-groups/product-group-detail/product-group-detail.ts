@@ -4,7 +4,7 @@ import { ProductGroupService } from '../services/product-group.service';
 import { ProductGroupFormService } from '../services/product-group-form.service';
 import { ProductService } from '../../products/services/product.service';
 import { DetailConfig, Product, ProductGroup, ProductOption } from '../../../shared/models';
-import { ItemCard, CustomField } from '../../../shared/components/item-card';
+import { ItemCard, CardField } from '../../../shared/components/item-card';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -28,8 +28,8 @@ export class ProductGroupDetail implements OnInit {
   productGroup = signal<ProductGroup | null>(null);
   products = signal<Map<number, Product>>(new Map());
 
-  // Custom fields for ProductOption items
-  customFields: CustomField[] = [
+  // Display fields for ProductOption items
+  displayFields: CardField[] = [
     {
       key: 'maxQuantity',
       label: 'Máx. cantidad',
@@ -41,7 +41,7 @@ export class ProductGroupDetail implements OnInit {
       label: 'Incremento',
       type: 'currency',
       editable: false,
-      suffix: '$'
+      prefix: '$'
     }
   ];
 
@@ -98,9 +98,9 @@ export class ProductGroupDetail implements OnInit {
             listItems: (data) => this.enrichOptionsWithNames(data.options || []),
             listItemComponent: ItemCard,
             listItemInputs: {
-              editableFields: false,
-              showRemoveButton: false,
-              customFields: this.customFields,
+              editable: false,
+              deletable: false,
+              displayFields: this.displayFields,
               nameResolver: (item: any) => this.getProductName(item.productId)
             },
             emptyMessage: 'Sin opciones'

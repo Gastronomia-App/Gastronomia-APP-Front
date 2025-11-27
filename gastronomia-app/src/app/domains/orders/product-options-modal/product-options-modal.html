@@ -1,0 +1,106 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>{{ product().name }} - Seleccionar Opciones (x{{ quantity() }})</h2>
+      <button type="button" class="btn-close" (click)="cancel()">✕</button>
+    </div>
+
+    <!-- Body: Two Column Layout -->
+    <div class="modal-body">
+      <div class="options-layout">
+        <!-- Left Column: Tabs + Options Grid (70%) -->
+        <div class="options-column">
+          <!-- Tabs Navigation -->
+          <div class="tabs-navigation">
+            @for (group of groups(); track group.id; let i = $index) {
+              <button 
+                type="button"
+                class="tab-btn"
+                [class.active]="activeTabIndex() === i"
+                (click)="switchTab(i)">
+                {{ group.name }}
+              </button>
+            }
+          </div>
+
+          <!-- Options Grid -->
+          @if (activeGroup(); as group) {
+            <div class="options-grid">
+              @for (option of group.options; track option.id) {
+                <button 
+                  type="button"
+                  class="option-btn"
+                  [class.selected]="getOptionCount(option) > 0"
+                  [disabled]="isOptionDisabled(option)"
+                  (click)="selectOption(option)">
+                  <span class="option-name">{{ option.productName }}</span>
+                  @if (option.priceIncrease && option.priceIncrease > 0) {
+                    <span class="option-price">+${{ option.priceIncrease.toFixed(2) }}</span>
+                  }
+                  @if (getOptionCount(option) > 0) {
+                    <span class="option-badge">{{ getOptionCount(option) }}</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Right Column: Summary + Selected Items (30%) -->
+        <div class="summary-column">
+          <!-- Summary Header -->
+          <div class="summary-header">
+            <h4>Resumen</h4>
+            <div class="summary-list">
+              @for (summary of groupSummaries(); track summary.groupName) {
+                <div class="summary-item">
+                  <span class="summary-name">
+                    {{ summary.groupName }}
+                    @if (!summary.isValid) {
+                      <span class="required-indicator">*</span>
+                    }
+                  </span>
+                  <span class="summary-count">{{ summary.current }}/{{ summary.max }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Selected Items List -->
+          <div class="selected-items">
+            <h4>Seleccionados</h4>
+            <div class="items-list">
+              @if (selectedOptions().length === 0) {
+                <p class="empty-message">Ninguna opción seleccionada</p>
+              } @else {
+                @for (selection of selectedOptions(); track selection.productOption.id) {
+                  <app-selectable-item-card
+                    [name]="selection.productOption.productName"
+                    [quantity]="selection.quantity"
+                    [price]="selection.productOption.priceIncrease"
+                    (remove)="removeSelectedOption(selection)">
+                  </app-selectable-item-card>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer: Actions -->
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cancel()">
+        Cancelar
+      </button>
+      <button 
+        type="button"
+        class="btn-primary" 
+        [disabled]="!isValid()"
+        (click)="confirm()">
+        Confirmar Selecciones
+      </button>
+    </div>
+  </div>
+</div>

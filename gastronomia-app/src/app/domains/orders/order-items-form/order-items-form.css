@@ -213,6 +213,29 @@ section {
     gap: var(--spacing-xs);
 }
 
+/* Custom Action Button (Comment) - Projected into ItemCard */
+.btn-comment {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-comment:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-lightest);
+}
+
+.btn-comment svg {
+  display: block;
+}
+
 .selected-options-display {
     background-color: var(--color-primary-lightest);
     padding: var(--spacing-xs) var(--spacing-sm);
