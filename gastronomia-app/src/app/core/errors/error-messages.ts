@@ -311,8 +311,14 @@ export const ERROR_MESSAGES: Record<string, ErrorMessageConfig> = {
     message: 'Ocurrió un problema al acceder a la información. Intentá nuevamente.',
     severity: 'error'
   },
-  
-   INTERNAL_ERROR: {
+
+  DATABASE_CONSTRAINT_VIOLATION: {
+    title: 'Conflicto con datos existentes',
+    message: 'Se detectó un conflicto con datos ya registrados. Verificá que no estés duplicando información e intentá nuevamente.',
+    severity: 'error'
+  },
+
+  INTERNAL_ERROR: {
     title: 'Error interno inesperado',
     message: 'Ocurrió un error inesperado en el sistema. Intentá nuevamente y, si persiste, contactá al administrador.',
     severity: 'error'
