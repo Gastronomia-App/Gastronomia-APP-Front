@@ -1,10 +1,10 @@
-import { 
-  Component, 
-  inject, 
-  OnInit, 
-  output, 
-  ChangeDetectorRef, 
-  viewChild, 
+import {
+  Component,
+  inject,
+  OnInit,
+  output,
+  ChangeDetectorRef,
+  viewChild,
   signal,
   DestroyRef
 } from '@angular/core';
@@ -14,18 +14,21 @@ import { CommonModule } from '@angular/common';
 import { Form } from '../../../shared/components/form/form';
 import { ExpenseService, ExpenseFormService } from '../services';
 import { SupplierService } from '../../../services/supplier.service';
-import { Expense, Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
+import {
+  Expense,
+  Supplier,
+  FormConfig,
+  FormSubmitEvent
+} from '../../../shared/models';
 
 @Component({
   selector: 'app-expense-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './expense-form.html',
-  styleUrl: './expense-form.css',
+  styleUrl: './expense-form.css'
 })
 export class ExpenseForm implements OnInit {
-
   private expenseService = inject(ExpenseService);
   private supplierService = inject(SupplierService);
   private expenseFormService = inject(ExpenseFormService);
@@ -41,10 +44,6 @@ export class ExpenseForm implements OnInit {
 
   editingExpenseId: number | null = null;
   isEditMode = false;
-
-  // Alerts
-  showAlert = signal(false);
-  alertMessage = signal('');
 
   formConfig: FormConfig<Expense> = {
     sections: [
@@ -115,10 +114,11 @@ export class ExpenseForm implements OnInit {
   private loadSuppliers(): void {
     this.isLoadingSuppliers.set(true);
 
-    this.supplierService.getSuppliers({ size: 100 })
+    this.supplierService
+      .getSuppliers({ size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => {
+        next: response => {
           const activeSuppliers = response.content.filter(s => !s.deleted);
           this.suppliers.set(activeSuppliers);
           this.updateSupplierOptions();
@@ -128,20 +128,22 @@ export class ExpenseForm implements OnInit {
           this.isLoadingSuppliers.set(false);
           this.suppliers.set([]);
 
-          const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
+          const supplierField = this.formConfig.sections[0].fields.find(
+            f => f.name === 'supplierId'
+          );
           if (supplierField) {
             supplierField.options = [];
             supplierField.helpText = 'Error al cargar proveedores';
           }
-
-          this.alertMessage.set('Error al cargar proveedores.');
-          this.showAlert.set(true);
+          // El mensaje visual lo maneja el handler global.
         }
       });
   }
 
   private updateSupplierOptions(): void {
-    const supplierField = this.formConfig.sections[0].fields.find(f => f.name === 'supplierId');
+    const supplierField = this.formConfig.sections[0].fields.find(
+      f => f.name === 'supplierId'
+    );
     if (supplierField) {
       supplierField.options = this.suppliers().map(s => ({
         label: s.tradeName,
@@ -156,7 +158,10 @@ export class ExpenseForm implements OnInit {
       dateTimeValue = this.getCurrentDateTime();
     }
 
-    if (dateTimeValue && !dateTimeValue.includes(':00', dateTimeValue.length - 3)) {
+    if (
+      dateTimeValue &&
+      !dateTimeValue.includes(':00', dateTimeValue.length - 3)
+    ) {
       dateTimeValue = dateTimeValue + ':00';
     }
 
@@ -171,37 +176,39 @@ export class ExpenseForm implements OnInit {
       formData.comment = comment;
     }
 
+    // EDIT
     if (event.isEditMode && event.editingId) {
-      this.expenseService.updateExpense(Number(event.editingId), formData)
+      this.expenseService
+        .updateExpense(Number(event.editingId), formData)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: (expense) => {
+          next: expense => {
             this.expenseFormService.notifyExpenseUpdated(expense);
             this.resetForm();
             this.onClose();
             this.expenseFormService.viewExpenseDetails(expense);
           },
-          error: (error) => {
-            this.alertMessage.set(error.error?.message || 'Error al actualizar el gasto.');
-            this.showAlert.set(true);
+          error: () => {
+            // Errores manejados por el handler global
           }
         });
 
       return;
     }
 
-    this.expenseService.createExpense(formData)
+    // CREATE
+    this.expenseService
+      .createExpense(formData)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (expense) => {
+        next: expense => {
           this.expenseFormService.notifyExpenseCreated(expense);
           this.resetForm();
           this.onClose();
           this.expenseFormService.viewExpenseDetails(expense);
         },
-        error: (error) => {
-          this.alertMessage.set(error.error?.message || 'Error al crear el gasto.');
-          this.showAlert.set(true);
+        error: () => {
+          // Errores manejados por el handler global
         }
       });
   }

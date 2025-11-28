@@ -22,104 +22,104 @@
   </div>
 
   <aside class="aside-panel seating-aside">
-  <div class="aside-panel-wrapper">
+    <div class="aside-panel-wrapper">
 
-    @if (draftSeating()) {
+      @if (draftSeating()) {
 
-      <app-seating-form
-        [seating]="draftSeating()!"
-        mode="create"
-        (closed)="onFormClosed()"
-        (changed)="onFormChanged($event)">
-      </app-seating-form>
+        <app-seating-form
+          [seating]="draftSeating()!"
+          mode="create"
+          (closed)="onFormClosed()"
+          (changed)="onFormChanged($event)">
+        </app-seating-form>
 
-    } @else if (selectedSeating()) {
+      } @else if (selectedSeating()) {
 
-      <app-seating-form
-        [seating]="selectedSeating()!"
-        mode="edit"
-        (closed)="onFormClosed()"
-        (changed)="onFormChanged($event)">
-      </app-seating-form>
+        <app-seating-form
+          [seating]="selectedSeating()!"
+          mode="edit"
+          (closed)="onFormClosed()"
+          (changed)="onFormChanged($event)">
+        </app-seating-form>
 
-    } @else {
+      } @else {
 
-      <div class="aside-panel-container">
-        <section>
-          <p class="text-muted">
-            Configurá la disposición, forma y tamaño de las ubicaciones.  
-            Seleccioná una ubicación o hacé clic en una celda vacía para crear una nueva.
-          </p>
-
-          <!-- Control de Zoom -->
-          <div class="zoom-control">
-            <label for="zoomButtons">Nivel de Zoom</label>
-            <div class="zoom-buttons" id="zoomButtons">
-              <button type="button" (click)="decreaseZoom()" [disabled]="zoomLevel() <= 1">−</button>
-              <span class="zoom-value">{{ zoomLevel() }}</span>
-              <button type="button" (click)="increaseZoom()" [disabled]="zoomLevel() >= 5">+</button>
-            </div>
-            <p class="text-muted small">
-              Ajustá el nivel de zoom para observar el salón con mayor o menor detalle.
+        <div class="aside-panel-container">
+          <section>
+            <p class="text-muted">
+              Configurá la disposición, forma y tamaño de las ubicaciones.  
+              Seleccioná una ubicación o hacé clic en una celda vacía para crear una nueva.
             </p>
-          </div>
 
-          <!-- Acciones -->
-          <h3 class="section-title">Acciones disponibles</h3>
-          <ul class="info-list">
-            <li>
-              <span class="icon">➕</span>
-              <div>
-                <strong>Agregar:</strong>
-                <span class="text-muted"> hacé clic en una celda vacía.</span>
+            <!-- Control de Zoom -->
+            <div class="zoom-control">
+              <label for="zoomButtons">Nivel de Zoom</label>
+              <div class="zoom-buttons" id="zoomButtons">
+                <button type="button" (click)="decreaseZoom()" [disabled]="zoomLevel() <= 1">−</button>
+                <span class="zoom-value">{{ zoomLevel() }}</span>
+                <button type="button" (click)="increaseZoom()" [disabled]="zoomLevel() >= 5">+</button>
               </div>
-            </li>
-            <li>
-              <span class="icon">🖱️</span>
-              <div>
-                <strong>Mover:</strong>
-                <span class="text-muted"> arrastrá y soltá para cambiar posición.</span>
-              </div>
-            </li>
-            <li>
-              <span class="icon">⚙️</span>
-              <div>
-                <strong>Editar:</strong>
-                <span class="text-muted"> hacé clic en una ubicación existente.</span>
-              </div>
-            </li>
-            <li>
-              <span class="icon">⌫</span>
-              <div>
-                <strong>Eliminar:</strong>
-                <span class="text-muted"> seleccioná y presioná eliminar.</span>
-              </div>
-            </li>
-          </ul>
+              <p class="text-muted small">
+                Ajustá el nivel de zoom para observar el salón con mayor o menor detalle.
+              </p>
+            </div>
 
-          <!-- Reglas -->
-          <div class="alert-info">
-            <h4>Reglas del modo edición</h4>
-            <ul>
-              <li>No se pueden eliminar ubicaciones ocupadas o en facturación.</li>
-              <li>Los cambios se aplican solo al <strong>guardar</strong>.</li>
-              <li>Los cambios no guardados se pierden al salir del modo edición.</li>
+            <!-- Acciones -->
+            <h3 class="section-title">Acciones disponibles</h3>
+            <ul class="info-list">
+              <li>
+                <span class="icon">➕</span>
+                <div>
+                  <strong>Agregar:</strong>
+                  <span class="text-muted"> hacé clic en una celda vacía.</span>
+                </div>
+              </li>
+              <li>
+                <span class="icon">🖱️</span>
+                <div>
+                  <strong>Mover:</strong>
+                  <span class="text-muted"> arrastrá y soltá para cambiar posición.</span>
+                </div>
+              </li>
+              <li>
+                <span class="icon">⚙️</span>
+                <div>
+                  <strong>Editar:</strong>
+                  <span class="text-muted"> hacé clic en una ubicación existente.</span>
+                </div>
+              </li>
+              <li>
+                <span class="icon">⌫</span>
+                <div>
+                  <strong>Eliminar:</strong>
+                  <span class="text-muted"> seleccioná y presioná eliminar.</span>
+                </div>
+              </li>
             </ul>
-          </div>
 
-          <!-- Tip -->
-          <div class="tip-box">
-            <span class="emoji">💡</span>
-            <p>Usá este modo para reorganizar el salón de forma clara y ordenada.</p>
-          </div>
+            <!-- Reglas -->
+            <div class="alert-info">
+              <h4>Reglas del modo edición</h4>
+              <ul>
+                <li>No se pueden eliminar ubicaciones ocupadas o en facturación.</li>
+                <li>Los cambios se aplican solo al <strong>guardar</strong>.</li>
+                <li>Los cambios no guardados se pierden al salir del modo edición.</li>
+              </ul>
+            </div>
 
-        </section>
-      </div>
+            <!-- Tip -->
+            <div class="tip-box">
+              <span class="emoji">💡</span>
+              <p>Usá este modo para reorganizar el salón de forma clara y ordenada.</p>
+            </div>
 
-    }
+          </section>
+        </div>
 
-  </div>
-</aside>
+      }
+
+    </div>
+  </aside>
 
   <app-confirmation-modal
     [isVisible]="showDeleteModal()"
@@ -131,13 +131,4 @@
     (confirm)="confirmDelete()"
     (cancel)="showDeleteModal.set(false)">
   </app-confirmation-modal>
-
-  @if (showAlert()) {
-  <app-alert
-    [title]="alertTitle()"
-    [message]="alertMessage()"
-    (onAccept)="showAlert.set(false)"
-    (onClose)="showAlert.set(false)">
-  </app-alert>
-}
 </div>

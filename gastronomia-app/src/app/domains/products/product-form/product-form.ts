@@ -1,4 +1,15 @@
-import { Component, inject, OnInit, output, ChangeDetectorRef, viewChild, signal, computed, effect, DestroyRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  output,
+  ChangeDetectorRef,
+  viewChild,
+  signal,
+  computed,
+  effect,
+  DestroyRef
+} from '@angular/core';
 import { Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
@@ -8,15 +19,21 @@ import { ProductComponentsSelector } from '../components/product-components-sele
 import { ProductGroupsSelector } from '../components/product-groups-selector/product-groups-selector';
 import { ProductService } from '../services/product.service';
 import { ProductFormService } from '../services/product-form.service';
-import { Category, Product, ProductComponent, ProductGroup, FormConfig, FormSubmitEvent } from '../../../shared/models';
+import {
+  Category,
+  Product,
+  ProductComponent,
+  ProductGroup,
+  FormConfig,
+  FormSubmitEvent
+} from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
 import { ProductGroupService } from '../../product-groups/services/product-group.service';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
   host: {
@@ -30,9 +47,6 @@ export class ProductForm implements OnInit {
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-
-  showAlert = signal(false);
-  alertMessage = signal('');
 
   formComponent = viewChild(Form);
   onFormClosed = output<void>();
@@ -58,7 +72,7 @@ export class ProductForm implements OnInit {
     const allComponents = this.availableComponents();
     const selected = this.selectedComponents();
     const currentProductId = this.editingProductId;
-    
+
     const filteredComponents = allComponents.filter(component => {
       const isSelected = selected.some(s => s.productId === component.id);
       const isSelfReference = currentProductId !== null && component.id === currentProductId;
@@ -177,7 +191,7 @@ export class ProductForm implements OnInit {
             defaultValue: 0,
             placeholder: '0',
             validators: [Validators.min(0)],
-            condition: (formValue) => formValue.controlStock === true,
+            condition: formValue => formValue.controlStock === true,
             fullWidth: true
           }
         ]
@@ -219,15 +233,15 @@ export class ProductForm implements OnInit {
     effect(() => {
       const componentsInputs = this.componentsInputs();
       const groupsInputs = this.productGroupsInputs();
-      
+
       const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
       if (compositionSection) {
         const componentsField = compositionSection.fields.find(f => f.name === 'components');
         const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
-        
+
         if (componentsField) componentsField.customInputs = componentsInputs;
         if (groupsField) groupsField.customInputs = groupsInputs;
-        
+
         setTimeout(() => {
           this.formComponent()?.renderDynamicComponents();
         }, 0);
@@ -251,15 +265,13 @@ export class ProductForm implements OnInit {
   loadCategories(): void {
     this.isLoadingCategories.set(true);
     this.categoryService.getCategories().subscribe({
-      next: (categories) => {
+      next: categories => {
         this.categories.set(categories);
         this.updateCategoryOptions();
         this.isLoadingCategories.set(false);
       },
-      error: (error) => {
-        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando categorías.');
-        this.showAlert.set(true);
-
+      error: () => {
+        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingCategories.set(false);
         this.categories.set([]);
       }
@@ -279,15 +291,13 @@ export class ProductForm implements OnInit {
   loadAvailableComponents(): void {
     this.isLoadingComponents.set(true);
     this.productService.getProducts().subscribe({
-      next: (products) => {
+      next: products => {
         this.availableComponents.set(Array.isArray(products) ? products : []);
         this.updateDynamicFieldsAndRerender();
         this.isLoadingComponents.set(false);
       },
-      error: (error) => {
-        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando componentes.');
-        this.showAlert.set(true);
-
+      error: () => {
+        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingComponents.set(false);
         this.availableComponents.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -298,15 +308,13 @@ export class ProductForm implements OnInit {
   loadProductGroups(): void {
     this.isLoadingGroups.set(true);
     this.productGroupService.getProductGroups().subscribe({
-      next: (groups) => {
+      next: groups => {
         this.availableProductGroups.set(Array.isArray(groups) ? groups : []);
         this.updateDynamicFieldsAndRerender();
         this.isLoadingGroups.set(false);
       },
-      error: (error) => {
-        this.alertMessage.set(error?.error?.message || error?.message || 'Error cargando grupos de opciones.');
-        this.showAlert.set(true);
-
+      error: () => {
+        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingGroups.set(false);
         this.availableProductGroups.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -334,13 +342,13 @@ export class ProductForm implements OnInit {
     const component: ProductComponent = {
       productId: item.id,
       name: item.name,
-      quantity: quantity
+      quantity
     };
     this.selectedComponents.update(items => [...items, component]);
   }
 
   onComponentRemoved(itemId: number): void {
-    this.selectedComponents.update(items => 
+    this.selectedComponents.update(items =>
       items.filter(c => c.id !== itemId && c.productId !== itemId)
     );
   }
@@ -391,54 +399,48 @@ export class ProductForm implements OnInit {
 
   createProduct(formData: any): void {
     this.productService.createProduct(formData).subscribe({
-      next: (product) => {
+      next: product => {
         this.addComponentsAndGroups(product.id).subscribe({
           next: () => {
             this.productService.getProductById(product.id).subscribe({
-              next: (createdProduct) => {
+              next: createdProduct => {
                 this.productFormService.notifyProductCreated(createdProduct);
                 this.resetForm();
                 this.onClose();
               },
               error: () => {
-                this.alertMessage.set('Error recargando el producto.');
-                this.showAlert.set(true);
-
+                // Fallback: notificar igual y cerrar, error visual global
                 this.productFormService.notifyProductCreated(product);
                 this.resetForm();
                 this.onClose();
               }
             });
           },
-          error: (error) => {
-            this.alertMessage.set(error?.error?.message || error?.message || 'Error agregando componentes o grupos.');
-            this.showAlert.set(true);
+          error: () => {
+            // Error visual lo maneja el Global Handler
           }
         });
       },
-      error: (error) => {
-        this.alertMessage.set(error?.error?.message || error?.message || 'No se pudo crear el producto.');
-        this.showAlert.set(true);
+      error: () => {
+        // Error visual lo maneja el Global Handler
       }
     });
   }
 
   updateProduct(productId: number, formData: any): void {
     this.productService.updateProduct(productId, formData).subscribe({
-      next: (product) => {
+      next: product => {
         this.syncComponentsAndGroups(productId).subscribe({
           next: () => {
             this.productService.getProductById(productId).subscribe({
-              next: (updatedProduct) => {
+              next: updatedProduct => {
                 this.productFormService.notifyProductUpdated(updatedProduct);
                 this.resetForm();
                 this.onClose();
                 this.productFormService.viewProductDetails(updatedProduct);
               },
               error: () => {
-                this.alertMessage.set('Error recargando el producto.');
-                this.showAlert.set(true);
-
+                // Fallback: usar el producto de la primera respuesta
                 this.productFormService.notifyProductUpdated(product);
                 this.resetForm();
                 this.onClose();
@@ -446,15 +448,13 @@ export class ProductForm implements OnInit {
               }
             });
           },
-          error: (error) => {
-            this.alertMessage.set(error?.error?.message || error?.message || 'Error sincronizando componentes o grupos.');
-            this.showAlert.set(true);
+          error: () => {
+            // Error visual lo maneja el Global Handler
           }
         });
       },
-      error: (error) => {
-        this.alertMessage.set(error?.error?.message || error?.message || 'No se pudo actualizar el producto.');
-        this.showAlert.set(true);
+      error: () => {
+        // Error visual lo maneja el Global Handler
       }
     });
   }
@@ -479,7 +479,7 @@ export class ProductForm implements OnInit {
       );
     });
 
-    return operations.length > 0 
+    return operations.length > 0
       ? new Observable(observer => {
           let completed = 0;
           operations.forEach(op => {
@@ -491,11 +491,14 @@ export class ProductForm implements OnInit {
                   observer.complete();
                 }
               },
-              error: (err: any) => observer.error(err)
+              error: err => observer.error(err)
             });
           });
         })
-      : new Observable(observer => { observer.next(true); observer.complete(); });
+      : new Observable(observer => {
+          observer.next(true);
+          observer.complete();
+        });
   }
 
   syncComponentsAndGroups(productId: number): Observable<any> {
@@ -509,7 +512,7 @@ export class ProductForm implements OnInit {
         productId: c.productId,
         quantity: c.quantity || 1
       }));
-    
+
     if (componentsToAdd.length > 0) {
       operations.push(
         this.productService.addProductComponents(productId, componentsToAdd)
@@ -521,14 +524,19 @@ export class ProductForm implements OnInit {
       const original = this.originalComponents.find(oc => oc.id === c.id);
       return original && original.quantity !== c.quantity;
     });
+
     componentsToUpdate.forEach(component => {
       operations.push(
-        this.productService.updateProductComponent(productId, component.id!, component.quantity || 1)
+        this.productService.updateProductComponent(
+          productId,
+          component.id!,
+          component.quantity || 1
+        )
       );
     });
 
-    const componentsToDelete = this.originalComponents.filter(oc => 
-      !currentComponents.find(c => c.id === oc.id)
+    const componentsToDelete = this.originalComponents.filter(
+      oc => !currentComponents.find(c => c.id === oc.id)
     );
     componentsToDelete.forEach(component => {
       operations.push(
@@ -538,8 +546,8 @@ export class ProductForm implements OnInit {
 
     const currentGroups = this.selectedProductGroups();
 
-    const groupsToAdd = currentGroups.filter(g => 
-      !this.originalProductGroups.find(og => og.id === g.id)
+    const groupsToAdd = currentGroups.filter(
+      g => !this.originalProductGroups.find(og => og.id === g.id)
     );
     groupsToAdd.forEach(group => {
       operations.push(
@@ -547,8 +555,8 @@ export class ProductForm implements OnInit {
       );
     });
 
-    const groupsToDelete = this.originalProductGroups.filter(og =>
-      !currentGroups.find(g => g.id === og.id)
+    const groupsToDelete = this.originalProductGroups.filter(
+      og => !currentGroups.find(g => g.id === og.id)
     );
     groupsToDelete.forEach(group => {
       operations.push(
@@ -556,11 +564,11 @@ export class ProductForm implements OnInit {
       );
     });
 
-    return operations.length > 0 
+    return operations.length > 0
       ? new Observable(observer => {
           let completed = 0;
           let hasError = false;
-          
+
           operations.forEach(op => {
             op.subscribe({
               next: () => {
@@ -570,16 +578,17 @@ export class ProductForm implements OnInit {
                   observer.complete();
                 }
               },
-              error: (err: any) => {
+              error: err => {
                 hasError = true;
-                this.alertMessage.set(err?.error?.message || err?.message || 'Error sincronizando componentes o grupos.');
-                this.showAlert.set(true);
                 observer.error(err);
               }
             });
           });
         })
-      : new Observable(observer => { observer.next(true); observer.complete(); });
+      : new Observable(observer => {
+          observer.next(true);
+          observer.complete();
+        });
   }
 
   loadProduct(product: Product): void {

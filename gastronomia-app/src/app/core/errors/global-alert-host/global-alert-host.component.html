@@ -1,0 +1,8 @@
+@if (alertStore.visible()) {
+  <app-alert
+    [title]="alertStore.title()"
+    [message]="alertStore.message()"
+    (onAccept)="handleClose()"
+    (onClose)="handleClose()"
+  />
+}

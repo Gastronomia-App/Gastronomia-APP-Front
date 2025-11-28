@@ -6,7 +6,6 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { SeatingsService } from '../services/seating-service';
 import { ZoomStateService } from '../services/zoom-state-service';
 import { Seating } from '../../../shared/models/seating';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-seating-config-page',
@@ -15,29 +14,25 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
     CommonModule,
     SeatingGridEditor,
     SeatingForm,
-    ConfirmationModalComponent,
-    AlertComponent
+    ConfirmationModalComponent
   ],
   templateUrl: './seating-config-page.html',
   styleUrl: './seating-config-page.css'
 })
-export class SeatingConfigPage{
+export class SeatingConfigPage {
   private readonly seatingService = inject(SeatingsService);
   @ViewChild('gridEditor') gridEditor!: SeatingGridEditor;
-  readonly showAlert = signal(false);
-  readonly alertTitle = signal('');
-  readonly alertMessage = signal('');
+
   private zoomState = inject(ZoomStateService);
   readonly seatings = signal<Seating[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  readonly editMode = signal(true); // 🟢 Siempre en modo edición aquí
+  readonly editMode = signal(true);
   readonly draftSeating = signal<Seating | null>(null);
   readonly selectedSeating = signal<Seating | null>(null);
 
-
-  // ✅ usa el signal compartido del servicio
+  // Uses shared zoom state from service
   zoomLevel = this.zoomState.zoomLevel;
 
   readonly showDeleteModal = signal(false);
@@ -47,17 +42,6 @@ export class SeatingConfigPage{
     this.loadSeatings();
   }
 
-  private showError(title: string, err: any) {
-  const backendMsg =
-    err?.error?.message ||
-    err?.message ||
-    'Ocurrió un error inesperado.';
-
-  this.alertTitle.set(title);
-  this.alertMessage.set(backendMsg);
-  this.showAlert.set(true);
-  }
-
   private loadSeatings(): void {
     this.loading.set(true);
     this.seatingService.getAll().subscribe({
@@ -65,15 +49,14 @@ export class SeatingConfigPage{
         this.seatings.set(data);
         this.loading.set(false);
       },
-      error: (err) => {
-     this.showError('No se pudieron cargar las ubicaciones del salón', err);
-     this.loading.set(false);
-    }
+      error: () => {
+        // Global error handler will display the error
+        this.loading.set(false);
+      }
     });
   }
 
-
-  /** 🔄 Refrescar grilla sin parpadeo */
+  /** Refresh grid data without flicker */
   private refreshGridWithoutFlicker(): void {
     this.seatingService.getAll().subscribe({
       next: (data) => {
@@ -81,12 +64,14 @@ export class SeatingConfigPage{
         current.splice(0, current.length, ...data);
         this.seatings.set(current);
       },
-      error: (err) => this.showError('No se pudo refrescar la grilla', err),
+      error: () => {
+        // Global error handler will display the error
+      }
     });
   }
 
   // =========================================================
-  // 📦 Eventos de interacción
+  // Interaction events
   // =========================================================
 
   onDraftRequested(e: { row: number; col: number; shape: 'ROUND' | 'SQUARE'; size: 'SMALL' | 'MEDIUM' | 'LARGE' }): void {
@@ -97,7 +82,7 @@ export class SeatingConfigPage{
       posY: e.row + 1,
       status: 'FREE',
       shape: e.shape,
-      size: e.size,
+      size: e.size
     });
     this.selectedSeating.set(null);
   }
@@ -118,7 +103,9 @@ export class SeatingConfigPage{
     this.gridEditor?.clearSelectionAndMenu();
     const prev = this.seatings();
     const idx = prev.findIndex(s => s.id === event.id);
-    if (idx === -1) return;
+    if (idx === -1) {
+      return;
+    }
 
     const optimistic = prev.map(s =>
       s.id === event.id ? { ...s, posX: event.newPosX, posY: event.newPosY } : s
@@ -128,16 +115,18 @@ export class SeatingConfigPage{
     this.seatingService.movePosition(event.id, { posX: event.newPosX, posY: event.newPosY })
       .subscribe({
         next: () => this.refreshGridWithoutFlicker(),
-        error: (err) => {
-  this.showError('No se pudo mover la mesa', err);
-  this.seatings.set(prev);
-},
+        error: () => {
+          // Revert optimistic update; global handler shows the error
+          this.seatings.set(prev);
+        }
       });
   }
 
   onShapeSizeRequested(e: { id: number; shape: 'ROUND' | 'SQUARE'; size: 'SMALL' | 'MEDIUM' | 'LARGE' }): void {
     const current = this.selectedSeating();
-    if (!current || current.id !== e.id) return;
+    if (!current || current.id !== e.id) {
+      return;
+    }
 
     const updated = { ...current, shape: e.shape, size: e.size };
     this.selectedSeating.set(updated);
@@ -148,11 +137,16 @@ export class SeatingConfigPage{
 
   onFormChanged(partial: Partial<Seating>): void {
     const current = this.selectedSeating() ?? this.draftSeating();
-    if (!current) return;
+    if (!current) {
+      return;
+    }
 
     const updated = { ...current, ...partial };
-    if (this.selectedSeating()) this.selectedSeating.set(updated);
-    else this.draftSeating.set(updated);
+    if (this.selectedSeating()) {
+      this.selectedSeating.set(updated);
+    } else {
+      this.draftSeating.set(updated);
+    }
 
     this.seatings.update(list => list.map(s => (s.id === updated.id ? updated : s)));
   }
@@ -162,13 +156,15 @@ export class SeatingConfigPage{
     this.showDeleteModal.set(true);
   }
 
-onDraftCleared(): void {
-  this.draftSeating.set(null);
-}
+  onDraftCleared(): void {
+    this.draftSeating.set(null);
+  }
 
   confirmDelete(): void {
     const id = this.seatToDelete();
-    if (id == null) return;
+    if (id == null) {
+      return;
+    }
 
     this.seatingService.delete(id).subscribe({
       next: () => {
@@ -176,24 +172,20 @@ onDraftCleared(): void {
         this.seatToDelete.set(null);
         this.refreshGridWithoutFlicker();
       },
-      error: (err) => {
-  this.showError('No se pudo eliminar la mesa', err);
-  this.showDeleteModal.set(false);
-},
+      error: () => {
+        // Global error handler will display the error
+        this.showDeleteModal.set(false);
+      }
     });
   }
 
   increaseZoom(): void {
-  const next = Math.min(5, this.zoomLevel() + 1);
-  this.zoomState.setZoom(next); // guarda en sesión
-}
+    const next = Math.min(5, this.zoomLevel() + 1);
+    this.zoomState.setZoom(next);
+  }
 
-decreaseZoom(): void {
-  const next = Math.max(1, this.zoomLevel() - 1);
-  this.zoomState.setZoom(next); // guarda en sesión
-}
-
-
-
-  
+  decreaseZoom(): void {
+    const next = Math.max(1, this.zoomLevel() - 1);
+    this.zoomState.setZoom(next);
+  }
 }

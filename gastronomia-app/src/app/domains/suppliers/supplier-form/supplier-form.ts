@@ -5,8 +5,7 @@ import {
   output,
   ChangeDetectorRef,
   viewChild,
-  DestroyRef,
-  signal
+  DestroyRef
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Validators } from '@angular/forms';
@@ -15,12 +14,11 @@ import { Form } from '../../../shared/components/form/form';
 import { SupplierService } from '../../../services/supplier.service';
 import { SupplierFormService } from '../services';
 import { Supplier, FormConfig, FormSubmitEvent } from '../../../shared/models';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-supplier-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './supplier-form.html',
   styleUrl: './supplier-form.css',
 })
@@ -39,11 +37,6 @@ export class SupplierForm implements OnInit {
   // ==================== Outputs ====================
 
   onFormClosed = output<void>();
-
-  // ==================== Alert Signals ====================
-
-  showAlert = signal(false);
-  alertMessage = signal('');
 
   // ==================== Edit Mode State ====================
 
@@ -205,11 +198,8 @@ export class SupplierForm implements OnInit {
             this.onClose();
             this.supplierFormService.viewSupplierDetails(supplier);
           },
-          error: (error) => {
-            this.alertMessage.set(
-              error?.error?.message || error?.message || 'Error al actualizar el proveedor.'
-            );
-            this.showAlert.set(true);
+          error: () => {
+            // Global error handler will display the error
           }
         });
 
@@ -223,11 +213,8 @@ export class SupplierForm implements OnInit {
             this.onClose();
             this.supplierFormService.viewSupplierDetails(supplier);
           },
-          error: (error) => {
-            this.alertMessage.set(
-              error?.error?.message || error?.message || 'Error al crear el proveedor.'
-            );
-            this.showAlert.set(true);
+          error: () => {
+            // Global error handler will display the error
           }
         });
     }

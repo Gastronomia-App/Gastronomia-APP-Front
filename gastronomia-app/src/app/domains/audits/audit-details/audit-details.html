@@ -23,15 +23,6 @@
 >
 </app-confirmation-modal>
 
-<app-alert
-  *ngIf="showAlert()"
-  type="error"
-  title="Error"
-  [message]="alertMessage()"
-  (onAccept)="showAlert.set(false)"
-  (onClose)="showAlert.set(false)"
-></app-alert>
-
 <!-- Finalize Modal (Custom) -->
 @if (showFinalizeModal()) {
   <div class="modal-backdrop" (click)="cancelFinalize()">

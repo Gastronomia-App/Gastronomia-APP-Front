@@ -15,17 +15,21 @@ import { Employee, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { AccountCredentials } from '../../../shared/components/account-credentials/account-credentials';
 import { UserRole } from '../../../shared/models/auth.model';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './employee-form.html',
   styleUrl: './employee-form.css',
   host: { class: 'entity-form' }
 })
 export class EmployeeForm implements OnInit {
+  private readonly MIN_USERNAME = 5;
+  private readonly MAX_USERNAME = 50;
+  private readonly MIN_PASSWORD = 8;
+  private readonly MAX_PASSWORD = 20;
+
   private employeeService = inject(EmployeeService);
   private employeeFormService = inject(EmployeeFormService);
   private authService = inject(AuthService);
@@ -43,10 +47,6 @@ export class EmployeeForm implements OnInit {
 
   usernameLocal: string | null = null;
   passwordLocal: string | null = null;
-
-  // Alerts
-  showAlert = signal(false);
-  alertMessage = signal('');
 
   // -----------------------------------------
   // FORM CONFIG
@@ -105,10 +105,10 @@ export class EmployeeForm implements OnInit {
             customComponent: AccountCredentials,
             customInputs: {
               username: null,
-              minUsername: 5,
-              maxUsername: 50,
-              minPassword: 8,
-              maxPassword: 20,
+              minUsername: this.MIN_USERNAME,
+              maxUsername: this.MAX_USERNAME,
+              minPassword: this.MIN_PASSWORD,
+              maxPassword: this.MAX_PASSWORD,
               disabled: false
             },
             customOutputs: {
@@ -162,10 +162,10 @@ export class EmployeeForm implements OnInit {
 
     cfg.sections[1].fields[0].customInputs = {
       username: this.currentUsername,
-      minUsername: 5,
-      maxUsername: 50,
-      minPassword: 8,
-      maxPassword: 20,
+      minUsername: this.MIN_USERNAME,
+      maxUsername: this.MAX_USERNAME,
+      minPassword: this.MIN_PASSWORD,
+      maxPassword: this.MAX_PASSWORD,
       disabled: this.isReadOnlyForAdmin
     };
 
@@ -200,25 +200,49 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // SUBMIT — VALIDATED
+  // VALIDACIONES LOCALES
+  // -----------------------------------------
+  private isUsernameInvalidForSubmit(isEditMode: boolean): boolean {
+    const local = (this.usernameLocal ?? '').trim();
+
+    if (!isEditMode) {
+      // Create: username obligatorio
+      return local.length < this.MIN_USERNAME || local.length > this.MAX_USERNAME;
+    }
+
+    // Edit: si usernameLocal es null, significa que no se tocó el campo
+    if (this.usernameLocal === null) {
+      return false;
+    }
+
+    return local.length < this.MIN_USERNAME || local.length > this.MAX_USERNAME;
+  }
+
+  private isPasswordInvalidForSubmit(): boolean {
+    const pwd = (this.passwordLocal ?? '').trim();
+    const len = pwd.length;
+
+    // Vacío: lo dejamos pasar (create lo validará el backend si hace falta).
+    if (len === 0) {
+      return false;
+    }
+
+    // Si escribió algo, exigimos 8–20 caracteres
+    return len < this.MIN_PASSWORD || len > this.MAX_PASSWORD;
+  }
+
+  // -----------------------------------------
+  // SUBMIT
   // -----------------------------------------
   onFormSubmit(event: FormSubmitEvent<Employee>): void {
     const data = event.data as any;
 
-    // Validate local username
-    if (this.usernameLocal && (this.usernameLocal.length < 5 || this.usernameLocal.length > 50)) {
-      this.alertMessage.set('El nombre de usuario debe tener entre 5 y 50 caracteres.');
-      this.showAlert.set(true);
-      return;
-    }
-
-    // Validate role permissions
-    const logged = this.authService.role()?.replace('ROLE_', '') || '';
-    const targetRole = data.role?.replace('ROLE_', '') || '';
-
-    if (logged === 'ADMIN' && targetRole === 'ADMIN') {
-      this.alertMessage.set('No puedes asignar el rol Administrador.');
-      this.showAlert.set(true);
+    // Bloqueo local: username o password inválidos
+    if (
+      this.isUsernameInvalidForSubmit(event.isEditMode) ||
+      this.isPasswordInvalidForSubmit()
+    ) {
+      this.formComponent()?.form.markAllAsTouched();
       return;
     }
 
@@ -231,23 +255,23 @@ export class EmployeeForm implements OnInit {
       role: data.role
     };
 
-    const local = this.usernameLocal?.trim() ?? '';
+    const local = (this.usernameLocal ?? '').trim();
 
     // CREATE
     if (!event.isEditMode) {
-      if (local) formData.username = local;
+      if (local) {
+        formData.username = local;
+      }
 
-      if (this.passwordLocal?.trim()) formData.password = this.passwordLocal.trim();
+      if (this.passwordLocal?.trim()) {
+        formData.password = this.passwordLocal.trim();
+      }
 
       this.employeeService.createEmployee(formData).subscribe({
         next: employee => {
           this.employeeFormService.notifyEmployeeCreated(employee);
           this.resetForm();
           this.onClose();
-        },
-        error: err => {
-          this.alertMessage.set(err.error?.message || 'Error al crear empleado.');
-          this.showAlert.set(true);
         }
       });
 
@@ -256,7 +280,7 @@ export class EmployeeForm implements OnInit {
 
     // EDIT
     if (event.isEditMode && event.editingId) {
-      if (local) {
+      if (this.usernameLocal !== null) {
         let domain = '';
         if (this.currentUsername?.includes('@')) {
           domain = this.currentUsername.substring(this.currentUsername.indexOf('@'));
@@ -264,7 +288,9 @@ export class EmployeeForm implements OnInit {
         formData.username = local + domain;
       }
 
-      if (this.passwordLocal?.trim()) formData.password = this.passwordLocal.trim();
+      if (this.passwordLocal?.trim()) {
+        formData.password = this.passwordLocal.trim();
+      }
 
       this.employeeService.updateEmployee(Number(event.editingId), formData).subscribe({
         next: e => {
@@ -272,10 +298,6 @@ export class EmployeeForm implements OnInit {
           this.resetForm();
           this.onClose();
           this.employeeFormService.viewEmployeeDetails(e);
-        },
-        error: err => {
-          this.alertMessage.set(err.error?.message || 'Error al actualizar empleado.');
-          this.showAlert.set(true);
         }
       });
     }
@@ -323,7 +345,7 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // RESET FORM
+  // RESET
   // -----------------------------------------
   resetForm(): void {
     this.isEditMode = false;
@@ -342,16 +364,13 @@ export class EmployeeForm implements OnInit {
   }
 
   // -----------------------------------------
-  // CANCEL
+  // CANCEL / CLOSE
   // -----------------------------------------
   onFormCancel(): void {
     this.resetForm();
     this.onClose();
   }
 
-  // -----------------------------------------
-  // CLOSE
-  // -----------------------------------------
   onClose(): void {
     this.onFormClosed.emit();
   }

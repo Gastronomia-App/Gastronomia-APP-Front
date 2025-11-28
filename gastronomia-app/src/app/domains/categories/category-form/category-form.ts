@@ -8,12 +8,11 @@ import { CategoryFormService } from '../services/category-form.service';
 import { Category, FormConfig, FormSubmitEvent } from '../../../shared/models';
 import { clampHue, hslToHex, hexToHue, DEFAULT_LIGHTNESS, DEFAULT_SATURATION } from '../../../shared/utils/color.helpers';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [CommonModule, Form, FormsModule, AlertComponent],
+  imports: [CommonModule, Form, FormsModule],
   templateUrl: './category-form.html',
   styleUrl: './category-form.css',
   host: {
@@ -25,8 +24,6 @@ export class CategoryForm {
   private categoryFormService = inject(CategoryFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-  showAlert = signal(false);
-  alertMessage = signal<string | null>(null);
   // Reference to the generic Form component
   formComponent = viewChild(Form);
 
@@ -118,10 +115,7 @@ export class CategoryForm {
         this.onClose();
       },
       error: (error) => {
-        this.alertMessage.set(
-          error.error?.message || 'No se pudo actualizar la categoría.'
-        );
-        this.showAlert.set(true);
+        console.error('Error updating category:', error);
       }
     });
 } else {
@@ -135,10 +129,7 @@ export class CategoryForm {
         this.onClose();
       },
       error: (error) => {
-        this.alertMessage.set(
-          error.error?.message || 'No se pudo crear la categoría.'
-        );
-        this.showAlert.set(true);
+        console.error('Error creating category:', error);
       }
     });
 }

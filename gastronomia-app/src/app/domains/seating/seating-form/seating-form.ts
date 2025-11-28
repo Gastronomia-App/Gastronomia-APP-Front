@@ -9,34 +9,32 @@ import {
   signal,
   Injector,
   runInInjectionContext,
-  DestroyRef,
+  DestroyRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Form } from '../../../shared/components/form';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { SeatingsService } from '../services/seating-service';
-import { Seating, SeatingCreateRequest, SeatingUpdateRequest } from '../../../shared/models/seating';
+import {
+  Seating,
+  SeatingCreateRequest,
+  SeatingUpdateRequest
+} from '../../../shared/models/seating';
 import { FormConfig, FormSubmitEvent } from '../../../shared/models';
-
-
 
 @Component({
   selector: 'app-seating-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './seating-form.html',
-  styleUrl: './seating-form.css',
+  styleUrl: './seating-form.css'
 })
 export class SeatingForm {
   private readonly seatingsService = inject(SeatingsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
 
-  readonly showAlert = signal(false);
-  readonly alertTitle = signal('');
-  readonly alertMessage = signal('');
-  readonly alertDetails = signal<any>(null);
+  // Confirmation state (kept as is, in case it is used by a modal)
   readonly showConfirm = signal(false);
 
   seating = input<Seating>();
@@ -64,9 +62,9 @@ export class SeatingForm {
               min: 1,
               max: 9999,
               fullWidth: true,
-              defaultValue: s?.number ?? null,
-            },
-          ],
+              defaultValue: s?.number ?? null
+            }
+          ]
         },
         {
           fields: [
@@ -76,7 +74,7 @@ export class SeatingForm {
               type: 'number',
               readonly: true,
               required: true,
-              defaultValue: s?.posX ?? 1,
+              defaultValue: s?.posX ?? 1
             },
             {
               name: 'posY',
@@ -84,9 +82,9 @@ export class SeatingForm {
               type: 'number',
               readonly: true,
               required: true,
-              defaultValue: s?.posY ?? 1,
-            },
-          ],
+              defaultValue: s?.posY ?? 1
+            }
+          ]
         },
         {
           fields: [
@@ -97,9 +95,9 @@ export class SeatingForm {
               required: true,
               options: [
                 { label: 'Cuadrada', value: 'SQUARE' },
-                { label: 'Redonda', value: 'ROUND' },
+                { label: 'Redonda', value: 'ROUND' }
               ],
-              defaultValue: s?.shape ?? 'SQUARE',
+              defaultValue: s?.shape ?? 'SQUARE'
             },
             {
               name: 'size',
@@ -109,13 +107,13 @@ export class SeatingForm {
               options: [
                 { label: 'Chica', value: 'SMALL' },
                 { label: 'Mediana', value: 'MEDIUM' },
-                { label: 'Grande', value: 'LARGE' },
+                { label: 'Grande', value: 'LARGE' }
               ],
-              defaultValue: s?.size ?? 'SMALL',
-            },
-          ],
-        },
-      ],
+              defaultValue: s?.size ?? 'SMALL'
+            }
+          ]
+        }
+      ]
     };
   });
 
@@ -123,16 +121,20 @@ export class SeatingForm {
     effect(() => {
       const s = this.seating();
       const form = this.formRef();
-      if (!form || !s) return;
+      if (!form || !s) {
+        return;
+      }
 
       const serialized = JSON.stringify({
         number: s.number,
         posX: s.posX,
         posY: s.posY,
         shape: s.shape,
-        size: s.size,
+        size: s.size
       });
-      if (this.lastSeating === serialized) return;
+      if (this.lastSeating === serialized) {
+        return;
+      }
       this.lastSeating = serialized;
 
       form.resetForm();
@@ -140,7 +142,9 @@ export class SeatingForm {
 
       runInInjectionContext(this.injector, () => {
         const ngForm: import('@angular/forms').FormGroup | undefined = (form as any).form;
-        if (!ngForm) return;
+        if (!ngForm) {
+          return;
+        }
 
         ngForm.valueChanges
           .pipe(takeUntilDestroyed(this.destroyRef))
@@ -150,14 +154,16 @@ export class SeatingForm {
               posX: val?.posX,
               posY: val?.posY,
               shape: val?.shape,
-              size: val?.size,
+              size: val?.size
             } as Partial<Seating>;
 
             const serializedChange = JSON.stringify(payload);
-            if (this.lastEmitted === serializedChange) return;
+            if (this.lastEmitted === serializedChange) {
+              return;
+            }
             this.lastEmitted = serializedChange;
 
-            // SOLO preview: el padre actualiza señales locales, sin tocar backend
+            // Only preview: parent updates local signals, backend is not touched here
             this.changed.emit(payload);
           });
       });
@@ -166,7 +172,9 @@ export class SeatingForm {
 
   onSubmit(event: FormSubmitEvent<Seating>): void {
     const base = this.seating();
-    if (!base) return;
+    if (!base) {
+      return;
+    }
 
     if (this.mode() === 'create') {
       const payloadCreate: SeatingCreateRequest = {
@@ -174,18 +182,16 @@ export class SeatingForm {
         posX: Number(event.data.posX),
         posY: Number(event.data.posY),
         shape: event.data.shape,
-        size: event.data.size,
+        size: event.data.size
       };
-      this.seatingsService.create(payloadCreate)
+      this.seatingsService
+        .create(payloadCreate)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => this.closed.emit(),
-          error: (err) => {
-            this.alertTitle.set('Error al crear');
-            this.alertMessage.set(err?.error?.message || 'Ocurrió un error.');
-            this.alertDetails.set(err);
-            this.showAlert.set(true);
-          },
+          error: () => {
+            // Global error handler will display the error
+          }
         });
     } else {
       const payloadUpdate: SeatingUpdateRequest = {
@@ -194,42 +200,46 @@ export class SeatingForm {
         posX: Number(event.data.posX),
         posY: Number(event.data.posY),
         shape: event.data.shape,
-        size: event.data.size,
+        size: event.data.size
       };
-      this.seatingsService.update(base.id, payloadUpdate)
+      this.seatingsService
+        .update(base.id, payloadUpdate)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => this.closed.emit(),
-          error: (err) => {
-            this.alertTitle.set('Error al actualizar');
-            this.alertMessage.set(err?.error?.message || 'Ocurrió un error.');
-            this.alertDetails.set(err);
-            this.showAlert.set(true);
-          },
+          error: () => {
+            // Global error handler will display the error
+          }
         });
     }
   }
 
   onDeleteConfirmed(): void {
     const s = this.seating();
-    if (!s) return;
+    if (!s) {
+      return;
+    }
 
-    this.seatingsService.delete(s.id)
+    this.seatingsService
+      .delete(s.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.showConfirm.set(false);
           this.closed.emit();
         },
-        error: (err) => {
-          this.alertTitle.set('Error al eliminar');
-          this.alertMessage.set(err?.error?.message || 'No se pudo eliminar la ubicación.');
-          this.alertDetails.set(err);
-          this.showAlert.set(true);
-        },
+        error: () => {
+          // Global error handler will display the error
+          this.showConfirm.set(false);
+        }
       });
   }
 
-  onCancel(): void { this.closed.emit(); }
-  onClose(): void { this.closed.emit(); }
+  onCancel(): void {
+    this.closed.emit();
+  }
+
+  onClose(): void {
+    this.closed.emit();
+  }
 }

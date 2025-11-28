@@ -7,12 +7,11 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { AuditFormService } from '../services/audit-form.service';
 import { AuditService } from '../../../services/audit.service';
 import { Audit, DetailConfig } from '../../../shared/models';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-audit-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, Detail, ConfirmationModalComponent, AlertComponent],
+  imports: [CommonModule, FormsModule, Detail, ConfirmationModalComponent],
   templateUrl: './audit-details.html',
   styleUrl: './audit-details.css',
   host: {
@@ -23,8 +22,6 @@ export class AuditDetails {
   private auditFormService = inject(AuditFormService);
   private auditService = inject(AuditService);
   private destroyRef = inject(DestroyRef);
-  readonly showAlert = signal(false);
-  readonly alertMessage = signal('');
 
   onDetailsClosed = output<void>();
 
@@ -270,58 +267,45 @@ export class AuditDetails {
   }
 
   confirmCancel(): void {
-    const currentAudit = this.audit();
-    if (!currentAudit) return;
+  const currentAudit = this.audit();
+  if (!currentAudit) return;
 
-    // Call cancel service
-    this.auditService.cancelAudit(currentAudit.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (canceledAudit) => {
-          this.showCancelModal.set(false);
-          this.audit.set(canceledAudit);
-          this.auditFormService.notifyAuditUpdated(canceledAudit);
-
-          // Optionally close the details panel
-          this.onClose();
-        },
-        error: (error) => {
-          this.alertMessage.set(error.error?.message || 'No se pudo cancelar la auditoría.');
-          this.showAlert.set(true);
-        }
-      });
-  }
+  this.auditService.cancelAudit(currentAudit.id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (canceledAudit) => {
+        this.showCancelModal.set(false);
+        this.audit.set(canceledAudit);
+        this.auditFormService.notifyAuditUpdated(canceledAudit);
+        this.onClose();
+      }
+      // No error callback -> error goes to global handler
+    });
+}
 
   confirmFinalize(): void {
-    const currentAudit = this.audit();
-    if (!currentAudit) return;
+  const currentAudit = this.audit();
+  if (!currentAudit) return;
 
-    const realCashValue = this.realCash();
+  const realCashValue = this.realCash();
 
-    // Validation
-    if (realCashValue == null || realCashValue < 0) {
-      console.error('El efectivo final no puede estar vacío y debe ser mayor o igual a 0.');
-      return;
-    }
-
-    // Call finalize service
-    this.auditService.finalizeAudit(currentAudit.id, { realCash: realCashValue })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (finalizedAudit) => {
-          this.showFinalizeModal.set(false);
-          this.audit.set(finalizedAudit);
-          this.auditFormService.notifyAuditFinalized(finalizedAudit);
-
-          // Close the details panel after successful finalization
-          this.onClose();
-        },
-        error: (error) => {
-          this.alertMessage.set(error.error?.message || 'No se pudo finalizar la auditoría.');
-          this.showAlert.set(true);
-        }
-      });
+  // Basic validation before sending request
+  if (realCashValue == null || realCashValue < 0) {
+    console.error('Final cash amount must be greater or equal than 0.');
+    return;
   }
+
+  this.auditService.finalizeAudit(currentAudit.id, { realCash: realCashValue })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (finalizedAudit) => {
+        this.showFinalizeModal.set(false);
+        this.audit.set(finalizedAudit);
+        this.auditFormService.notifyAuditFinalized(finalizedAudit);
+        this.onClose();
+      }
+    });
+}
 
   private formatCurrency(value: number): string {
     return new Intl.NumberFormat('es-AR', {

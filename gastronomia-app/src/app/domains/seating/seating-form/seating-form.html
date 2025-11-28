@@ -13,13 +13,4 @@
       (formClose)="onClose()">
     </app-form>
   }
-
-   @if (showAlert()) {
-    <app-alert
-      [title]="alertTitle()"
-      [message]="alertMessage()"
-      (onAccept)="showAlert.set(false)"
-      (onClose)="showAlert.set(false)">
-    </app-alert>
-  }
 </div>

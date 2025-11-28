@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BusinessService } from '../../business/services/business.service';
+import { ErrorTranslatorService } from '../../../core/errors/error-translator.service';
 
 @Component({
   selector: 'app-register',
@@ -15,6 +16,7 @@ export class Register {
   private fb = inject(FormBuilder);
   private businessService = inject(BusinessService);
   private router = inject(Router);
+  private errorTranslator = inject(ErrorTranslatorService);
 
   currentStep = signal(1);
   isSubmitting = signal(false);
@@ -95,15 +97,18 @@ export class Register {
     };
 
     this.businessService.createBusiness(businessRequest).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        this.isSubmitting.set(false);
-        this.errorMessage.set(error.error?.message || 'Error al crear el negocio.');
-      }
-    });
+  next: () => {
+    this.isSubmitting.set(false);
+    this.router.navigate(['/login']);
+  },
+  error: (err) => {
+    this.isSubmitting.set(false);
+
+    // Translate backend error (by code/status) to a friendly Spanish message
+    const uiError = this.errorTranslator.translate(err);
+    this.errorMessage.set(uiError.message || 'Error al crear el negocio.');
+  }
+});
   }
 
   hasError(formGroup: FormGroup, fieldName: string): boolean {

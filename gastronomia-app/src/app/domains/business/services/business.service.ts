@@ -21,7 +21,13 @@ export class BusinessService {
 
   // Create new business (used in register with owner data)
   createBusiness(business: Partial<Business>): Observable<Business> {
-    return this.http.post<Business>(`${this.apiUrl}/businesses`, business);
+    return this.http.post<Business>(
+      `${this.apiUrl}/businesses`,
+      business,
+      {
+        headers: { 'X-Skip-Global-Error': 'true' }
+      }
+    );
   }
 
   // Update business

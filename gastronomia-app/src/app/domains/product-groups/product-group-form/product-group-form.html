@@ -1,27 +1,21 @@
-@if (showAlert()) {
-  <app-alert
-    [title]="'Error'"
-    [message]="alertMessage()"
-    (onAccept)="showAlert.set(false)"
-    (onClose)="showAlert.set(false)"
-  />
-}
+<!-- product-group-form.html -->
+
 <!-- Aside panel container -->
 <aside class="aside-panel">
-    <!-- Generic Form Component with integrated header and footer -->
-    <app-form
-        [config]="formConfig"
-        [isEditMode]="isEditMode"
-        [editingId]="editingProductGroupId"
-        [showHeader]="true"
-        [showFooter]="true"
-        [headerTitle]="'Nuevo grupo de opciones'"
-        [headerEditTitle]="'Editar grupo de opciones'"
-        [cancelButtonLabel]="'Cancelar'"
-        [submitButtonLabel]="'Crear'"
-        [submitEditButtonLabel]="'Guardar'"
-        (formSubmit)="onFormSubmit($event)"
-        (formCancel)="onFormCancel()"
-        (formClose)="onClose()">
-    </app-form>
+  <!-- Generic Form Component with integrated header and footer -->
+  <app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode"
+    [editingId]="editingProductGroupId"
+    [showHeader]="true"
+    [showFooter]="true"
+    [headerTitle]="'Nuevo grupo de opciones'"
+    [headerEditTitle]="'Editar grupo de opciones'"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Crear'"
+    [submitEditButtonLabel]="'Guardar'"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+    (formClose)="onClose()">
+  </app-form>
 </aside>

@@ -1,0 +1,12 @@
+/* core/errors/global-alert-host.component.css */
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 99999; /* Debe ser mayor que cualquier modal tuyo */
+  pointer-events: none; /* No bloquear clics cuando no hay alerta */
+}
+
+/* Cuando hay alerta, permitir interacción dentro del componente */
+:host app-alert {
+  pointer-events: auto;
+}

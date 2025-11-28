@@ -1,15 +1,5 @@
 <!-- expense-form.html -->
 
-@if (showAlert()) {
-  <app-alert
-    type="error"
-    title="Error"
-    [message]="alertMessage()"
-    (onAccept)="showAlert.set(false)"
-    (onClose)="showAlert.set(false)"
-  />
-}
-
 <aside class="aside-panel">
   <!-- Generic Form Component with integrated header and footer -->
   <app-form
@@ -25,6 +15,7 @@
     [submitEditButtonLabel]="'Guardar'"
     (formSubmit)="onFormSubmit($event)"
     (formCancel)="onFormCancel()"
-    (formClose)="onClose()">
+    (formClose)="onClose()"
+  >
   </app-form>
 </aside>

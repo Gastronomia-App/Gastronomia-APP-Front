@@ -4,12 +4,11 @@ import { Form } from '../../../shared/components/form';
 import { CustomerFormService } from '../services/CustomerFormService';
 import { CustomersService } from '../services/customers-service';
 import { Customer, FormConfig, FormSubmitEvent } from '../../../shared/models';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, Form, AlertComponent],
+  imports: [CommonModule, Form],
   templateUrl: './customer-form.html',
   styleUrl: './customer-form.css',
   host: { class: 'entity-form' }
@@ -25,10 +24,6 @@ export class CustomerForm {
   // === State ===
   editingCustomerId: number | null = null;
   isEditMode = false;
-
-  // === Alerts ===
-  showAlert = signal(false);
-  alertMessage = signal('');
 
   // === Outputs ===
   onFormClosed = output<void>();
@@ -57,46 +52,45 @@ export class CustomerForm {
    *  SUBMIT
    *  ------------------------------------------------------ */
   onFormSubmit(event: FormSubmitEvent<Customer>): void {
+  const data: Partial<Customer> = {
+    name: event.data.name,
+    lastName: event.data.lastName,
+    dni: event.data.dni,
+    email: event.data.email,
+    phoneNumber: event.data.phoneNumber,
+    discount: Number(event.data.discount ?? 0)
+  };
 
-    const data: Partial<Customer> = {
-      name: event.data.name,
-      lastName: event.data.lastName,
-      dni: event.data.dni,
-      email: event.data.email,
-      phoneNumber: event.data.phoneNumber,
-      discount: Number(event.data.discount ?? 0)
-    };
+  if (this.isEditMode && this.editingCustomerId) {
+    // UPDATE
+    this.customersService.update(this.editingCustomerId, data).subscribe({
+      next: (customer) => {
+        this.customerFormService.notifyCustomerUpdated(customer);
+        this.resetForm();
+        this.onClose();
+        this.customerFormService.viewCustomerDetails(customer);
+      },
+      error: (error) => {
+        console.error('Error updating customer:', error);
+        // Global interceptor / handler se encarga de mostrar el mensaje
+      }
+    });
 
-    if (this.isEditMode && this.editingCustomerId) {
-      // UPDATE
-      this.customersService.update(this.editingCustomerId, data).subscribe({
-        next: (customer) => {
-          this.customerFormService.notifyCustomerUpdated(customer);
-          this.resetForm();
-          this.onClose();
-          this.customerFormService.viewCustomerDetails(customer);
-        },
-        error: (error) => {
-          this.alertMessage.set(error.error?.message || 'Could not update customer.');
-          this.showAlert.set(true);
-        }
-      });
-
-    } else {
-      // CREATE
-      this.customersService.create(data).subscribe({
-        next: (customer) => {
-          this.customerFormService.notifyCustomerCreated(customer);
-          this.resetForm();
-          this.onClose();
-        },
-        error: (error) => {
-          this.alertMessage.set(error.error?.message || 'Could not create customer.');
-          this.showAlert.set(true);
-        }
-      });
-    }
+  } else {
+    // CREATE
+    this.customersService.create(data).subscribe({
+      next: (customer) => {
+        this.customerFormService.notifyCustomerCreated(customer);
+        this.resetForm();
+        this.onClose();
+      },
+      error: (error) => {
+        console.error('Error creating customer:', error);
+        // Global interceptor / handler se encarga de mostrar el mensaje
+      }
+    });
   }
+}
 
   /** -------------------------------------------------------
    *  LOAD

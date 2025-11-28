@@ -2,22 +2,27 @@ import {
   Component,
   Output,
   EventEmitter,
-  HostListener,
   inject,
   signal,
   OnInit
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  CommonModule
+} from '@angular/common';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators
+} from '@angular/forms';
 import { EmployeeService } from '../services/employee.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-employees-update-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './employees-update-profile.html',
   styleUrl: './employees-update-profile.css'
 })
@@ -32,6 +37,8 @@ export class EmployeesUpdateProfile implements OnInit {
 
   readonly MAX_TOTAL_USERNAME = 50;
   readonly MIN_USERNAME = 5;
+  readonly MIN_PASSWORD = 8;
+  readonly MAX_PASSWORD = 72;
 
   domain = '@Cloud.com';
 
@@ -50,10 +57,6 @@ export class EmployeesUpdateProfile implements OnInit {
   // Overlay and countdown
   readonly securityRedirect = signal(false);
   readonly redirectCountdown = signal(5);
-
-  // Alert
-  readonly showAlert = signal(false);
-  readonly alertMessage = signal('');
 
   readonly form: FormGroup = this.fb.group({
     firstName: ['', [Validators.maxLength(80)]],
@@ -123,6 +126,21 @@ export class EmployeesUpdateProfile implements OnInit {
     return local ? `${local}${this.domain}` : '';
   }
 
+  passwordLength(): number {
+    const value = (this.form.get('password')?.value ?? '') as string;
+    return value.trim().length;
+  }
+
+  passwordTooShort(): boolean {
+    const len = this.passwordLength();
+    return len > 0 && len < this.MIN_PASSWORD;
+  }
+
+  passwordTooLong(): boolean {
+    const len = this.passwordLength();
+    return len > this.MAX_PASSWORD;
+  }
+
   togglePassword(): void {
     this.showPassword.update(x => !x);
   }
@@ -130,11 +148,39 @@ export class EmployeesUpdateProfile implements OnInit {
   previewName(): string {
     const f = (this.form.get('firstName')?.value ?? '').trim();
     const l = (this.form.get('lastName')?.value ?? '').trim();
-    return `${f || this.currentUser.firstName} ${l || this.currentUser.lastName}`.trim();
+    return `${f || this.currentUser.firstName} ${
+      l || this.currentUser.lastName
+    }`.trim();
   }
 
   previewUsername(): string {
     return this.fullUsername();
+  }
+
+  isSubmitDisabled(): boolean {
+    const rawLocal = (this.form.get('usernameLocal')?.value ?? '').trim();
+    const password = (this.form.get('password')?.value ?? '').trim();
+
+    const usernameChanged = rawLocal.length > 0;
+    const passwordChanged = password.length > 0;
+
+    if (
+      usernameChanged &&
+      (rawLocal.length < this.MIN_USERNAME ||
+        rawLocal.length > this.MAX_TOTAL_USERNAME)
+    ) {
+      return true;
+    }
+
+    if (
+      passwordChanged &&
+      (password.length < this.MIN_PASSWORD ||
+        password.length > this.MAX_PASSWORD)
+    ) {
+      return true;
+    }
+
+    return this.form.invalid;
   }
 
   submit(): void {
@@ -146,13 +192,27 @@ export class EmployeesUpdateProfile implements OnInit {
     const usernameChanged = rawLocal.length > 0;
     const passwordChanged = password.length > 0;
 
-    // Validate local username length
+    // Mark controls as touched to show errors
+    this.form.markAllAsTouched();
+
+    // Manual username length validation (backend already tiene uno válido)
+    if (
+      usernameChanged &&
+      (rawLocal.length < this.MIN_USERNAME ||
+        rawLocal.length > this.MAX_TOTAL_USERNAME)
+    ) {
+      const usernameCtrl = this.form.get('usernameLocal');
+      const currentErrors = usernameCtrl?.errors || {};
+      usernameCtrl?.setErrors({ ...currentErrors, length: true });
+      return;
+    }
+
+    // Password and other fields validations rely on reactive validators
+    if (this.form.invalid) {
+      return;
+    }
+
     if (usernameChanged) {
-      if (rawLocal.length < this.MIN_USERNAME || rawLocal.length > this.MAX_TOTAL_USERNAME) {
-        this.alertMessage.set('El nombre de usuario debe tener entre 5 y 50 caracteres.');
-        this.showAlert.set(true);
-        return;
-      }
       dto.username = rawLocal;
     }
 
@@ -196,11 +256,8 @@ export class EmployeesUpdateProfile implements OnInit {
             this.router.navigate(['/login']);
           }
         }, 1000);
-      },
-      error: err => {
-        this.alertMessage.set(err.error?.message || 'Error al actualizar perfil.');
-        this.showAlert.set(true);
       }
+      // Errors de backend los maneja el interceptor/global handler
     });
   }
 

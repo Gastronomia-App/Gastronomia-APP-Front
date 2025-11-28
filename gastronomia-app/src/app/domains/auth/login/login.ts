@@ -8,6 +8,7 @@ import { Business } from '../../../shared/models/business.model';
 import { Role } from '../../../shared/models/role.enum';
 import { BusinessService } from '../../business/services';
 import { BusinessStateService } from '../../business/services/business-state-service';
+import { ErrorTranslatorService } from '../../../core/errors/error-translator.service';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +23,7 @@ export class LoginComponent {
   private router = inject(Router);
   private businessService = inject(BusinessService);
   private businessState = inject(BusinessStateService);
+  private errorTranslator = inject(ErrorTranslatorService); 
 
   @Input() mode: 'login' | 'register' = 'login';
 
@@ -124,35 +126,33 @@ export class LoginComponent {
   }
 
   private submitLogin(): void {
-    const credentials: LoginRequest = {
-      username: this.form.value.username,
-      password: this.form.value.password
-    };
+  const credentials: LoginRequest = {
+    username: this.form.value.username,
+    password: this.form.value.password
+  };
 
-    this.authService.login(credentials).subscribe({
-      next: (session) => {
-        this.loading.set(false);
+  this.authService.login(credentials).subscribe({
+    next: (session) => {
+      this.loading.set(false);
 
-        this.businessService.getMyBusiness().subscribe({
-          next: (business) => {
-            this.businessState.set(business);
-            this.router.navigateByUrl('/seatings');
-          },
-          error: () => {
-            this.router.navigateByUrl('/seatings');
-          }
-        });
-      },
-      error: (error) => {
-        this.error.set(
-          error?.error?.message ??
-          error?.message ??
-          'Credenciales inválidas.'
-        );
-        this.loading.set(false);
-      }
-    });
-  }
+      this.businessService.getMyBusiness().subscribe({
+        next: (business) => {
+          this.businessState.set(business);
+          this.router.navigateByUrl('/seatings');
+        },
+        error: () => {
+          this.router.navigateByUrl('/seatings');
+        }
+      });
+    },
+    error: (err) => {
+      // Traducimos el error usando el mismo mapa de códigos que el alert global
+      const uiError = this.errorTranslator.translate(err);
+      this.error.set(uiError.message || 'Credenciales inválidas.');
+      this.loading.set(false);
+    }
+  });
+}
 
   private submitRegister(): void {
     const values = this.form.value;

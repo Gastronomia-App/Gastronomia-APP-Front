@@ -16,13 +16,4 @@
         (formCancel)="onFormCancel()"
         (formClose)="onClose()">
     </app-form>
-    @if (showAlert()) {
-  <app-alert
-    type="error"
-    title="Error"
-    [message]="alertMessage() || ''"
-    (onAccept)="showAlert.set(false)"
-    (onClose)="showAlert.set(false)"
-  />
-}
 </aside>

@@ -6,7 +6,6 @@ import { Router } from '@angular/router';
 import { BusinessService } from '../services';
 import { Business } from '../../../shared/models';
 import { BusinessStateService } from '../services/business-state-service';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { BusinessInfo } from '../business-info/business-info';
 import { BusinessForm } from '../business-form/business-form';
 import { BusinessDelete } from '../business-delete/business-delete';
@@ -15,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-business-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlertComponent, BusinessInfo, BusinessForm, BusinessDelete],
+  imports: [CommonModule, FormsModule, BusinessInfo, BusinessForm, BusinessDelete],
   templateUrl: './business-page.html',
   styleUrl: './business-page.css'
 })
@@ -24,10 +23,6 @@ export class BusinessPage implements OnInit {
   private readonly businessState = inject(BusinessStateService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-
-  // Alert
-  readonly showAlert = signal(false);
-  readonly alertMessage = signal<string | null>(null);
 
   // UI state
   readonly myBusiness = signal<Business | null>(null);
@@ -88,8 +83,6 @@ export class BusinessPage implements OnInit {
 
     const businessId = this.myBusiness()!.id!;
 
-    this.showAlert.set(false);
-
     this.businessService.updateBusiness(businessId, dto).subscribe({
       next: (updated) => {
         this.myBusiness.set(updated);
@@ -97,12 +90,7 @@ export class BusinessPage implements OnInit {
         this.isEditMode.set(false);
       },
       error: (error) => {
-        if (error.status === 403) {
-          this.alertMessage.set('No tienes permiso para modificar este negocio.');
-        } else {
-          this.alertMessage.set('Error al actualizar el negocio.');
-        }
-        this.showAlert.set(true);
+        console.error('Error updating business:', error);
       }
     });
   }
@@ -130,14 +118,7 @@ export class BusinessPage implements OnInit {
       },
       error: (error) => {
         this.showDeleteConfirm.set(false);
-
-        if (error.status === 403) {
-          this.alertMessage.set('No tienes permiso para eliminar este negocio.');
-        } else {
-          this.alertMessage.set('Error al eliminar el negocio.');
-        }
-
-        this.showAlert.set(true);
+      console.error('Error deleting business:', error);
       }
     });
   }
