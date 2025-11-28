@@ -310,5 +310,11 @@ export const ERROR_MESSAGES: Record<string, ErrorMessageConfig> = {
     title: 'Error en la base de datos',
     message: 'Ocurrió un problema al acceder a la información. Intentá nuevamente.',
     severity: 'error'
+  },
+  
+   INTERNAL_ERROR: {
+    title: 'Error interno inesperado',
+    message: 'Ocurrió un error inesperado en el sistema. Intentá nuevamente y, si persiste, contactá al administrador.',
+    severity: 'error'
   }
 };
