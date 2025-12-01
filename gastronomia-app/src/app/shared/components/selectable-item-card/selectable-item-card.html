@@ -1,16 +1,48 @@
 <div 
   class="item-card" 
   [class.selected]="isSelected()"
-  (click)="onRemove()">
+  [class.invalid]="isInvalid()"
+  [style.padding-left]="'calc(var(--spacing-sm) + ' + (indentLevel() * 16) + 'px)'"
+  (click)="onCardClick()">
+  
+  @if (hasChildren()) {
+    <button 
+      type="button"
+      class="expand-btn"
+      (click)="onToggleExpand($event)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        @if (isExpanded()) {
+          <polyline points="6 9 12 15 18 9"></polyline>
+        } @else {
+          <polyline points="9 18 15 12 9 6"></polyline>
+        }
+      </svg>
+    </button>
+  }
+  
   <div class="item-info">
     <span class="item-name">{{ name() }}</span>
+    @if (!isExpanded() && badges().length > 0) {
+      <div class="badges-summary">
+        @for (badge of badges(); track badge) {
+          <span class="badge">{{ badge }}</span>
+        }
+      </div>
+    }
   </div>
   
   @if (quantity()) {
     <span class="item-quantity">x{{ quantity() }}</span>
   }
   
-  @if (price()) {
-    <span class="item-price">${{ price()!.toFixed(2) }}</span>
+  @if (price() && price()! > 0) {
+    <span class="item-price">+${{ price()!.toFixed(2) }}</span>
   }
+  
+  <button 
+    type="button"
+    class="delete-btn"
+    (click)="onDelete($event)">
+    ✕
+  </button>
 </div>

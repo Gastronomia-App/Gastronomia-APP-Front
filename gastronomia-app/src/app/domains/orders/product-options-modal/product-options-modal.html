@@ -1,30 +1,33 @@
 <div class="modal-backdrop" (click)="cancel()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <!-- Header -->
     <div class="modal-header">
-      <h2>{{ product().name }} - Seleccionar Opciones (x{{ quantity() }})</h2>
+      <h2>
+        {{ product().name }}
+        @if (currentContext().type === 'option') {
+          <span class="context-indicator"> › Configurando Sub-Opciones</span>
+        }
+      </h2>
       <button type="button" class="btn-close" (click)="cancel()">✕</button>
     </div>
 
-    <!-- Body: Two Column Layout -->
     <div class="modal-body">
       <div class="options-layout">
-        <!-- Left Column: Tabs + Options Grid (70%) -->
         <div class="options-column">
-          <!-- Tabs Navigation -->
           <div class="tabs-navigation">
-            @for (group of groups(); track group.id; let i = $index) {
+            @for (group of currentProductGroups(); track group.id; let i = $index) {
               <button 
                 type="button"
                 class="tab-btn"
                 [class.active]="activeTabIndex() === i"
                 (click)="switchTab(i)">
                 {{ group.name }}
+                @if (groupSummaries()[i]) {
+                  <span class="tab-counter">{{ groupSummaries()[i].current }}/{{ groupSummaries()[i].max }}</span>
+                }
               </button>
             }
           </div>
 
-          <!-- Options Grid -->
           @if (activeGroup(); as group) {
             <div class="options-grid">
               @for (option of group.options; track option.id) {
@@ -47,14 +50,12 @@
           }
         </div>
 
-        <!-- Right Column: Summary + Selected Items (30%) -->
         <div class="summary-column">
-          <!-- Summary Header -->
           <div class="summary-header">
-            <h4>Resumen</h4>
+            <h4>Resumen Grupos</h4>
             <div class="summary-list">
               @for (summary of groupSummaries(); track summary.groupName) {
-                <div class="summary-item">
+                <div class="summary-item" [class.invalid]="!summary.isValid">
                   <span class="summary-name">
                     {{ summary.groupName }}
                     @if (!summary.isValid) {
@@ -67,21 +68,66 @@
             </div>
           </div>
 
-          <!-- Selected Items List -->
           <div class="selected-items">
-            <h4>Seleccionados</h4>
+            <h4>Items y Opciones</h4>
             <div class="items-list">
-              @if (selectedOptions().length === 0) {
-                <p class="empty-message">Ninguna opción seleccionada</p>
-              } @else {
-                @for (selection of selectedOptions(); track selection.productOption.id) {
-                  <app-selectable-item-card
-                    [name]="selection.productOption.productName"
-                    [quantity]="selection.quantity"
-                    [price]="selection.productOption.priceIncrease"
-                    (remove)="removeSelectedOption(selection)">
-                  </app-selectable-item-card>
+              @for (item of items(); track item.index) {
+                @let isSelected = currentContext().itemIndex === item.index && currentContext().type === 'item';
+                @let itemKey = 'item-' + item.index;
+                @let expanded = isExpanded(itemKey);
+                
+                <app-selectable-item-card
+                  [name]="item.productName + ' #' + (item.index + 1)"
+                  [quantity]="1"
+                  [isSelected]="isSelected"
+                  [hasChildren]="item.selections.length > 0"
+                  [isExpanded]="expanded"
+                  (clicked)="onItemClick(item.index)"
+                  (remove)="onRemoveItem(item.index)"
+                  (toggleExpand)="toggleItemExpansion(itemKey)">
+                </app-selectable-item-card>
+
+                @if (expanded && item.selections.length > 0) {
+                  @for (selection of item.selections; track selection.productOption.id; let selIdx = $index) {
+                    @let selKey = itemKey + '-sel-' + selIdx;
+                    @let selExpanded = isExpanded(selKey);
+                    @let optionPath = [selIdx];
+                    @let isSelSelected = currentContext().itemIndex === item.index && 
+                                          currentContext().type === 'option' && 
+                                          pathEquals(currentContext().optionPath, optionPath);
+                    
+                    <app-selectable-item-card
+                      [name]="selection.productOption.productName"
+                      [quantity]="selection.quantity"
+                      [price]="selection.productOption.priceIncrease"
+                      [isSelected]="isSelSelected"
+                      [hasChildren]="(selection.selectedOptions?.length || 0) > 0"
+                      [isExpanded]="selExpanded"
+                      [indentLevel]="1"
+                      (clicked)="onOptionClick(item.index, optionPath)"
+                      (remove)="onRemoveOption(item.index, optionPath)"
+                      (toggleExpand)="toggleItemExpansion(selKey)">
+                    </app-selectable-item-card>
+
+                    @if (selExpanded && selection.selectedOptions && selection.selectedOptions.length > 0) {
+                      @for (subOption of selection.selectedOptions; track subOption.productOption.id; let subIdx = $index) {
+                        @let subPath = [selIdx, subIdx];
+                        
+                        <app-selectable-item-card
+                          [name]="subOption.productOption.productName"
+                          [quantity]="subOption.quantity"
+                          [price]="subOption.productOption.priceIncrease"
+                          [indentLevel]="2"
+                          (remove)="onRemoveOption(item.index, subPath)">
+                        </app-selectable-item-card>
+                      }
+                    }
+                  }
                 }
+              }
+              
+              @if (items().length === 0) {
+                <p class="empty-message">No hay items</p>
               }
             </div>
           </div>
@@ -89,7 +135,6 @@
       </div>
     </div>
 
-    <!-- Footer: Actions -->
     <div class="modal-footer">
       <button type="button" class="btn-secondary" (click)="cancel()">
         Cancelar
@@ -97,10 +142,11 @@
       <button 
         type="button"
         class="btn-primary" 
-        [disabled]="!isValid()"
+        [disabled]="!isAllValid()"
         (click)="confirm()">
-        Confirmar Selecciones
+        Confirmar {{ items().length }} Item(s)
       </button>
     </div>
   </div>
 </div>
+

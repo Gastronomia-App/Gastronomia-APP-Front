@@ -63,31 +63,60 @@
       <!-- Items pendientes a confirmar -->
       @if (pendingItems().length > 0) {
       <div class="pending-items">
-        @for (product of pendingItemsForCard(); track product.id) {
-          <app-item-card
-            #pendingCard
-            [item]="product"
-            [displayFields]="pendingProductDisplayFields"
-            [badgeListConfig]="pendingProductBadgeConfig"
-            [commentField]="'comment'"
-            [editable]="true"
-            [deletable]="true"
-            (fieldUpdated)="onPendingFieldUpdate($event)"
-            (commentUpdated)="onPendingCommentUpdate($event)"
-            (remove)="onRemovePendingItem($event)">
-            
-            <!-- Custom Comment Action Button -->
-            <button 
-              custom-actions
-              type="button"
-              class="btn-comment"
-              (click)="pendingCard.enableCommentEditMode()"
-              [title]="product.comment ? 'Editar comentario' : 'Agregar comentario'">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </button>
-          </app-item-card>
+        @for (product of pendingItemsForCard(); track product.id; let idx = $index) {
+          @let uniqueId = getUniqueId(product);
+          @let options = product.selectedOptions;
+          @let hasOptions = options.length > 0;
+          @let isExpanded = isPendingItemExpanded(uniqueId);
+          @let itemBadges = getPendingItemBadges(uniqueId);
+          @let isValid = isPendingItemValid(uniqueId);
+          
+          <app-selectable-item-card
+            [name]="product.name"
+            [quantity]="1"
+            [price]="product.totalPrice"
+            [hasChildren]="hasOptions"
+            [isExpanded]="isExpanded"
+            [badges]="itemBadges"
+            [isInvalid]="!isValid"
+            (clicked)="onEditPendingItem(uniqueId)"
+            (remove)="onRemovePendingItem(uniqueId)"
+            (toggleExpand)="togglePendingItemExpansion(uniqueId)">
+          </app-selectable-item-card>
+
+          @if (isExpanded && hasOptions) {
+            @for (option of options; track option.productOption.id; let optIdx = $index) {
+              @let subOptions = option.selectedOptions || [];
+              @let hasSubOptions = subOptions.length > 0;
+              @let isOptionExpanded = isPendingOptionExpanded(uniqueId, optIdx);
+              @let optionBadges = getPendingOptionBadges(subOptions);
+              
+              <app-selectable-item-card
+                [name]="option.productOption.productName"
+                [quantity]="option.quantity"
+                [price]="option.productOption.priceIncrease"
+                [hasChildren]="hasSubOptions"
+                [isExpanded]="isOptionExpanded"
+                [badges]="optionBadges"
+                [indentLevel]="1"
+                (clicked)="onEditPendingItemOption(uniqueId, optIdx)"
+                (remove)="removePendingItemOption(uniqueId, optIdx)"
+                (toggleExpand)="togglePendingOptionExpansion(uniqueId, optIdx)">
+              </app-selectable-item-card>
+
+              @if (isOptionExpanded && hasSubOptions) {
+                @for (subOption of subOptions; track subOption.productOption.id; let subIdx = $index) {
+                  <app-selectable-item-card
+                    [name]="subOption.productOption.productName"
+                    [quantity]="subOption.quantity"
+                    [price]="subOption.productOption.priceIncrease"
+                    [indentLevel]="2"
+                    (remove)="removePendingItemSubOption(uniqueId, optIdx, subIdx)">
+                  </app-selectable-item-card>
+                }
+              }
+            }
+          }
         }
       </div>
 
@@ -96,7 +125,7 @@
         <button type="button" class="secondary" (click)="cancelPendingItems()">
           Cancelar
         </button>
-        <button type="button" class="btn-primary" (click)="confirmPendingItems()">
+        <button type="button" class="btn-primary" (click)="confirmPendingItems()" [disabled]="hasInvalidPendingItems()">
           Confirmar
         </button>
       </div>
@@ -114,14 +143,50 @@
       } @else {
       <div class="confirmed-items-list">
         @for (item of confirmedItemsWithName(); track item.id) {
-          <app-item-card 
-            [item]="item" 
-            [displayFields]="itemDisplayFields"
-            [badgeListConfig]="itemBadgeConfig"
-            [commentField]="'comment'"
-            [editable]="false"
-            (remove)="onRemoveConfirmedItem($event)">
-          </app-item-card>
+          @let itemOptions = item.selectedOptions || [];
+          @let hasOptions = itemOptions.length > 0;
+          @let isExpanded = isConfirmedItemExpanded(item.id!);
+          @let itemBadges = getConfirmedItemBadges(item);
+          
+          <app-selectable-item-card
+            [name]="item.product.name"
+            [quantity]="item.quantity"
+            [price]="item.totalPrice"
+            [hasChildren]="hasOptions"
+            [isExpanded]="isExpanded"
+            [badges]="itemBadges"
+            (remove)="onRemoveConfirmedItem(item.id!)"
+            (toggleExpand)="toggleConfirmedItemExpansion(item.id!)">
+          </app-selectable-item-card>
+
+          @if (isExpanded && hasOptions) {
+            @for (option of itemOptions; track option.id) {
+              @let subOptions = option.selectedOptions || [];
+              @let hasSubOptions = subOptions.length > 0;
+              @let optionExpanded = isConfirmedItemExpanded(option.id || 0);
+              
+              <app-selectable-item-card
+                [name]="option.productOption.productName"
+                [quantity]="option.quantity"
+                [price]="option.productOption.priceIncrease"
+                [hasChildren]="hasSubOptions"
+                [isExpanded]="optionExpanded"
+                [indentLevel]="1"
+                (toggleExpand)="toggleConfirmedItemExpansion(option.id || 0)">
+              </app-selectable-item-card>
+
+              @if (optionExpanded && hasSubOptions) {
+                @for (subOption of subOptions; track subOption.id) {
+                  <app-selectable-item-card
+                    [name]="subOption.productOption.productName"
+                    [quantity]="subOption.quantity"
+                    [price]="subOption.productOption.priceIncrease"
+                    [indentLevel]="2">
+                  </app-selectable-item-card>
+                }
+              }
+            }
+          }
         }
       </div>
       }
@@ -178,6 +243,8 @@
 <app-product-options-modal 
   [product]="modalProduct()!" 
   [quantity]="modalQuantity()"
+  [initialSelections]="modalInitialSelections()"
+  [initialContext]="modalInitialContext()"
   (confirmed)="onOptionsConfirmed($event)"
   (cancelled)="onOptionsCancelled()">
 </app-product-options-modal>

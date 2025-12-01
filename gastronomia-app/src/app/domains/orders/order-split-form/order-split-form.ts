@@ -5,7 +5,7 @@ import { OrderService } from '../services/order.service';
 import { SeatingsService } from '../../seating/services/seating-service';
 import { EmployeeService } from '../../employees';
 import { CustomersService } from '../../customer/services/customers-service';
-import { Order, Item, Customer, Employee, Seating, SelectedProductOption } from '../../../shared/models';
+import { Order, Item, Customer, Employee, Seating, SelectedOption } from '../../../shared/models';
 
 export interface ItemTransferDto {
   itemId: number;

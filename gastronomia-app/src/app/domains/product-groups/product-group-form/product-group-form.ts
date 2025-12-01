@@ -238,22 +238,23 @@ export class ProductGroupForm implements OnInit {
   onOptionUpdated(item: any): void {
     this.selectedOptions.update(items => {
       const index = items.findIndex(
-        o => o.productId === item.productId || o.productId === item.id
+        o => o.productId === item.product?.id || o.productId === item.id
       );
 
       if (index !== -1) {
         const updated = [...items];
-        const productId = item.productId ?? item.id;
+        const productId = item.product?.id ?? item.id;
         const product = this.availableProducts().find(p => p.id === productId);
 
-        updated[index] = {
-          id: updated[index].id,
-          productId: productId,
-          productName:
-            product?.name || updated[index].productName || `Producto #${productId}`,
-          maxQuantity: Number(item.maxQuantity) || 1,
-          priceIncrease: Number(item.priceIncrease) || 0
-        };
+        if (product) {
+          updated[index] = {
+            id: updated[index].id,
+            productId: product.id,
+            productName: product.name,
+            maxQuantity: Number(item.maxQuantity) || 1,
+            priceIncrease: Number(item.priceIncrease) || 0
+          };
+        }
         return updated;
       }
 
@@ -480,16 +481,9 @@ export class ProductGroupForm implements OnInit {
     this.originalOptions = [];
 
     if (productGroup.options && productGroup.options.length > 0) {
-      const options = productGroup.options.map(o => ({
-        id: o.id,
-        productId: o.productId,
-        productName: o.productName,
-        maxQuantity: o.maxQuantity,
-        priceIncrease: o.priceIncrease
-      }));
-
-      this.selectedOptions.set(options);
-      this.originalOptions = JSON.parse(JSON.stringify(options));
+      // Las opciones ya vienen con el product completo desde el backend
+      this.selectedOptions.set(productGroup.options);
+      this.originalOptions = JSON.parse(JSON.stringify(productGroup.options));
     }
 
     const fc = this.formComponent();

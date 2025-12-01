@@ -9,19 +9,31 @@ import { CommonModule } from '@angular/common';
   styleUrl: './selectable-item-card.css'
 })
 export class SelectableItemCard {
-  // Inputs
   name = input.required<string>();
   quantity = input<number>();
   price = input<number>();
   isSelected = input<boolean>(false);
+  hasChildren = input<boolean>(false);
+  isExpanded = input<boolean>(false);
+  indentLevel = input<number>(0);
+  badges = input<string[]>([]);
+  isInvalid = input<boolean>(false); // New: mark card as invalid (red)
 
-  // Outputs
+  clicked = output<void>();
   remove = output<void>();
+  toggleExpand = output<void>();
 
-  /**
-   * Handle card click to remove item
-   */
-  onRemove(): void {
+  onCardClick(): void {
+    this.clicked.emit();
+  }
+
+  onDelete(event: Event): void {
+    event.stopPropagation();
     this.remove.emit();
+  }
+
+  onToggleExpand(event: Event): void {
+    event.stopPropagation();
+    this.toggleExpand.emit();
   }
 }

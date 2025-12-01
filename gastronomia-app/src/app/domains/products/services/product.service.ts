@@ -26,9 +26,6 @@ export class ProductService {
   // Get product by ID
   getProductById(id: number): Observable<Product> {
     const product = this.http.get<Product>(`${this.apiUrl}/products/${id}`);
-    product.subscribe(p => {
-      console.log(p)
-    })
     return product
   }
 
