@@ -1,3 +1,5 @@
+import { Product } from './product.model';
+
 export interface ProductGroup {
     id: number;
     name: string;
@@ -12,10 +14,4 @@ export interface ProductOption {
     productName: string;
     maxQuantity: number;
     priceIncrease: number;
-}
-
-export interface SelectedProductOption {
-    id: number;
-    productOption: ProductOption;
-    quantity: number;
 }

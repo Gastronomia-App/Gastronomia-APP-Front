@@ -62,7 +62,7 @@
                       <span class="item-name">{{ item.product.name }}</span>
                       @if (item.selectedOptions && item.selectedOptions.length > 0) {
                         <div class="item-options">
-                          @for (option of item.selectedOptions; track option.id) {
+                          @for (option of item.selectedOptions; track option.productOption.id) {
                             <span class="option-badge">{{ option.productOption.productName }}</span>
                           }
                         </div>

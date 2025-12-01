@@ -74,17 +74,10 @@ export class ProductOptionsSelector {
 
   // Convert selected ProductOptions to Products for searchable-list filtering (using computed for caching)
   selectedProductsForFiltering = computed(() => {
-    return this.selectedItems().map(option => {
-      const product = this.availableItems().find(p => p.id === option.productId);
-      if (product) {
-        return product;
-      }
-      // Fallback if product not found
-      return {
-        id: option.productId,
-        name: option.productName
-      } as Product;
-    });
+    const available = this.availableItems();
+    return this.selectedItems()
+      .map(option => available.find(p => p.id === option.productId))
+      .filter(p => p !== undefined) as Product[];
   });
 
   // Helper to add name property for ItemCard (uses productName from ProductOption)

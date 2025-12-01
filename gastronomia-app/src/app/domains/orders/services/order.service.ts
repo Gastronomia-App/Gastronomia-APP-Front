@@ -2,15 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../enviroments/environment';
-import { Order, PageResponse, Item, SelectedProductOption } from '../../../shared/models';
-
-// Item Request DTO for adding items to an order
-export interface ItemRequest {
-  productId: number;
-  quantity: number;
-  selectedOptions?: Array<{ productOptionId: number; quantity: number }>;
-  comment?: string;
-}
+import { Order, PageResponse, Item, ItemRequest } from '../../../shared/models';
 
 interface OrderFilters {
     status?: string | null;

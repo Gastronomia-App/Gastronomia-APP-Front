@@ -51,8 +51,6 @@ export class ProductGroupDetail implements OnInit {
       const currentProductGroup = this.productGroup();
       // Track dependency
       if (currentProductGroup) {
-        // Load product names for options
-        this.loadProductsForOptions(currentProductGroup.options || []);
         // Trigger re-render in detail component
         setTimeout(() => {
           this.detailComponent()?.renderDynamicComponents();
@@ -138,30 +136,7 @@ export class ProductGroupDetail implements OnInit {
       });
   }
 
-  /**
-   * Load products for all options to get their names
-   */
-  private loadProductsForOptions(options: ProductOption[]): void {
-    const productIds = options.map(opt => opt.productId);
-    const uniqueIds = [...new Set(productIds)];
-    
-    uniqueIds.forEach(productId => {
-      if (!this.products().has(productId)) {
-        this.productService.getProductById(productId).subscribe({
-          next: (product) => {
-            this.products.update(map => {
-              const newMap = new Map(map);
-              newMap.set(productId, product);
-              return newMap;
-            });
-          },
-          error: (error) => {
-            console.error(`❌ Error loading product ${productId}:`, error);
-          }
-        });
-      }
-    });
-  }
+
 
   /**
    * Get product name by ID
@@ -177,7 +152,7 @@ export class ProductGroupDetail implements OnInit {
   private enrichOptionsWithNames(options: ProductOption[]): any[] {
     return options.map(option => ({
       ...option,
-      name: this.getProductName(option.productId)
+      name: option.productName
     }));
   }
 

@@ -2,18 +2,18 @@ import { Component, inject, OnInit, signal, computed, input, output, effect } fr
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchableList } from '../../../shared/components/searchable-list';
-import { ItemCard, CardField, BadgeListConfig } from '../../../shared/components/item-card';
+import { SelectableItemCard } from '../../../shared/components/selectable-item-card';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 import { OrderSplitForm } from '../order-split-form/order-split-form';
 import { ProductOptionsModal } from '../product-options-modal/product-options-modal';
-import { OrderService, ItemRequest } from '../services/order.service';
+import { OrderService } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
-import { Order, Product, Item, SelectedProductOption, ProductGroup, ProductOption } from '../../../shared/models';
+import { Order, Product, Item, SelectedOption, ItemRequest, ProductGroup, ProductOption } from '../../../shared/models';
 
 @Component({
   selector: 'app-order-items-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableList, ItemCard, ConfirmationModalComponent, OrderSplitForm, ProductOptionsModal],
+  imports: [CommonModule, FormsModule, SearchableList, SelectableItemCard, ConfirmationModalComponent, OrderSplitForm, ProductOptionsModal],
   templateUrl: './order-items-form.html',
   styleUrl: './order-items-form.css',
 })
@@ -43,40 +43,20 @@ export class OrderItemsForm implements OnInit {
   currentOrder = signal<Order | null>(null);
   
   // Map to store selected options for pending products
-  pendingItemsSelectedOptions = signal<Map<number, SelectedProductOption[]>>(new Map());
+  pendingItemsSelectedOptions = signal<Map<number, SelectedOption[]>>(new Map());
   
   // Modal state for product options
   showOptionsModal = signal(false);
   modalProduct = signal<Product | null>(null);
   modalQuantity = signal(1);
+  modalInitialSelections = signal<SelectedOption[][]>([]);
+  modalInitialContext = signal<any>(null);
+  currentEditingItemId: number | null = null;
 
-  // ItemCard configuration for confirmed items
-  // Note: Only quantity is editable. Comments are not editable for confirmed items.
-  itemDisplayFields: CardField[] = [
-    { key: 'quantity', type: 'number', prefix: 'x' },
-    { key: 'totalPrice', type: 'currency', prefix: '$' }
-  ];
-
-  itemBadgeConfig: BadgeListConfig = {
-    itemsKey: 'selectedOptions',
-    nameKey: 'productOption.productName',
-    quantityKey: 'quantity',
-    showQuantity: true
-  };
-
-  // ItemCard configuration for pending products
-  // Quantity is editable here.
-  pendingProductDisplayFields: CardField[] = [
-    { key: 'quantity', type: 'number', editable: true },
-    { key: 'price', type: 'currency', prefix: '$' }
-  ];
-
-  pendingProductBadgeConfig: BadgeListConfig = {
-    itemsKey: 'selectedOptions',
-    nameKey: 'productOption.productName',
-    quantityKey: 'quantity',
-    showQuantity: true
-  };
+  // Collapsed items tracking
+  expandedConfirmedItems = signal<Set<number>>(new Set());
+  expandedPendingItems = signal<Set<number>>(new Set());
+  expandedPendingOptions = signal<Set<string>>(new Set()); // Track expanded pending options by "uniqueId-optionIndex"
 
   constructor() {
     // Effect to detect changes in the order input
@@ -125,12 +105,19 @@ export class OrderItemsForm implements OnInit {
 
   // Pending products prepared for ItemCard (including selectedOptions and comments)
   pendingItemsForCard = computed(() => {
-    return this.pendingItems().map(product => ({
-      ...product,
-      quantity: (product as any).quantity || 1,
-      comment: (product as any).comment || '',
-      selectedOptions: this.pendingItemsSelectedOptions().get(product.id) || []
-    }));
+    return this.pendingItems().map(product => {
+      const uniqueId = this.getUniqueId(product);
+      const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+      const totalPrice = this.calculatePendingItemPrice(product.price, selectedOptions);
+      
+      return {
+        ...product,
+        quantity: (product as any).quantity || 1,
+        comment: (product as any).comment || '',
+        selectedOptions: selectedOptions,
+        totalPrice: totalPrice
+      };
+    });
   });
 
   ngOnInit(): void {
@@ -179,12 +166,13 @@ export class OrderItemsForm implements OnInit {
   /**
    * Remove a pending item
    */
-  onRemovePendingItem(productId: number): void {
-    this.pendingItems.update(items => items.filter(p => p.id !== productId));
-    // Clean up selected options for this product
+  onRemovePendingItem(uniqueId: number): void {
+    this.pendingItems.update(items => 
+      items.filter(p => this.getUniqueId(p) !== uniqueId)
+    );
     this.pendingItemsSelectedOptions.update(map => {
       const newMap = new Map(map);
-      newMap.delete(productId);
+      newMap.delete(uniqueId);
       return newMap;
     });
   }
@@ -196,6 +184,32 @@ export class OrderItemsForm implements OnInit {
     this.pendingItems.update(items =>
       items.map(p => p.id === product.id ? product : p)
     );
+  }
+
+  /**
+   * Edit sub-options of a pending item option
+   */
+  onEditPendingItemOption(itemUniqueId: number, optionIndex: number): void {
+    const product = this.pendingItems().find(p => this.getUniqueId(p) === itemUniqueId);
+    if (!product) return;
+
+    const currentSelections = this.pendingItemsSelectedOptions().get(itemUniqueId) || [];
+    if (optionIndex >= currentSelections.length) return;
+
+    const option = currentSelections[optionIndex];
+    // Note: The modal will handle loading the product if needed
+
+    // Open modal in edit mode, navigating to the option's context
+    this.currentEditingItemId = itemUniqueId;
+    this.modalProduct.set(product);
+    this.modalQuantity.set(1);
+    this.modalInitialSelections.set([currentSelections]);
+    this.modalInitialContext.set({
+      type: 'option',
+      itemIndex: 0,
+      optionPath: [optionIndex]
+    });
+    this.showOptionsModal.set(true);
   }
 
   /**
@@ -216,21 +230,38 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
+   * Convert SelectedOption[] to SelectedOptionRequest[] with recursive support
+   */
+  private convertToSelectedOptionRequests(selectedOptions: SelectedOption[]): any[] {
+    return selectedOptions.map(opt => ({
+      productOptionId: opt.productOption.id,
+      quantity: opt.quantity,
+      selectedOptions: opt.selectedOptions 
+        ? this.convertToSelectedOptionRequests(opt.selectedOptions)
+        : undefined
+    }));
+  }
+
+  /**
    * Confirm all pending items (send them to the backend)
+   * Each item is sent individually with quantity=1
    */
   confirmPendingItems(): void {
-    const itemsToAdd: ItemRequest[] = this.pendingItems().map(p => {
-      const selectedOptions = this.pendingItemsSelectedOptions().get(p.id) || [];
+    const itemsToAdd: ItemRequest[] = [];
+    
+    this.pendingItems().forEach(p => {
+      const uniqueId = (p as any).uniqueId || p.id;
+      const comment = (p as any).comment || '';
+      const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
       
-      return {
+      const itemRequest = {
         productId: p.id,
-        quantity: (p as any).quantity || 1,
-        selectedOptions: selectedOptions.map(opt => ({
-          productOptionId: opt.productOption.id,
-          quantity: opt.quantity
-        })),
-        comment: (p as any).comment || ''
+        quantity: 1,
+        selectedOptions: this.convertToSelectedOptionRequests(selectedOptions),
+        comment: comment
       };
+      
+      itemsToAdd.push(itemRequest);
     });
 
     if (itemsToAdd.length === 0) return;
@@ -269,11 +300,7 @@ export class OrderItemsForm implements OnInit {
     const itemRequest: ItemRequest = {
       productId: originalItem.product.id,
       quantity: data.quantity,
-      selectedOptions: (originalItem.selectedOptions || []).map(opt => ({
-        productOptionId: opt.productOption.id,
-        quantity: opt.quantity
-      })),
-      // Keep existing comment
+      selectedOptions: this.convertToSelectedOptionRequests(originalItem.selectedOptions || []),
       comment: originalItem.comment || ''
     };
 
@@ -365,7 +392,7 @@ export class OrderItemsForm implements OnInit {
 
     this.orderService.updateDiscount(this.order().id!, value).subscribe({
       next: () => {
-        console.log('Discount updated successfully');
+        // Discount updated
       },
       error: (error) => {
         console.error('Error updating discount:', error);
@@ -419,25 +446,38 @@ export class OrderItemsForm implements OnInit {
 
   /**
    * Handle product options modal confirmation
+   * The modal returns selections grouped by item: SelectedOption[][]
+   * Create individual pending items with quantity=1 each
    */
-  onOptionsConfirmed(selectedOptions: SelectedProductOption[]): void {
+  onOptionsConfirmed(itemSelections: SelectedOption[][]): void {
     const product = this.modalProduct();
-    const quantity = this.modalQuantity();
     
     if (!product) return;
+
+    if (this.currentEditingItemId !== null) {
+      this.pendingItemsSelectedOptions.update(map => {
+        const newMap = new Map(map);
+        newMap.set(this.currentEditingItemId!, itemSelections[0]);
+        return newMap;
+      });
+      this.currentEditingItemId = null;
+    } else {
+      itemSelections.forEach((options, index) => {
+        const productCopy = { ...product };
+        const uniqueId = Date.now() + index;
+        (productCopy as any).uniqueId = uniqueId;
+        (productCopy as any).quantity = 1;
+        
+        this.pendingItems.update(items => [...items, productCopy]);
+        
+        this.pendingItemsSelectedOptions.update(map => {
+          const newMap = new Map(map);
+          newMap.set(uniqueId, options);
+          return newMap;
+        });
+      });
+    }
     
-    // Add product to pending items
-    const productWithQuantity = { ...product, quantity };
-    this.pendingItems.update(items => [...items, productWithQuantity]);
-    
-    // Store selected options
-    this.pendingItemsSelectedOptions.update(map => {
-      const newMap = new Map(map);
-      newMap.set(product.id, selectedOptions);
-      return newMap;
-    });
-    
-    // Close modal
     this.closeOptionsModal();
   }
 
@@ -455,6 +495,9 @@ export class OrderItemsForm implements OnInit {
     this.showOptionsModal.set(false);
     this.modalProduct.set(null);
     this.modalQuantity.set(1);
+    this.modalInitialSelections.set([]);
+    this.modalInitialContext.set(null);
+    this.currentEditingItemId = null;
   }
 
   /**
@@ -463,5 +506,227 @@ export class OrderItemsForm implements OnInit {
   hasSelectableGroups(product: Product): boolean {
     return (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE') 
       && (product.productGroups?.length || 0) > 0;
+  }
+
+  /**
+   * Toggle expansion state for confirmed item
+   */
+  toggleConfirmedItemExpansion(itemId: number): void {
+    this.expandedConfirmedItems.update(expanded => {
+      const newSet = new Set(expanded);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Toggle expansion state for pending item
+   */
+  togglePendingItemExpansion(productId: number): void {
+    this.expandedPendingItems.update(expanded => {
+      const newSet = new Set(expanded);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Check if confirmed item is expanded
+   */
+  isConfirmedItemExpanded(itemId: number): boolean {
+    return this.expandedConfirmedItems().has(itemId);
+  }
+
+  /**
+   * Check if pending item is expanded
+   */
+  isPendingItemExpanded(productId: number): boolean {
+    return this.expandedPendingItems().has(productId);
+  }
+
+  /**
+   * Get unique ID from product (handles products with uniqueId property)
+   */
+  getUniqueId(product: Product): number {
+    return (product as any).uniqueId || product.id;
+  }
+
+  /**
+   * Edit pending item - reopen modal with current selections
+   */
+  onEditPendingItem(uniqueId: number): void {
+    const product = this.pendingItems().find(p => this.getUniqueId(p) === uniqueId);
+    if (!product) return;
+
+    const currentSelections = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+
+    this.currentEditingItemId = uniqueId;
+
+    this.modalProduct.set(product);
+    this.modalQuantity.set(1);
+    this.modalInitialSelections.set([currentSelections]);
+    this.showOptionsModal.set(true);
+  }
+
+  /**
+   * Calculate total price for pending item including all option price increases
+   */
+  private calculatePendingItemPrice(basePrice: number, selections: SelectedOption[]): number {
+    let total = basePrice;
+    
+    const addPriceIncrease = (options: SelectedOption[]) => {
+      for (const opt of options) {
+        total += opt.productOption.priceIncrease * opt.quantity;
+        if (opt.selectedOptions && opt.selectedOptions.length > 0) {
+          addPriceIncrease(opt.selectedOptions);
+        }
+      }
+    };
+    
+    addPriceIncrease(selections);
+    return total;
+  }
+
+  /**
+   * Get badge summary for pending item (only immediate children)
+   */
+  getPendingItemBadges(uniqueId: number): string[] {
+    const options = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+    return options.map(opt => 
+      opt.quantity > 1 
+        ? `${opt.quantity}x ${opt.productOption.productName}`
+        : opt.productOption.productName
+    );
+  }
+
+  /**
+   * Check if pending option is expanded
+   */
+  isPendingOptionExpanded(uniqueId: number, optionIndex: number): boolean {
+    const key = `${uniqueId}-${optionIndex}`;
+    return this.expandedPendingOptions().has(key);
+  }
+
+  /**
+   * Toggle expansion for pending option
+   */
+  togglePendingOptionExpansion(uniqueId: number, optionIndex: number): void {
+    const key = `${uniqueId}-${optionIndex}`;
+    this.expandedPendingOptions.update(expanded => {
+      const newSet = new Set(expanded);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Get badge summary for pending option's sub-options
+   */
+  getPendingOptionBadges(subOptions: SelectedOption[]): string[] {
+    return subOptions.map(opt => 
+      opt.quantity > 1 
+        ? `${opt.quantity}x ${opt.productOption.productName}`
+        : opt.productOption.productName
+    );
+  }
+
+  /**
+   * Check if pending item has valid selections (meets all group requirements)
+   */
+  isPendingItemValid(uniqueId: number): boolean {
+    const product = this.pendingItems().find(p => this.getUniqueId(p) === uniqueId);
+    if (!product) return true;
+    
+    const productGroups = product.productGroups || [];
+    const selections = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+    
+    return this.areSelectionsValidForGroups(productGroups, selections);
+  }
+
+  /**
+   * Validate selections against product groups recursively
+   */
+  private areSelectionsValidForGroups(groups: ProductGroup[], selections: SelectedOption[]): boolean {
+    for (const group of groups) {
+      const selectedForGroup = selections.filter(s => 
+        group.options?.some(opt => opt.id === s.productOption.id)
+      );
+      const count = selectedForGroup.reduce((sum, s) => sum + s.quantity, 0);
+      
+      if (count < group.minQuantity) {
+        return false;
+      }
+      
+      // Note: We can't validate nested selections for pending items since we don't have the full product loaded
+      // The validation will happen on the backend when confirming
+    }
+    
+    return true;
+  }
+
+  /**
+   * Check if there are any invalid pending items
+   */
+  hasInvalidPendingItems(): boolean {
+    return this.pendingItems().some(p => {
+      const uniqueId = this.getUniqueId(p);
+      return !this.isPendingItemValid(uniqueId);
+    });
+  }
+
+  /**
+   * Remove option from pending item
+   */
+  removePendingItemOption(uniqueId: number, optionIndex: number): void {
+    this.pendingItemsSelectedOptions.update(map => {
+      const newMap = new Map(map);
+      const currentSelections = newMap.get(uniqueId) || [];
+      const updatedSelections = currentSelections.filter((_, idx) => idx !== optionIndex);
+      newMap.set(uniqueId, updatedSelections);
+      return newMap;
+    });
+  }
+
+  /**
+   * Remove sub-option from pending item option
+   */
+  removePendingItemSubOption(uniqueId: number, optionIndex: number, subOptionIndex: number): void {
+    this.pendingItemsSelectedOptions.update(map => {
+      const newMap = new Map(map);
+      const currentSelections = newMap.get(uniqueId) || [];
+      const updatedSelections = currentSelections.map((opt, idx) => {
+        if (idx === optionIndex) {
+          const updatedSubOptions = (opt.selectedOptions || []).filter((_, subIdx) => subIdx !== subOptionIndex);
+          return { ...opt, selectedOptions: updatedSubOptions };
+        }
+        return opt;
+      });
+      newMap.set(uniqueId, updatedSelections);
+      return newMap;
+    });
+  }
+
+  /**
+   * Get badge summary for confirmed item
+   */
+  getConfirmedItemBadges(item: Item): string[] {
+    const options = item.selectedOptions || [];
+    return options.map(opt => 
+      opt.quantity > 1 
+        ? `${opt.quantity}x ${opt.productOption.productName}`
+        : opt.productOption.productName
+    );
   }
 }
