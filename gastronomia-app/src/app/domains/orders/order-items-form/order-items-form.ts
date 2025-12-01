@@ -8,18 +8,29 @@ import { OrderSplitForm } from '../order-split-form/order-split-form';
 import { ProductOptionsModal } from '../product-options-modal/product-options-modal';
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
+import { TicketService } from '../../../services/ticket.service';
 import { Order, Product, Item, SelectedOption, ItemRequest, ProductGroup, ProductOption } from '../../../shared/models';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-order-items-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableList, SelectableItemCard, ConfirmationModalComponent, OrderSplitForm, ProductOptionsModal],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SearchableList,
+    SelectableItemCard,
+    ConfirmationModalComponent,
+    OrderSplitForm,
+    ProductOptionsModal
+  ],
   templateUrl: './order-items-form.html',
   styleUrl: './order-items-form.css',
 })
 export class OrderItemsForm implements OnInit {
   private orderService = inject(OrderService);
   private productService = inject(ProductService);
+  private ticketService = inject(TicketService);
   
   editRequested = output<void>();
 
@@ -197,9 +208,7 @@ export class OrderItemsForm implements OnInit {
     if (optionIndex >= currentSelections.length) return;
 
     const option = currentSelections[optionIndex];
-    // Note: The modal will handle loading the product if needed
 
-    // Open modal in edit mode, navigating to the option's context
     this.currentEditingItemId = itemUniqueId;
     this.modalProduct.set(product);
     this.modalQuantity.set(1);
@@ -243,44 +252,58 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
-   * Confirm all pending items (send them to the backend)
-   * Each item is sent individually with quantity=1
-   */
-  confirmPendingItems(): void {
-    const itemsToAdd: ItemRequest[] = [];
-    
-    this.pendingItems().forEach(p => {
-      const uniqueId = (p as any).uniqueId || p.id;
-      const comment = (p as any).comment || '';
-      const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
-      
-      const itemRequest = {
-        productId: p.id,
-        quantity: 1,
-        selectedOptions: this.convertToSelectedOptionRequests(selectedOptions),
-        comment: comment
-      };
-      
-      itemsToAdd.push(itemRequest);
-    });
+ * Confirm all pending items (send them to the backend)
+ * Each item is sent individually with quantity=1
+ * Luego imprime el ticket de cocina.
+ */
+confirmPendingItems(): void {
+  const itemsToAdd: ItemRequest[] = [];
+  const orderId = this.order().id!;
 
-    if (itemsToAdd.length === 0) return;
+  this.pendingItems().forEach(p => {
+    const uniqueId = (p as any).uniqueId || p.id;
+    const comment = (p as any).comment || '';
+    const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
 
-    this.orderService.addItems(this.order().id!, itemsToAdd).subscribe({
-      next: (updatedOrder) => {
-        this.pendingItems.set([]);
-        this.pendingItemsSelectedOptions.set(new Map());
-        this.currentOrder.set(updatedOrder);
-        
-        if (updatedOrder.items && updatedOrder.items.length > 0) {
-          this.confirmedItems.set(updatedOrder.items);
-        }
-      },
-      error: (error) => {
-        console.error('Error adding items:', error);
+    const itemRequest: ItemRequest = {
+      productId: p.id,
+      quantity: 1,
+      selectedOptions: this.convertToSelectedOptionRequests(selectedOptions),
+      comment: comment
+    };
+
+    itemsToAdd.push(itemRequest);
+  });
+
+  if (itemsToAdd.length === 0) return;
+
+  this.orderService.addItems(orderId, itemsToAdd).subscribe({
+    next: (updatedOrder) => {
+      // Actualizar estado local
+      this.pendingItems.set([]);
+      this.pendingItemsSelectedOptions.set(new Map());
+      this.currentOrder.set(updatedOrder);
+
+      if (updatedOrder.items && updatedOrder.items.length > 0) {
+        this.confirmedItems.set(updatedOrder.items);
       }
-    });
-  }
+
+      // Imprimir ticket de cocina con los items confirmados
+      this.ticketService
+        .getKitchenTicket(orderId)
+        .pipe(take(1))
+        .subscribe({
+          next: (blob) => this.ticketService.openPdf(blob),
+          error: (error) => {
+            console.error('Error downloading kitchen ticket', error);
+          }
+        });
+    },
+    error: (error) => {
+      console.error('Error adding items:', error);
+    }
+  });
+}
 
   /**
    * Cancel and clear pending items
@@ -400,28 +423,73 @@ export class OrderItemsForm implements OnInit {
     });
   }
 
-  onFinalizeOrder(): void {
-    this.orderService.finalizeOrder(this.order().id!).subscribe({
-      next: () => {
-        this.orderUpdated.emit();
-        this.onClose();
-      },
-      error: (error) => {
-        console.error('Error finalizing order:', error);
-      }
-    });
-  }
-
+  /**
+   * Mark order as billed and print the bill ticket PDF
+   */
   onPrintBill(): void {
-    this.orderService.billOrder(this.order().id!).subscribe({
+    const orderId = this.order().id;
+
+    if (!orderId) {
+      console.error('Order id is missing. Cannot print bill.');
+      return;
+    }
+
+    // First mark the order as billed
+    this.orderService.billOrder(orderId).subscribe({
       next: () => {
         this.orderUpdated.emit();
+
+        // Then request the PDF ticket and open it
+        this.ticketService
+          .getBillTicket(orderId)
+          .pipe(take(1))
+          .subscribe({
+            next: (blob) => {
+              this.ticketService.openPdf(blob);
+            },
+            error: (error) => {
+              console.error('Error downloading bill ticket', error);
+            }
+          });
       },
       error: (error) => {
         console.error('Error marking order as billed:', error);
       }
     });
   }
+
+  /**
+ * Finalizar orden y generar ticket de pago
+ */
+onFinalizeOrder(): void {
+  const orderId = this.order().id!;
+  
+  this.orderService.finalizeOrder(orderId).subscribe({
+    next: () => {
+      this.orderUpdated.emit();
+
+      // Solicitar ticket de pago y abrirlo
+      this.ticketService
+        .getPaymentTicket(orderId)
+        .pipe(take(1))
+        .subscribe({
+          next: (blob) => {
+            this.ticketService.openPdf(blob);
+            // Cerrar panel luego de disparar la apertura del PDF
+            this.onClose();
+          },
+          error: (error) => {
+            console.error('Error downloading payment ticket', error);
+            // Aunque falle el ticket, cerramos el panel porque la orden ya se finalizó
+            this.onClose();
+          }
+        });
+    },
+    error: (error) => {
+      console.error('Error finalizing order:', error);
+    }
+  });
+}
 
   onSplitOrder(): void {
     this.showSplitForm.set(true);
@@ -669,8 +737,7 @@ export class OrderItemsForm implements OnInit {
         return false;
       }
       
-      // Note: We can't validate nested selections for pending items since we don't have the full product loaded
-      // The validation will happen on the backend when confirming
+      // Backend will perform deeper validation when confirming
     }
     
     return true;
@@ -729,4 +796,5 @@ export class OrderItemsForm implements OnInit {
         : opt.productOption.productName
     );
   }
+
 }
