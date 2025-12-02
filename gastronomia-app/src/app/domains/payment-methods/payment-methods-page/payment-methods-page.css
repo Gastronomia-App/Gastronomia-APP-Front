@@ -1,0 +1,28 @@
+/* payment-methods-page.css */
+
+/* Import global page layout styles */
+@import '../../../../styles/components/page.css';
+
+/* Host - Full height container */
+:host {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Payment method-specific overrides (if needed) */
+.table-section app-payment-method-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+app-payment-method-form,
+app-payment-method-details {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
