@@ -40,6 +40,7 @@ export class OrderItemsForm implements OnInit {
   // Outputs
   orderClosed = output<void>();
   orderUpdated = output<void>();
+  finalizeRequested = output<Order>();
 
   // Signals
   availableProducts = signal<Product[]>([]);
@@ -474,12 +475,25 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
-   * Finalize order and generate payment ticket
+   * Request to finalize order - emits event for parent to handle with modal
    */
   onFinalizeOrder(): void {
+    const currentOrder = this.order();
+    if (!currentOrder?.id) return;
+    
+    // Emit event to parent component to open finalize modal
+    this.finalizeRequested.emit(currentOrder);
+  }
+
+  /**
+   * Legacy method - kept for reference but not used
+   * @deprecated Use onFinalizeOrder which emits event
+   */
+  private legacyFinalizeOrder(): void {
     const orderId = this.order().id!;
 
-    this.orderService.finalizeOrder(orderId).subscribe({
+    // Call with empty payment methods array
+    this.orderService.finalizeOrder(orderId, []).subscribe({
       next: () => {
         this.orderUpdated.emit();
 

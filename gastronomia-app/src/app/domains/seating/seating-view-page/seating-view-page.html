@@ -31,7 +31,8 @@
   [order]="selectedSeating()!.activeOrder!"
   (orderClosed)="onOrderClosed()"
   (orderUpdated)="onOrderUpdated()"
-  (editRequested)="onEditOrder()">
+  (editRequested)="onEditOrder()"
+  (finalizeRequested)="openFinalizeModal($event)">
 </app-order-items-form>
       }@else if (currentMode() === 'editOrder' && selectedSeating()?.activeOrder) {
   <app-order-form
@@ -49,4 +50,12 @@
       }
     </div>
   </aside>
+
+  <!-- Order Finalize Modal -->
+  <app-order-finalize-modal
+    [isVisible]="showFinalizeModal()"
+    [order]="orderToFinalize()"
+    (onClose)="closeFinalizeModal()"
+    (onOrderFinalized)="onOrderFinalized()">
+  </app-order-finalize-modal>
 </div>

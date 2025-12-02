@@ -12,6 +12,7 @@ export type { Business } from './business.model';
 export type { Employee } from './employee.model';
 export type { SelectedOption, Item, ItemRequest, SelectedOptionRequest } from './item.model';
 export type { Order } from './order.model';
+export type { OrderPaymentMethod } from './order-payment-method.model';
 export type { Seating, SeatingCreateRequest, SeatingUpdateRequest } from './seating';
 export type {
   TableColumn,

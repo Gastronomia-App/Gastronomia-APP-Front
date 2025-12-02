@@ -10,13 +10,14 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderTable } from '../order-table/order-table';
 import { OrderDetails } from '../order-details';
+import { OrderFinalizeModal } from '../order-finalize-modal';
 import { OrderFormService } from '../services';
 import { Order } from '../../../shared/models';
 
 @Component({
   selector: 'app-orders-page',
   standalone: true,
-  imports: [OrderTable, OrderDetails],
+  imports: [OrderTable, OrderDetails, OrderFinalizeModal],
   templateUrl: './orders-page.html',
   styleUrl: './orders-page.css',
 })
@@ -38,6 +39,8 @@ export class OrdersPage implements OnInit, AfterViewChecked {
   // ==================== UI State - SIGNALS ====================
   
   showOrderDetails = signal(false);
+  showFinalizeModal = signal(false);
+  orderToFinalize = signal<Order | null>(null);
   currentOrderId: number | null = null;
 
   // ==================== Lifecycle - OnInit ====================
@@ -83,5 +86,30 @@ export class OrdersPage implements OnInit, AfterViewChecked {
     this.showOrderDetails.set(false);
     this.currentOrderId = null;
     this.orderFormService.setActiveOrderId(null);
+  }
+
+  // ==================== Finalize Order Management ====================
+
+  openFinalizeModal(order: Order): void {
+    this.orderToFinalize.set(order);
+    this.showFinalizeModal.set(true);
+  }
+
+  closeFinalizeModal(): void {
+    this.showFinalizeModal.set(false);
+    this.orderToFinalize.set(null);
+  }
+
+  onOrderFinalized(order: Order): void {
+    // Refresh the table to show updated status
+    this.orderTableComponent?.refreshList();
+    
+    // Update details if they're showing the same order
+    if (this.currentOrderId === order.id && this.showOrderDetails()) {
+      this.pendingDetailsOrder = order;
+    }
+
+    // Notify via service
+    this.orderFormService.notifyOrderUpdated(order);
   }
 }
