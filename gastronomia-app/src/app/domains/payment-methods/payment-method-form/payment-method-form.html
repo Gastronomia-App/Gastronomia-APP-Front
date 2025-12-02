@@ -1,0 +1,28 @@
+<!-- payment-method-form.html -->
+<aside class="aside-panel">
+
+   @if (showAlert()) {
+    <app-alert
+      [title]="'Error'"
+      [message]="alertMessage()"
+      (onClose)="showAlert.set(false)"
+      (onAccept)="showAlert.set(false)">
+    </app-alert>
+  }
+  <!-- Generic Form Component with integrated header and footer -->
+  <app-form
+    [config]="formConfig"
+    [isEditMode]="isEditMode"
+    [editingId]="editingPaymentMethodId"
+    [showHeader]="true"
+    [showFooter]="true"
+    [headerTitle]="'Nuevo método de pago'"
+    [headerEditTitle]="'Editar método de pago'"
+    [cancelButtonLabel]="'Cancelar'"
+    [submitButtonLabel]="'Crear'"
+    [submitEditButtonLabel]="'Guardar'"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+    (formClose)="onClose()">
+  </app-form>
+</aside>
