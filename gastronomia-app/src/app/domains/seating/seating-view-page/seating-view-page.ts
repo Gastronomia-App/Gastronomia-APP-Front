@@ -18,11 +18,13 @@ import { ZoomStateService } from '../services/zoom-state-service';
 
 import { OrderForm } from '../../orders/order-form/order-form';
 import { OrderItemsForm } from '../../orders/order-items-form/order-items-form';
+import { OrderFinalizeModal } from '../../orders/order-finalize-modal/order-finalize-modal';
+import { Order } from '../../../shared/models';
 
 @Component({
   selector: 'app-seating-view-page',
   standalone: true,
-  imports: [CommonModule, SeatingGridView, OrderForm, OrderItemsForm],
+  imports: [CommonModule, SeatingGridView, OrderForm, OrderItemsForm, OrderFinalizeModal],
   templateUrl: './seating-view-page.html',
   styleUrl: './seating-view-page.css'
 })
@@ -41,6 +43,8 @@ export class SeatingViewPage implements AfterViewInit {
   readonly error = signal<string | null>(null);
   readonly showOrderForm = signal(false);
   readonly selectedSeating = signal<Seating | null>(null);
+  readonly showFinalizeModal = signal(false);
+  readonly orderToFinalize = signal<Order | null>(null);
 
   readonly zoomLevel = this.zoomState.zoomLevel;
 
@@ -85,7 +89,22 @@ export class SeatingViewPage implements AfterViewInit {
   }
   
   onEditOrder(): void {
-  this.currentMode.set('editOrder');
+    this.currentMode.set('editOrder');
+  }
+
+  openFinalizeModal(order: Order): void {
+    this.orderToFinalize.set(order);
+    this.showFinalizeModal.set(true);
+  }
+
+  closeFinalizeModal(): void {
+    this.showFinalizeModal.set(false);
+    this.orderToFinalize.set(null);
+  }
+
+  onOrderFinalized(): void {
+    this.closeFinalizeModal();
+    this.onOrderUpdated();
   }
 
   increaseZoom(): void {

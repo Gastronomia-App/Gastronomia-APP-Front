@@ -101,8 +101,8 @@ export class OrderService {
     return this.http.patch<Order>(`${this.apiUrl}/${orderId}?discount=${discount}`, {});
   }
 
-  finalizeOrder(orderId: number): Observable<Order> {
-    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/finalize`, {});
+  finalizeOrder(orderId: number, paymentMethods: { paymentMethodId: number; amount: number }[]): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/finalize`, paymentMethods);
   }
 
   billOrder(orderId: number): Observable<Order> {

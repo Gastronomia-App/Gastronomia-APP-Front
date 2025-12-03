@@ -28,10 +28,19 @@
           <app-order-items-form
             [order]="selectedSeating()!.activeOrder!"
             (orderClosed)="onOrderItemsClosed()"
-            (orderUpdated)="onOrderUpdated()">
+            (orderUpdated)="onOrderUpdated()"
+            (finalizeRequested)="openFinalizeModal($event)">
           </app-order-items-form>
         }
       </div>
     </aside>
   }
+
+  <!-- Order Finalize Modal -->
+  <app-order-finalize-modal
+    [isVisible]="showFinalizeModal()"
+    [order]="orderToFinalize()"
+    (onClose)="closeFinalizeModal()"
+    (onOrderFinalized)="onOrderFinalized()">
+  </app-order-finalize-modal>
 </div>

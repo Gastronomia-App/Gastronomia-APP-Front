@@ -1,0 +1,189 @@
+@if (isVisible()) {
+  <div class="modal-overlay" (click)="close()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      
+      @if (showAlert()) {
+        <app-alert
+          [title]="'Error'"
+          [message]="alertMessage()"
+          (onClose)="showAlert.set(false)"
+          (onAccept)="showAlert.set(false)">
+        </app-alert>
+      }
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2>Finalizar Orden</h2>
+        <button class="close-btn" (click)="close()" [disabled]="isLoading()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="body-columns">
+          
+          <!-- Left Column: Order Summary -->
+          <div class="left-column">
+            <div class="section">
+              <h3 class="section-title">Resumen de la Orden</h3>
+              
+              <div class="items-list">
+                @for (item of orderItems(); track item.id) {
+                  <div class="item-row">
+                    <div class="item-info">
+                      <span class="item-quantity">{{ item.quantity }}</span>
+                      <span class="item-name">{{ item.product.name }}</span>
+                    </div>
+                    <span class="item-price">{{ formatItemPrice(item) }}</span>
+                  </div>
+                  @if (item.comment) {
+                    <div class="item-comment">{{ item.comment }}</div>
+                  }
+                }
+                
+                @if (orderItems().length === 0) {
+                  <div class="empty-items">No hay items en esta orden</div>
+                }
+              </div>
+
+              <div class="totals-section">
+                <div class="total-row">
+                  <span class="total-label">Subtotal:</span>
+                  <span class="total-value">{{ formatCurrency(order()?.subtotal || 0) }}</span>
+                </div>
+                @if ((order()?.discount || 0) > 0) {
+                  <div class="total-row">
+                    <span class="total-label">Descuento ({{ order()?.discount }}%):</span>
+                    <span class="total-value discount">-{{ formatCurrency((order()?.subtotal || 0) * (order()?.discount || 0) / 100) }}</span>
+                  </div>
+                }
+                <div class="total-row final-total">
+                  <span class="total-label">Total:</span>
+                  <span class="total-value">{{ formatCurrency(orderTotal()) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Payment Methods -->
+          <div class="right-column">
+            <div class="section">
+              <div class="section-header">
+                <h3 class="section-title">Métodos de Pago</h3>
+                <button 
+                  class="add-payment-btn" 
+                  (click)="addPaymentEntry()"
+                  [disabled]="isLoading()"
+                  title="Agregar método de pago">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="payment-entries">
+                @for (entry of paymentEntries(); track $index) {
+                  <div class="payment-entry">
+                    <div class="payment-fields">
+                      <div class="field-group">
+                        <label class="field-label">Método</label>
+                        <select 
+                          class="payment-select"
+                          [value]="entry.paymentMethod?.id || ''"
+                          (change)="onPaymentMethodChange($index, $any($event.target).value)"
+                          [disabled]="isLoading()">
+                          <option value="">Seleccione...</option>
+                          @for (pm of paymentMethods(); track pm.id) {
+                            <option [value]="pm.id">{{ pm.name }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="field-group amount-field">
+                        <label class="field-label">Importe</label>
+                        <div class="amount-input-wrapper">
+                          <span class="currency-symbol">$</span>
+                          <input 
+                            type="number"
+                            class="payment-input"
+                            [value]="entry.amount"
+                            (input)="onAmountChange($index, $any($event.target).value)"
+                            placeholder="0.00"
+                            step="0.01"
+                            min="0"
+                            [disabled]="isLoading()" />
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (paymentEntries().length > 1) {
+                      <button 
+                        class="remove-payment-btn"
+                        (click)="removePaymentEntry($index)"
+                        [disabled]="isLoading()"
+                        title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Payment Summary -->
+              <div class="payment-summary">
+                <div class="summary-row">
+                  <span class="summary-label">Total a pagar:</span>
+                  <span class="summary-value">{{ formatCurrency(orderTotal()) }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Total abonado:</span>
+                  <span class="summary-value" [class.over]="difference() > 0" [class.under]="difference() < 0">
+                    {{ formatCurrency(totalPaid()) }}
+                  </span>
+                </div>
+                
+                @if (hasEfectivo() && change() > 0) {
+                  <div class="summary-row change-row">
+                    <span class="summary-label">Vuelto:</span>
+                    <span class="summary-value change">{{ formatCurrency(change()) }}</span>
+                  </div>
+                }
+
+                @if (validationMessage()) {
+                  <div class="validation-message" [class.error]="difference() !== 0 || totalPaid() === 0">
+                    {{ validationMessage() }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button 
+          class="btn btn-secondary" 
+          (click)="close()"
+          [disabled]="isLoading()">
+          Cancelar
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="finalizeOrder()"
+          [disabled]="!isValid() || isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+          }
+          Finalizar Orden
+        </button>
+      </div>
+    </div>
+  </div>
+}

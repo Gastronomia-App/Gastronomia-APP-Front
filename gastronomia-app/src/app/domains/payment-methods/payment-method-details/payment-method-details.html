@@ -2,8 +2,8 @@
 <aside class="aside-panel">
   <!-- Generic Detail Component with integrated header and footer -->
   <app-detail
-    [config]="detailConfig()"
-    [data]="order()"
+    [config]="detailConfig"
+    [data]="paymentMethod()"
     [showHeader]="true"
     [showFooter]="true"
     (detailClosed)="onClose()"

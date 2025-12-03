@@ -89,13 +89,16 @@ export class ProductOptionsSelector {
   }
 
   // Handle field update and emit updated ProductOption
-  onFieldUpdated(event: { id: number; field: string; value: any }): void {
-    const originalOption = this.selectedItems().find(o => o.productId === event.id || o.id === event.id);
+  onFieldUpdated(event: { id: number; field: string; value: any }): void {    
+    const originalOption = this.selectedItems().find(o => o.id === event.id);   
     if (originalOption) {
-      this.itemUpdated.emit({
+      const updatedOption = {
         ...originalOption,
         [event.field]: event.value
-      });
+      };
+      this.itemUpdated.emit(updatedOption);
+    } else {
+      console.warn('Original option not found for id:', event.id);
     }
   }
 }

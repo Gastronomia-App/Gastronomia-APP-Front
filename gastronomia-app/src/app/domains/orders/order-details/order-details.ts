@@ -138,8 +138,8 @@ export class OrderDetails {
     });
   }
 
-  // Detail configuration
-  detailConfig: DetailConfig<Order> = {
+  // Detail configuration with computed actions
+  detailConfig = computed<DetailConfig<Order>>(() => ({
     title: 'Detalles de la orden',
     showHeader: true,
     showFooter: true,
@@ -236,17 +236,47 @@ export class OrderDetails {
         ]
       }
     ],
-    actions: [
+    actions: this.detailActions()
+  }));
+
+  // Output for finalize action
+  onFinalizeOrder = output<Order>();
+
+  // Computed actions based on order status
+  detailActions = computed(() => {
+    const currentOrder = this.order();
+    
+    const baseActions = [
       {
         label: 'Cerrar',
-        type: 'secondary',
+        type: 'secondary' as const,
         handler: () => this.onClose()
       }
-    ]
-  };
+    ];
+
+    if (currentOrder?.status === 'ACTIVE') {
+      return [
+        ...baseActions,
+        {
+          label: 'Finalizar Orden',
+          type: 'primary' as const,
+          handler: () => this.onFinalize()
+        }
+      ];
+    }
+
+    return baseActions;
+  });
 
   loadOrder(order: Order): void {
     this.order.set(order);
+  }
+
+  onFinalize(): void {
+    const currentOrder = this.order();
+    if (currentOrder && currentOrder.status === 'ACTIVE') {
+      this.onFinalizeOrder.emit(currentOrder);
+    }
   }
 
   onClose(): void {

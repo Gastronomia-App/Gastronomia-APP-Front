@@ -105,6 +105,40 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'orders-management',
+    loadComponent: () =>
+      import('./domains/orders/orders-root-page/orders-root-page')
+        .then(m => m.OrdersRootPage),
+    canActivate: [
+      roleGuard([
+        UserRole.CASHIER,
+        UserRole.WAITER,
+        UserRole.ADMIN,
+        UserRole.OWNER,
+      ]),
+    ],
+    children: [
+      {
+        path: '',
+        redirectTo: 'orders',
+        pathMatch: 'full',
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./domains/orders/orders-page/orders-page')
+            .then(m => m.OrdersPage),
+      },
+      {
+        path: 'payment-methods',
+        loadComponent: () =>
+          import('./domains/payment-methods/payment-methods-page/payment-methods-page')
+            .then(m => m.PaymentMethodsPage),
+        canActivate: [roleGuard([UserRole.ADMIN, UserRole.OWNER])],
+      },
+    ],
+  },
+  {
     path: 'seatings',
     loadComponent: () =>
       import('./domains/seating/seating-root-page/seating-root-page')
@@ -139,17 +173,13 @@ export const routes: Routes = [
   },
   {
     path: 'orders',
-    loadComponent: () =>
-      import('./domains/orders/orders-page/orders-page')
-        .then(m => m.OrdersPage),
-    canActivate: [
-      roleGuard([
-        UserRole.CASHIER,
-        UserRole.WAITER,
-        UserRole.ADMIN,
-        UserRole.OWNER,
-      ]),
-    ],
+    redirectTo: '/orders-management/orders',
+    pathMatch: 'full',
+  },
+  {
+    path: 'payment-methods',
+    redirectTo: '/orders-management/payment-methods',
+    pathMatch: 'full',
   },
   {
     path: 'people',

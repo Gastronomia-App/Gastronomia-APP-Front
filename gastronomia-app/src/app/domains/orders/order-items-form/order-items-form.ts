@@ -9,7 +9,7 @@ import { ProductOptionsModal } from '../product-options-modal/product-options-mo
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
 import { TicketService } from '../../../services/ticket.service';
-import { Order, Product, Item, SelectedOption, ItemRequest, ProductGroup, ProductOption } from '../../../shared/models';
+import { Order, Product, Item, SelectedOption, ItemRequest, ProductGroup } from '../../../shared/models';
 import { take } from 'rxjs';
 
 @Component({
@@ -31,7 +31,7 @@ export class OrderItemsForm implements OnInit {
   private orderService = inject(OrderService);
   private productService = inject(ProductService);
   private ticketService = inject(TicketService);
-  
+
   editRequested = output<void>();
 
   // Input to receive the full order object (more efficient than just ID)
@@ -40,6 +40,7 @@ export class OrderItemsForm implements OnInit {
   // Outputs
   orderClosed = output<void>();
   orderUpdated = output<void>();
+  finalizeRequested = output<Order>();
 
   // Signals
   availableProducts = signal<Product[]>([]);
@@ -52,10 +53,10 @@ export class OrderItemsForm implements OnInit {
   showSplitForm = signal(false);
   isSelectingDestination = signal(false);
   currentOrder = signal<Order | null>(null);
-  
+
   // Map to store selected options for pending products
   pendingItemsSelectedOptions = signal<Map<number, SelectedOption[]>>(new Map());
-  
+
   // Modal state for product options
   showOptionsModal = signal(false);
   modalProduct = signal<Product | null>(null);
@@ -75,7 +76,7 @@ export class OrderItemsForm implements OnInit {
       const orderData = this.order();
       this.currentOrder.set(orderData);
       this.discount.set(orderData.discount || 0);
-      
+
       if (orderData.items && orderData.items.length > 0) {
         this.confirmedItems.set([...orderData.items]);
       } else {
@@ -120,7 +121,7 @@ export class OrderItemsForm implements OnInit {
       const uniqueId = this.getUniqueId(product);
       const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
       const totalPrice = this.calculatePendingItemPrice(product.price, selectedOptions);
-      
+
       return {
         ...product,
         quantity: (product as any).quantity || 1,
@@ -161,7 +162,7 @@ export class OrderItemsForm implements OnInit {
    */
   onProductAdded(product: Product | any): void {
     const quantity = product.quantity || 1;
-    
+
     // If product has selectable groups, open the modal
     if (this.hasSelectableGroups(product)) {
       this.modalProduct.set(product);
@@ -207,7 +208,7 @@ export class OrderItemsForm implements OnInit {
    * Remove a pending item
    */
   onRemovePendingItem(uniqueId: number): void {
-    this.pendingItems.update(items => 
+    this.pendingItems.update(items =>
       items.filter(p => this.getUniqueId(p) !== uniqueId)
     );
     this.pendingItemsSelectedOptions.update(map => {
@@ -288,88 +289,101 @@ export class OrderItemsForm implements OnInit {
     return selectedOptions.map(opt => ({
       productOptionId: opt.productOption.id,
       quantity: opt.quantity,
-      selectedOptions: opt.selectedOptions 
+      selectedOptions: opt.selectedOptions
         ? this.convertToSelectedOptionRequests(opt.selectedOptions)
         : undefined
     }));
   }
 
   /**
- * Confirm all pending items (send them to the backend)
- * Groups items with the same product and identical options (or no options) into single requests with quantity > 1
- * Luego imprime el ticket de cocina.
- */
-confirmPendingItems(): void {
-  const itemsToAdd: ItemRequest[] = [];
-  const orderId = this.order().id!;
+   * Confirm all pending items (send them to the backend)
+   * Groups items with the same product and identical options (or no options) into single requests with quantity > 1
+   * After adding them, prints a partial kitchen ticket only for the new items.
+   */
+  confirmPendingItems(): void {
+    const itemsToAdd: ItemRequest[] = [];
+    const orderId = this.order().id!;
 
-  // Group pending items by product and options
-  const groupedItems = new Map<string, { productId: number; comment: string; selectedOptions: SelectedOption[]; count: number }>();
+    // Keep the current confirmed item IDs to detect which ones are new
+    const previousItemIds = this.confirmedItems()
+      .map(i => i.id)
+      .filter((id): id is number => id !== null && id !== undefined);
 
-  this.pendingItems().forEach(p => {
-    const uniqueId = (p as any).uniqueId || p.id;
-    const comment = (p as any).comment || '';
-    const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
-    const quantity = (p as any).quantity || 1;
+    // Group pending items by product and options
+    const groupedItems = new Map<string, { productId: number; comment: string; selectedOptions: SelectedOption[]; count: number }>();
 
-    // Create a key based on product id, options, and comment
-    const key = this.createGroupingKey(p.id, selectedOptions, comment);
-    console.log('Pending item:', { productId: p.id, productName: p.name, quantity, optionsCount: selectedOptions.length, comment, key });
+    this.pendingItems().forEach(p => {
+      const uniqueId = (p as any).uniqueId || p.id;
+      const comment = (p as any).comment || '';
+      const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+      const quantity = (p as any).quantity || 1;
 
-    if (groupedItems.has(key)) {
-      groupedItems.get(key)!.count += quantity;
-    } else {
-      groupedItems.set(key, {
-        productId: p.id,
-        comment: comment,
-        selectedOptions: selectedOptions,
-        count: quantity
-      });
-    }
-  });
+      // Create a key based on product id, options, and comment
+      const key = this.createGroupingKey(p.id, selectedOptions, comment);
 
-  // Convert grouped items to ItemRequest[]
-  console.log('Grouped items map:', Array.from(groupedItems.entries()));
-  groupedItems.forEach(group => {
-    const itemRequest: ItemRequest = {
-      productId: group.productId,
-      quantity: group.count,
-      selectedOptions: this.convertToSelectedOptionRequests(group.selectedOptions),
-      comment: group.comment
-    };
-    console.log('Creating ItemRequest:', itemRequest);
-    itemsToAdd.push(itemRequest);
-  });
-
-  if (itemsToAdd.length === 0) return;
-
-  this.orderService.addItems(orderId, itemsToAdd).subscribe({
-    next: (updatedOrder) => {
-      // Actualizar estado local
-      this.pendingItems.set([]);
-      this.pendingItemsSelectedOptions.set(new Map());
-      this.currentOrder.set(updatedOrder);
-
-      if (updatedOrder.items && updatedOrder.items.length > 0) {
-        this.confirmedItems.set(updatedOrder.items);
-      }
-
-      // Imprimir ticket de cocina con los items confirmados
-      this.ticketService
-        .getKitchenTicket(orderId)
-        .pipe(take(1))
-        .subscribe({
-          next: (blob) => this.ticketService.openPdf(blob),
-          error: (error) => {
-            console.error('Error downloading kitchen ticket', error);
-          }
+      if (groupedItems.has(key)) {
+        groupedItems.get(key)!.count += quantity;
+      } else {
+        groupedItems.set(key, {
+          productId: p.id,
+          comment: comment,
+          selectedOptions: selectedOptions,
+          count: quantity
         });
-    },
-    error: (error) => {
-      console.error('Error adding items:', error);
+      }
+    });
+
+    // Convert grouped items to ItemRequest[]
+    groupedItems.forEach(group => {
+      const itemRequest: ItemRequest = {
+        productId: group.productId,
+        quantity: group.count,
+        selectedOptions: this.convertToSelectedOptionRequests(group.selectedOptions),
+        comment: group.comment
+      };
+      itemsToAdd.push(itemRequest);
+    });
+
+    if (itemsToAdd.length === 0) {
+      return;
     }
-  });
-}
+
+    this.orderService.addItems(orderId, itemsToAdd).subscribe({
+      next: (updatedOrder) => {
+        const updatedItems = updatedOrder.items ?? [];
+
+        // Compute the IDs of the newly added items
+        const newItemIds = updatedItems
+          .map(i => i.id)
+          .filter((id): id is number => id !== null && id !== undefined && !previousItemIds.includes(id));
+
+        // Update local state
+        this.pendingItems.set([]);
+        this.pendingItemsSelectedOptions.set(new Map());
+        this.currentOrder.set(updatedOrder);
+
+        if (updatedItems.length > 0) {
+          this.confirmedItems.set(updatedItems);
+        }
+
+        // Print partial kitchen ticket only if there are new items
+        if (newItemIds.length > 0) {
+          this.ticketService
+            .getKitchenTicketForItems(orderId, newItemIds)
+            .pipe(take(1))
+            .subscribe({
+              next: (blob) => this.ticketService.openPdf(blob),
+              error: (error) => {
+                console.error('Error downloading kitchen ticket', error);
+              }
+            });
+        }
+      },
+      error: (error) => {
+        console.error('Error adding items:', error);
+      }
+    });
+  }
 
   /**
    * Cancel and clear pending items
@@ -396,7 +410,7 @@ confirmPendingItems(): void {
     this.orderService.updateItem(this.order().id!, data.id, itemRequest).subscribe({
       next: () => {
         this.confirmedItems.update(items =>
-          items.map(i => i.id === data.id 
+          items.map(i => i.id === data.id
             ? { ...i, quantity: data.quantity, totalPrice: i.unitPrice * data.quantity }
             : i
           )
@@ -525,37 +539,49 @@ confirmPendingItems(): void {
   }
 
   /**
- * Finalizar orden y generar ticket de pago
- */
-onFinalizeOrder(): void {
-  const orderId = this.order().id!;
-  
-  this.orderService.finalizeOrder(orderId).subscribe({
-    next: () => {
-      this.orderUpdated.emit();
+   * Request to finalize order - emits event for parent to handle with modal
+   */
+  onFinalizeOrder(): void {
+    const currentOrder = this.order();
+    if (!currentOrder?.id) return;
+    
+    // Emit event to parent component to open finalize modal
+    this.finalizeRequested.emit(currentOrder);
+  }
 
-      // Solicitar ticket de pago y abrirlo
-      this.ticketService
-        .getPaymentTicket(orderId)
-        .pipe(take(1))
-        .subscribe({
-          next: (blob) => {
-            this.ticketService.openPdf(blob);
-            // Cerrar panel luego de disparar la apertura del PDF
-            this.onClose();
-          },
-          error: (error) => {
-            console.error('Error downloading payment ticket', error);
-            // Aunque falle el ticket, cerramos el panel porque la orden ya se finalizó
-            this.onClose();
-          }
-        });
-    },
-    error: (error) => {
-      console.error('Error finalizing order:', error);
-    }
-  });
-}
+  /**
+   * Legacy method - kept for reference but not used
+   * @deprecated Use onFinalizeOrder which emits event
+   */
+  private legacyFinalizeOrder(): void {
+    const orderId = this.order().id!;
+
+    // Call with empty payment methods array
+    this.orderService.finalizeOrder(orderId, []).subscribe({
+      next: () => {
+        this.orderUpdated.emit();
+
+        this.ticketService
+          .getPaymentTicket(orderId)
+          .pipe(take(1))
+          .subscribe({
+            next: (blob) => {
+              this.ticketService.openPdf(blob);
+              // Close panel after triggering PDF open
+              this.onClose();
+            },
+            error: (error) => {
+              console.error('Error downloading payment ticket', error);
+              // Even if ticket fails, close panel because order is already finalized
+              this.onClose();
+            }
+          });
+      },
+      error: (error) => {
+        console.error('Error finalizing order:', error);
+      }
+    });
+  }
 
   onSplitOrder(): void {
     this.showSplitForm.set(true);
@@ -585,7 +611,7 @@ onFinalizeOrder(): void {
    */
   onOptionsConfirmed(itemSelections: SelectedOption[][]): void {
     const product = this.modalProduct();
-    
+
     if (!product) return;
 
     if (this.currentEditingItemId !== null) {
@@ -612,7 +638,7 @@ onFinalizeOrder(): void {
         const uniqueId = Date.now();
         (productCopy as any).uniqueId = uniqueId;
         (productCopy as any).quantity = 1;
-        
+
         this.pendingItems.update(items => [...items, productCopy]);
         this.pendingItemsSelectedOptions.update(map => {
           const newMap = new Map(map);
@@ -674,7 +700,7 @@ onFinalizeOrder(): void {
         });
       });
     }
-    
+
     this.closeOptionsModal();
   }
 
@@ -701,7 +727,7 @@ onFinalizeOrder(): void {
    * Check if a product has selectable product groups
    */
   hasSelectableGroups(product: Product): boolean {
-    return (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE') 
+    return (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE')
       && (product.productGroups?.length || 0) > 0;
   }
 
@@ -786,7 +812,7 @@ onFinalizeOrder(): void {
    */
   private calculatePendingItemPrice(basePrice: number, selections: SelectedOption[]): number {
     let total = basePrice;
-    
+
     const addPriceIncrease = (options: SelectedOption[]) => {
       for (const opt of options) {
         total += opt.productOption.priceIncrease * opt.quantity;
@@ -795,7 +821,7 @@ onFinalizeOrder(): void {
         }
       }
     };
-    
+
     addPriceIncrease(selections);
     return total;
   }
@@ -805,8 +831,8 @@ onFinalizeOrder(): void {
    */
   getPendingItemBadges(uniqueId: number): string[] {
     const options = this.pendingItemsSelectedOptions().get(uniqueId) || [];
-    return options.map(opt => 
-      opt.quantity > 1 
+    return options.map(opt =>
+      opt.quantity > 1
         ? `${opt.quantity}x ${opt.productOption.productName}`
         : opt.productOption.productName
     );
@@ -840,8 +866,8 @@ onFinalizeOrder(): void {
    * Get badge summary for pending option's sub-options
    */
   getPendingOptionBadges(subOptions: SelectedOption[]): string[] {
-    return subOptions.map(opt => 
-      opt.quantity > 1 
+    return subOptions.map(opt =>
+      opt.quantity > 1
         ? `${opt.quantity}x ${opt.productOption.productName}`
         : opt.productOption.productName
     );
@@ -853,10 +879,10 @@ onFinalizeOrder(): void {
   isPendingItemValid(uniqueId: number): boolean {
     const product = this.pendingItems().find(p => this.getUniqueId(p) === uniqueId);
     if (!product) return true;
-    
+
     const productGroups = product.productGroups || [];
     const selections = this.pendingItemsSelectedOptions().get(uniqueId) || [];
-    
+
     return this.areSelectionsValidForGroups(productGroups, selections);
   }
 
@@ -865,18 +891,18 @@ onFinalizeOrder(): void {
    */
   private areSelectionsValidForGroups(groups: ProductGroup[], selections: SelectedOption[]): boolean {
     for (const group of groups) {
-      const selectedForGroup = selections.filter(s => 
+      const selectedForGroup = selections.filter(s =>
         group.options?.some(opt => opt.id === s.productOption.id)
       );
       const count = selectedForGroup.reduce((sum, s) => sum + s.quantity, 0);
-      
+
       if (count < group.minQuantity) {
         return false;
       }
-      
+
       // Backend will perform deeper validation when confirming
     }
-    
+
     return true;
   }
 
@@ -927,8 +953,8 @@ onFinalizeOrder(): void {
    */
   getConfirmedItemBadges(item: Item): string[] {
     const options = item.selectedOptions || [];
-    return options.map(opt => 
-      opt.quantity > 1 
+    return options.map(opt =>
+      opt.quantity > 1
         ? `${opt.quantity}x ${opt.productOption.productName}`
         : opt.productOption.productName
     );
@@ -985,5 +1011,4 @@ onFinalizeOrder(): void {
     
     return grouped;
   }
-
 }

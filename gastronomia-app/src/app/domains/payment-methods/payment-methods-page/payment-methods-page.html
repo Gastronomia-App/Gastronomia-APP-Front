@@ -1,0 +1,20 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- Payment Method Table with integrated search, filters, and action button -->
+    <div class="table-section">
+      <app-payment-method-table
+        (onNewPaymentMethodClick)="openCreatePaymentMethodForm()">
+      </app-payment-method-table>
+    </div>
+  </div>
+
+  @if (showPaymentMethodForm()) {
+    <aside class="aside-panel">
+      <app-payment-method-form (onFormClosed)="closePaymentMethodForm()"></app-payment-method-form>
+    </aside>
+  }
+
+  @if (showPaymentMethodDetails()) {
+    <app-payment-method-details (onDetailsClosed)="closePaymentMethodDetails()"></app-payment-method-details>
+  }
+</div>

@@ -1,0 +1,8 @@
+/* payment-method-table.css */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  --table-columns: 2; /* 2 data columns + 1 actions column */
+}

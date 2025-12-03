@@ -7,6 +7,17 @@
   </div>
 
   @if (showOrderDetails()) {
-    <app-order-details (onDetailsClosed)="closeOrderDetails()"></app-order-details>
+    <app-order-details 
+      (onDetailsClosed)="closeOrderDetails()"
+      (onFinalizeOrder)="openFinalizeModal($event)">
+    </app-order-details>
   }
 </div>
+
+<!-- Finalize Order Modal -->
+<app-order-finalize-modal
+  [isVisible]="showFinalizeModal()"
+  [order]="orderToFinalize()"
+  (onClose)="closeFinalizeModal()"
+  (onOrderFinalized)="onOrderFinalized($event)">
+</app-order-finalize-modal>

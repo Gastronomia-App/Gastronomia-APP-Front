@@ -4,10 +4,12 @@ import { SeatingsService } from '../services/seating-service';
 import { SeatingStatusView } from '../seating-status-view/seating-status-view';
 import { OrderItemsForm } from '../../orders/order-items-form/order-items-form';
 import { OrderForm } from '../../orders/order-form/order-form';
+import { OrderFinalizeModal } from '../../orders/order-finalize-modal/order-finalize-modal';
+import { Order } from '../../../shared/models';
 
 @Component({
   selector: 'app-seating-status-page',
-  imports: [SeatingStatusView, OrderItemsForm, OrderForm],
+  imports: [SeatingStatusView, OrderItemsForm, OrderForm, OrderFinalizeModal],
   templateUrl: './seating-status-page.html',
   styleUrl: './seating-status-page.css',
 })
@@ -19,6 +21,8 @@ export class SeatingStatusPage {
   readonly error = signal<string | null>(null);
   readonly selectedSeating = signal<Seating | null>(null);
   readonly currentMode = signal<'none' | 'createOrder' | 'orderItems'>('none');
+  readonly showFinalizeModal = signal(false);
+  readonly orderToFinalize = signal<Order | null>(null);
 
   constructor() {
     this.loadSeatings();
@@ -92,5 +96,20 @@ export class SeatingStatusPage {
   /** 🔄 Actualizar datos cuando cambia la orden */
   onOrderUpdated(): void {
     this.loadSeatings();
+  }
+
+  openFinalizeModal(order: Order): void {
+    this.orderToFinalize.set(order);
+    this.showFinalizeModal.set(true);
+  }
+
+  closeFinalizeModal(): void {
+    this.showFinalizeModal.set(false);
+    this.orderToFinalize.set(null);
+  }
+
+  onOrderFinalized(): void {
+    this.closeFinalizeModal();
+    this.onOrderUpdated();
   }
 }
