@@ -63,7 +63,7 @@
       <!-- Items pendientes a confirmar -->
       @if (pendingItems().length > 0) {
       <div class="pending-items">
-        @for (product of pendingItemsForCard(); track product.id; let idx = $index) {
+        @for (product of pendingItemsForCard(); track getUniqueId(product)) {
           @let uniqueId = getUniqueId(product);
           @let options = product.selectedOptions;
           @let hasOptions = options.length > 0;
@@ -73,15 +73,18 @@
           
           <app-selectable-item-card
             [name]="product.name"
-            [quantity]="1"
+            [quantity]="product.quantity"
             [price]="product.totalPrice"
             [hasChildren]="hasOptions"
             [isExpanded]="isExpanded"
             [badges]="itemBadges"
             [isInvalid]="!isValid"
+            [comment]="product.comment"
+            [showCommentButton]="true"
             (clicked)="onEditPendingItem(uniqueId)"
             (remove)="onRemovePendingItem(uniqueId)"
-            (toggleExpand)="togglePendingItemExpansion(uniqueId)">
+            (toggleExpand)="togglePendingItemExpansion(uniqueId)"
+            (commentChanged)="updatePendingItemComment(uniqueId, $event)">
           </app-selectable-item-card>
 
           @if (isExpanded && hasOptions) {

@@ -65,7 +65,7 @@ export class ProductGroupForm implements OnInit {
     selectedItems: this.selectedOptions(),
     isLoading: this.isLoadingProducts(),
 
-    customFields: [
+    displayFields: [
       {
         key: 'maxQuantity',
         label: 'Máx. cantidad',
@@ -81,7 +81,7 @@ export class ProductGroupForm implements OnInit {
       }
     ],
 
-    editableFields: true
+    editable: true
   }));
 
   formConfig: FormConfig<ProductGroup> = {
@@ -237,27 +237,21 @@ export class ProductGroupForm implements OnInit {
 
   onOptionUpdated(item: any): void {
     this.selectedOptions.update(items => {
-      const index = items.findIndex(
-        o => o.productId === item.product?.id || o.productId === item.id
-      );
+      const index = items.findIndex(o => o.id === item.id);
 
       if (index !== -1) {
         const updated = [...items];
-        const productId = item.product?.id ?? item.id;
-        const product = this.availableProducts().find(p => p.id === productId);
-
-        if (product) {
-          updated[index] = {
-            id: updated[index].id,
-            productId: product.id,
-            productName: product.name,
-            maxQuantity: Number(item.maxQuantity) || 1,
-            priceIncrease: Number(item.priceIncrease) || 0
-          };
-        }
+        
+        updated[index] = {
+          ...updated[index],
+          maxQuantity: Number(item.maxQuantity) || updated[index].maxQuantity,
+          priceIncrease: Number(item.priceIncrease) || updated[index].priceIncrease
+        };
+      
         return updated;
       }
 
+      console.warn('Option not found in array');
       return items;
     });
   }

@@ -98,8 +98,7 @@ export class ProductGroupDetail implements OnInit {
             listItemInputs: {
               editable: false,
               deletable: false,
-              displayFields: this.displayFields,
-              nameResolver: (item: any) => this.getProductName(item.productId)
+              displayFields: this.displayFields
             },
             emptyMessage: 'Sin opciones'
           }

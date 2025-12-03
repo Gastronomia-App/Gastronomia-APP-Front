@@ -2,6 +2,7 @@
   class="item-card" 
   [class.selected]="isSelected()"
   [class.invalid]="isInvalid()"
+  [class.editing-comment]="isEditingComment()"
   [style.padding-left]="'calc(var(--spacing-sm) + ' + (indentLevel() * 16) + 'px)'"
   (click)="onCardClick()">
   
@@ -20,29 +21,61 @@
     </button>
   }
   
-  <div class="item-info">
-    <span class="item-name">{{ name() }}</span>
-    @if (!isExpanded() && badges().length > 0) {
-      <div class="badges-summary">
-        @for (badge of badges(); track badge) {
-          <span class="badge">{{ badge }}</span>
-        }
-      </div>
+  @if (isEditingComment()) {
+    <!-- Comment editing mode - input takes full width -->
+    <input 
+      type="text" 
+      class="comment-edit-input"
+      [(ngModel)]="editingCommentValue"
+      (keydown)="onCommentKeyDown($event)"
+      (blur)="saveComment()"
+      (click)="$event.stopPropagation()"
+      placeholder="Agregar comentario..." />
+  } @else {
+    <!-- Normal display mode -->
+    <div class="item-info">
+      <span class="item-name">{{ name() }}</span>
+      @if (!isExpanded() && badges().length > 0) {
+        <div class="badges-summary">
+          @for (badge of badges(); track badge) {
+            <span class="badge">{{ badge }}</span>
+          }
+        </div>
+      }
+    </div>
+    
+    @if (quantity()) {
+      <span class="item-quantity">x{{ quantity() }}</span>
     }
-  </div>
-  
-  @if (quantity()) {
-    <span class="item-quantity">x{{ quantity() }}</span>
+    
+    @if (price() && price()! > 0) {
+      <span class="item-price">+${{ price()!.toFixed(2) }}</span>
+    }
+    
+    @if (showCommentButton()) {
+      <button 
+        type="button"
+        class="comment-btn"
+        (click)="onCommentClick($event)"
+        [title]="comment() ? 'Editar comentario' : 'Agregar comentario'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+    }
+    
+    <button 
+      type="button"
+      class="delete-btn"
+      (click)="onDelete($event)">
+      ✕
+    </button>
   }
   
-  @if (price() && price()! > 0) {
-    <span class="item-price">+${{ price()!.toFixed(2) }}</span>
+  <!-- Comment display below all content -->
+  @if (!isEditingComment() && comment() && comment()!.trim() !== '') {
+    <div class="item-comment-wrapper">
+      <span class="item-comment">{{ comment() }}</span>
+    </div>
   }
-  
-  <button 
-    type="button"
-    class="delete-btn"
-    (click)="onDelete($event)">
-    ✕
-  </button>
 </div>

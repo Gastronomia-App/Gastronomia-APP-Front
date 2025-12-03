@@ -158,6 +158,7 @@ export class OrderItemsForm implements OnInit {
 
   /**
    * Add product to pending items list (not yet confirmed/saved)
+   * Groups items with the same product and no options
    */
   onProductAdded(product: Product | any): void {
     const quantity = product.quantity || 1;
@@ -169,10 +170,38 @@ export class OrderItemsForm implements OnInit {
       this.showOptionsModal.set(true);
       return;
     }
+    
+    // Check if there's already a pending item for this product without options
+    const existingItem = this.pendingItems().find(p => {
+      const pId = this.getUniqueId(p);
+      const options = this.pendingItemsSelectedOptions().get(pId) || [];
+      const comment = (p as any).comment || '';
+      return p.id === product.id && options.length === 0 && comment === '';
+    });
 
-    // Otherwise, add directly to pending items
-    const productWithQuantity = { ...product, quantity };
-    this.pendingItems.update(items => [...items, productWithQuantity]);
+    if (existingItem) {
+      // Increment quantity of existing item
+      this.pendingItems.update(items =>
+        items.map(p => {
+          if (this.getUniqueId(p) === this.getUniqueId(existingItem)) {
+            return { ...p, quantity: ((p as any).quantity || 1) + quantity } as any;
+          }
+          return p;
+        })
+      );
+    } else {
+      // Add new item with unique ID
+      const uniqueId = Date.now() + Math.random();
+      const productWithQuantity = { ...product, quantity, uniqueId };
+      this.pendingItems.update(items => [...items, productWithQuantity]);
+      
+      // Initialize empty options for this item
+      this.pendingItemsSelectedOptions.update(map => {
+        const newMap = new Map(map);
+        newMap.set(uniqueId, []);
+        return newMap;
+      });
+    }
   }
 
   /**
@@ -195,6 +224,20 @@ export class OrderItemsForm implements OnInit {
   onUpdatePendingItem(product: Product): void {
     this.pendingItems.update(items =>
       items.map(p => p.id === product.id ? product : p)
+    );
+  }
+
+  /**
+   * Update comment for a pending item
+   */
+  updatePendingItemComment(uniqueId: number, comment: string): void {
+    this.pendingItems.update(items =>
+      items.map(p => {
+        if (this.getUniqueId(p) === uniqueId) {
+          return { ...p, comment } as any;
+        }
+        return p;
+      })
     );
   }
 
@@ -253,7 +296,8 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
-   * Confirm all pending items (send them to the backend).
+   * Confirm all pending items (send them to the backend)
+   * Groups items with the same product and identical options (or no options) into single requests with quantity > 1
    * After adding them, prints a partial kitchen ticket only for the new items.
    */
   confirmPendingItems(): void {
@@ -265,18 +309,38 @@ export class OrderItemsForm implements OnInit {
       .map(i => i.id)
       .filter((id): id is number => id !== null && id !== undefined);
 
+    // Group pending items by product and options
+    const groupedItems = new Map<string, { productId: number; comment: string; selectedOptions: SelectedOption[]; count: number }>();
+
     this.pendingItems().forEach(p => {
       const uniqueId = (p as any).uniqueId || p.id;
       const comment = (p as any).comment || '';
       const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+      const quantity = (p as any).quantity || 1;
 
+      // Create a key based on product id, options, and comment
+      const key = this.createGroupingKey(p.id, selectedOptions, comment);
+
+      if (groupedItems.has(key)) {
+        groupedItems.get(key)!.count += quantity;
+      } else {
+        groupedItems.set(key, {
+          productId: p.id,
+          comment: comment,
+          selectedOptions: selectedOptions,
+          count: quantity
+        });
+      }
+    });
+
+    // Convert grouped items to ItemRequest[]
+    groupedItems.forEach(group => {
       const itemRequest: ItemRequest = {
-        productId: p.id,
-        quantity: 1,
-        selectedOptions: this.convertToSelectedOptionRequests(selectedOptions),
-        comment: comment
+        productId: group.productId,
+        quantity: group.count,
+        selectedOptions: this.convertToSelectedOptionRequests(group.selectedOptions),
+        comment: group.comment
       };
-
       itemsToAdd.push(itemRequest);
     });
 
@@ -541,9 +605,9 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
-   * Handle product options modal confirmation.
-   * The modal returns selections grouped by item: SelectedOption[][].
-   * Create individual pending items with quantity=1 each.
+   * Handle product options modal confirmation
+   * The modal returns selections grouped by item: SelectedOption[][]
+   * Groups items with identical options
    */
   onOptionsConfirmed(itemSelections: SelectedOption[][]): void {
     const product = this.modalProduct();
@@ -551,24 +615,87 @@ export class OrderItemsForm implements OnInit {
     if (!product) return;
 
     if (this.currentEditingItemId !== null) {
-      this.pendingItemsSelectedOptions.update(map => {
-        const newMap = new Map(map);
-        newMap.set(this.currentEditingItemId!, itemSelections[0]);
-        return newMap;
-      });
-      this.currentEditingItemId = null;
-    } else {
-      itemSelections.forEach((options, index) => {
+      // Editing existing item - check if it was grouped
+      const currentProduct = this.pendingItems().find(p => this.getUniqueId(p) === this.currentEditingItemId);
+      const currentQuantity = (currentProduct as any)?.quantity || 1;
+      
+      if (currentQuantity > 1 && itemSelections.length === 1) {
+        // Item was grouped, update only one instance with the new options
+        // and reduce the quantity of the original by 1
+        
+        // Reduce quantity of existing grouped item
+        this.pendingItems.update(items => 
+          items.map(p => {
+            if (this.getUniqueId(p) === this.currentEditingItemId) {
+              return { ...p, quantity: currentQuantity - 1 } as any;
+            }
+            return p;
+          })
+        );
+        
+        // Create a new separate item with the options
         const productCopy = { ...product };
-        const uniqueId = Date.now() + index;
+        const uniqueId = Date.now();
         (productCopy as any).uniqueId = uniqueId;
         (productCopy as any).quantity = 1;
 
         this.pendingItems.update(items => [...items, productCopy]);
-
         this.pendingItemsSelectedOptions.update(map => {
           const newMap = new Map(map);
-          newMap.set(uniqueId, options);
+          newMap.set(uniqueId, itemSelections[0]);
+          return newMap;
+        });
+      } else if (currentQuantity > 1 && itemSelections.length > 1) {
+        // Multiple instances from grouped item - group by identical options
+        // Remove the original grouped item
+        this.pendingItems.update(items => items.filter(p => this.getUniqueId(p) !== this.currentEditingItemId));
+        this.pendingItemsSelectedOptions.update(map => {
+          const newMap = new Map(map);
+          newMap.delete(this.currentEditingItemId!);
+          return newMap;
+        });
+        
+        // Group the selections by identical options
+        const grouped = this.groupSelectionsByOptions(itemSelections);
+        
+        grouped.forEach((value, optionsKey) => {
+          const productCopy = { ...product };
+          const uniqueId = Date.now() + Math.random();
+          (productCopy as any).uniqueId = uniqueId;
+          (productCopy as any).quantity = value.count;
+          
+          this.pendingItems.update(items => [...items, productCopy]);
+          
+          this.pendingItemsSelectedOptions.update(map => {
+            const newMap = new Map(map);
+            newMap.set(uniqueId, value.options);
+            return newMap;
+          });
+        });
+      } else {
+        // Single item edit
+        this.pendingItemsSelectedOptions.update(map => {
+          const newMap = new Map(map);
+          newMap.set(this.currentEditingItemId!, itemSelections[0]);
+          return newMap;
+        });
+      }
+      this.currentEditingItemId = null;
+    } else {
+      // Adding new items - group by identical options
+      const grouped = this.groupSelectionsByOptions(itemSelections);
+      
+      grouped.forEach((value, optionsKey) => {
+        const productCopy = { ...product };
+        const uniqueId = Date.now() + Math.random();
+        (productCopy as any).uniqueId = uniqueId;
+        (productCopy as any).quantity = value.count;
+        
+        this.pendingItems.update(items => [...items, productCopy]);
+        
+        this.pendingItemsSelectedOptions.update(map => {
+          const newMap = new Map(map);
+          newMap.set(uniqueId, value.options);
           return newMap;
         });
       });
@@ -597,11 +724,16 @@ export class OrderItemsForm implements OnInit {
   }
 
   /**
-   * Check if a product has selectable product groups
+   * Check if a product has selectable product groups with at least one required group
    */
   hasSelectableGroups(product: Product): boolean {
-    return (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE')
+    const hasGroups = (product.compositionType === 'SELECTABLE' || product.compositionType === 'FIXED_SELECTABLE')
       && (product.productGroups?.length || 0) > 0;
+    
+    if (!hasGroups) return false;
+    
+    // Only open modal if at least one group is required (minQuantity > 0)
+    return product.productGroups?.some(group => group.minQuantity > 0) || false;
   }
 
   /**
@@ -657,18 +789,26 @@ export class OrderItemsForm implements OnInit {
 
   /**
    * Edit pending item - reopen modal with current selections
+   * If item has quantity > 1, create multiple instances in the modal
    */
   onEditPendingItem(uniqueId: number): void {
     const product = this.pendingItems().find(p => this.getUniqueId(p) === uniqueId);
     if (!product) return;
 
     const currentSelections = this.pendingItemsSelectedOptions().get(uniqueId) || [];
+    const quantity = (product as any).quantity || 1;
 
     this.currentEditingItemId = uniqueId;
 
+    // Create multiple instances for the modal if quantity > 1
+    const modalSelections: SelectedOption[][] = [];
+    for (let i = 0; i < quantity; i++) {
+      modalSelections.push(JSON.parse(JSON.stringify(currentSelections))); // Deep copy
+    }
+
     this.modalProduct.set(product);
-    this.modalQuantity.set(1);
-    this.modalInitialSelections.set([currentSelections]);
+    this.modalQuantity.set(quantity);
+    this.modalInitialSelections.set(modalSelections);
     this.showOptionsModal.set(true);
   }
 
@@ -823,5 +963,57 @@ export class OrderItemsForm implements OnInit {
         ? `${opt.quantity}x ${opt.productOption.productName}`
         : opt.productOption.productName
     );
+  }
+
+  /**
+   * Create a unique key for grouping items by product, options, and comment
+   */
+  private createGroupingKey(productId: number, selectedOptions: SelectedOption[], comment: string): string {
+    const optionsKey = this.serializeOptions(selectedOptions);
+    return `${productId}|${optionsKey}|${comment}`;
+  }
+
+  /**
+   * Serialize options to a string for comparison
+   */
+  private serializeOptions(options: SelectedOption[]): string {
+    if (!options || options.length === 0) return '';
+    
+    const serialize = (opts: SelectedOption[]): any[] => {
+      return opts.map(opt => ({
+        id: opt.productOption.id,
+        qty: opt.quantity,
+        sub: opt.selectedOptions ? serialize(opt.selectedOptions) : []
+      }));
+    };
+    
+    return JSON.stringify(serialize(options));
+  }
+
+  /**
+   * Group item selections by identical options
+   * Only groups items WITHOUT options (empty selections)
+   * Items with options are always kept separate with quantity 1
+   */
+  private groupSelectionsByOptions(itemSelections: SelectedOption[][]): Map<string, { count: number; options: SelectedOption[] }> {
+    const grouped = new Map<string, { count: number; options: SelectedOption[] }>();
+    
+    itemSelections.forEach(options => {
+      // Only group if there are NO options selected
+      if (options.length === 0) {
+        const key = 'empty';
+        if (grouped.has(key)) {
+          grouped.get(key)!.count++;
+        } else {
+          grouped.set(key, { count: 1, options: [] });
+        }
+      } else {
+        // Items with options are always individual (quantity 1)
+        const key = `individual_${Date.now()}_${Math.random()}`;
+        grouped.set(key, { count: 1, options: JSON.parse(JSON.stringify(options)) });
+      }
+    });
+    
+    return grouped;
   }
 }

@@ -138,7 +138,7 @@ export class ItemCard<T extends BaseCardItem = any> {
     const parsedValue = field.type === 'number' || field.type === 'currency' 
       ? Number(value) 
       : value;
-    
+  
     this.fieldUpdated.emit({ 
       id: this.item().id!, 
       field: field.key, 
