@@ -85,7 +85,7 @@ export class ProductForm implements OnInit {
       selectedItems: this.selectedComponents(),
       isLoading: this.isLoadingComponents(),
       allowQuantitySelection: true,
-      customFields: [
+      displayFields: [
         {
           key: 'quantity',
           label: 'Cantidad',
@@ -93,7 +93,7 @@ export class ProductForm implements OnInit {
           editable: true
         }
       ],
-      editableFields: true
+      editable: true
     };
   });
 

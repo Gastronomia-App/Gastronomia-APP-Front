@@ -65,7 +65,7 @@ export class ProductGroupForm implements OnInit {
     selectedItems: this.selectedOptions(),
     isLoading: this.isLoadingProducts(),
 
-    customFields: [
+    displayFields: [
       {
         key: 'maxQuantity',
         label: 'Máx. cantidad',
@@ -81,7 +81,7 @@ export class ProductGroupForm implements OnInit {
       }
     ],
 
-    editableFields: true
+    editable: true
   }));
 
   formConfig: FormConfig<ProductGroup> = {
