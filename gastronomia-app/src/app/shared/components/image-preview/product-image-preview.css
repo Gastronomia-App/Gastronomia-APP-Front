@@ -1,0 +1,56 @@
+.image-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dropzone {
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border);
+  background-color: var(--color-bg);
+  padding: 1rem;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* importante: solo lectura, sin mano */
+  cursor: default;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* eliminamos el hover “activo” para la variante readonly */
+.image-preview-only .dropzone:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-border);
+  box-shadow: none;
+  transform: none;
+}
+
+.placeholder {
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.placeholder .title {
+  font-size: var(--font-base);
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.placeholder .subtitle {
+  font-size: var(--font-xs);
+  margin: 0.25rem 0 0;
+  color: var(--color-text-secondary);
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: var(--shadow-light);
+}

@@ -1,0 +1,78 @@
+@if (hasIcon()) {
+  <div class="preview-box">
+    @if (selectedIconComponent()) {
+      <lucide-icon
+        [name]="selectedIconComponent()!"
+        [size]="28"
+      ></lucide-icon>
+    }
+
+    @if (mode() === 'select') {
+      <button
+        class="clear-btn"
+        type="button"
+        (click)="clear()"
+        title="Quitar ícono"
+      >
+        ✕
+      </button>
+    }
+  </div>
+} @else {
+  @if (mode() === 'select') {
+    <button
+      type="button"
+      class="select-btn"
+      (click)="openModal()"
+    >
+      Elegir ícono
+    </button>
+  } @else {
+    <div class="preview-box preview-box--empty">
+      <span class="preview-empty-text">
+        Sin ícono asignado
+      </span>
+    </div>
+  }
+}
+
+@if (isModalOpen()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Seleccionar ícono de Categoría</h3>
+        <button
+          class="close-btn"
+          type="button"
+          (click)="closeModal()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar ícono..."
+        (input)="onSearchInput($any($event.target).value)"
+      />
+
+      <div class="icon-grid">
+        @for (icon of filteredIcons(); track icon) {
+          <button
+            type="button"
+            class="icon-item"
+            (click)="selectIcon(icon)"
+          >
+            <lucide-icon
+              [name]="getIconComponent(icon)"
+              [size]="22"
+            ></lucide-icon>
+
+            <span>{{ getIconLabel(icon) }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

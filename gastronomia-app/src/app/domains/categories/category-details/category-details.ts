@@ -1,14 +1,23 @@
-import { Component, inject, output, OnInit, signal, computed, viewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  output,
+  OnInit,
+  signal,
+  computed
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Detail } from '../../../shared/components/detail/detail';
 import { CategoryService } from '../services/category.service';
 import { CategoryFormService } from '../services/category-form.service';
 import { Category, DetailConfig } from '../../../shared/models';
 import { getContrastColor } from '../../../shared/utils/color.helpers';
+import { CategoryIconSelector } from '../../../shared/components/category-icon-selector/category-icon-selector';
 
 @Component({
   selector: 'app-category-details',
-  imports: [CommonModule, Detail],
+  standalone: true,
+  imports: [CommonModule, Detail, CategoryIconSelector],
   templateUrl: './category-details.html',
   styleUrl: './category-details.css',
   host: {
@@ -18,26 +27,25 @@ import { getContrastColor } from '../../../shared/utils/color.helpers';
 export class CategoryDetails implements OnInit {
   private categoryService = inject(CategoryService);
   private categoryFormService = inject(CategoryFormService);
-  
+
   onDetailsClosed = output<void>();
-  
-  // Reference to the generic Detail component
-  detailComponent = viewChild(Detail);
-  
-  // Signals
+
+  // Current category
   category = signal<Category | null>(null);
-  
-  // Computed
+
+  // Icon derived from current category (no manual set)
+  iconSignal = computed<string | null>(() => {
+    const cat = this.category();
+    return cat?.icon ?? null;
+  });
+
+  // Products count
   productsCount = computed(() => {
     const currentCategory = this.category();
     return currentCategory?.products?.length || 0;
   });
 
-  constructor() {
-    // No effects needed for this simple detail
-  }
-
-  // Detail configuration
+  // Detail config
   detailConfig: DetailConfig<Category> = {
     title: 'Detalles de la categoría',
     showHeader: true,
@@ -76,6 +84,16 @@ export class CategoryDetails implements OnInit {
             }
           },
           {
+            name: 'icon',
+            label: 'Ícono',
+            type: 'custom',
+            customComponent: CategoryIconSelector,
+            customInputs: {
+              mode: 'view',
+              value: this.iconSignal
+            }
+          },
+          {
             name: 'products',
             label: 'Cantidad de productos',
             type: 'text',
@@ -86,12 +104,12 @@ export class CategoryDetails implements OnInit {
     ]
   };
 
-  ngOnInit(): void {
-    // No initial data loading needed
-  }
+  ngOnInit(): void {}
 
   loadCategory(category: Category): void {
+    // Single source of truth: category
     this.category.set(category);
+    // iconSignal is computed, no manual set here
   }
 
   onEdit(): void {
@@ -106,4 +124,3 @@ export class CategoryDetails implements OnInit {
     this.onDetailsClosed.emit();
   }
 }
-

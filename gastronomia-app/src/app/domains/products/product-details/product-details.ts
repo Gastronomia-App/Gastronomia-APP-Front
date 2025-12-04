@@ -6,10 +6,11 @@ import { Detail } from '../../../shared/components/detail/detail';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, DetailConfig } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
+import { ProductImagePreview } from '../../../shared/components/image-preview/product-image-preview';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CommonModule, Detail],
+  imports: [CommonModule, Detail, ProductImagePreview],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
   host: {
@@ -25,7 +26,13 @@ export class ProductDetails implements OnInit {
   
   // Reference to the generic Detail component
   detailComponent = viewChild(Detail);
-  
+
+  imagePreviewInputs = computed(() => {
+  const currentProduct = this.product();
+  return {
+    imageUrl: currentProduct?.imageUrl ?? null
+  };
+});
   // Signals
   product = signal<Product | null>(null);
   categories = signal<Category[]>([]);
@@ -38,16 +45,24 @@ export class ProductDetails implements OnInit {
   });
 
   constructor() {
-    // Effect to re-render detail when product changes
-    effect(() => {
-      const currentProduct = this.product();
-      // Track dependency
-      if (currentProduct) {
-        // Trigger re-render in detail component
-        this.detailComponent()?.renderDynamicComponents();
+  effect(() => {
+    const currentProduct = this.product();
+    const imageInputs = this.imagePreviewInputs();
+
+    // Actualizar inputs del campo custom de imagen
+    const mainSection = this.detailConfig.sections.find(s => s.title === 'Información principal');
+    if (mainSection) {
+      const imageField = mainSection.fields.find(f => f.name === 'image');
+      if (imageField) {
+        imageField.customInputs = imageInputs;
       }
-    });
-  }
+    }
+
+    if (currentProduct) {
+      this.detailComponent()?.renderDynamicComponents();
+    }
+  });
+}
 
   // Detail configuration
   detailConfig: DetailConfig<Product> = {
@@ -73,7 +88,14 @@ export class ProductDetails implements OnInit {
             name: 'price',
             label: 'Precio',
             type: 'currency'
-          },
+          },{
+          name: 'image',
+          label: 'Imagen',
+          type: 'custom',
+          fullWidth: true,
+          customComponent: ProductImagePreview,
+          customInputs: this.imagePreviewInputs()
+        },
           {
             name: 'cost',
             label: 'Costo',

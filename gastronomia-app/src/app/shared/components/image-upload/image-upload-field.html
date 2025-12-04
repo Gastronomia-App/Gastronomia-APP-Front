@@ -1,0 +1,54 @@
+<div
+  class="dropzone"
+  [class.drag-over]="isDragOver()"
+  (click)="onOpenFileDialog()"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+>
+  @if (previewUrl(); as img) {
+    <img [src]="img" alt="Product image preview" class="preview-image" />
+  } @else {
+    <div class="placeholder">
+      <div class="upload-icon">
+        ↑
+      </div>
+      <p class="title">Arrastra una imagen aquí</p>
+      <p class="subtitle">o usa el botón de abajo</p>
+    </div>
+  }
+
+  <input
+    #fileInput
+    type="file"
+    accept="image/*"
+    (change)="onFileInputChange($event)"
+    hidden
+  />
+</div>
+
+<div class="actions">
+  @if (!previewUrl()) {
+    <button
+      type="button"
+      class="btn-upload"
+      (click)="onOpenFileDialog()"
+    >
+      Subir imagen
+    </button>
+  }
+
+  @if (previewUrl()) {
+    <button
+      type="button"
+      class="btn-clear"
+      (click)="clearImage()"
+    >
+      Quitar imagen
+    </button>
+  }
+</div>
+
+@if (errorMessage()) {
+  <p class="error-message">{{ errorMessage() }}</p>
+}

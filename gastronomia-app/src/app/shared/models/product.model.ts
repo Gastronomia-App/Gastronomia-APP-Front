@@ -12,6 +12,7 @@ export interface Product {
     controlStock: boolean;
     active: boolean;
     deleted: boolean;
+    imageUrl?: string | null;
     components: ProductComponent[];
     productGroups: ProductGroup[];
     compositionType?: 'NONE' | 'SELECTABLE' | 'FIXED_SELECTABLE';

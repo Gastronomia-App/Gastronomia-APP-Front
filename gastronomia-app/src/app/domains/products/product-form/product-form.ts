@@ -29,11 +29,13 @@ import {
 } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
 import { ProductGroupService } from '../../product-groups/services/product-group.service';
+import { ImageUploadField } from '../../../shared/components/image-upload/image-upload-field'; // <--- NUEVO
+import { ProductImageService } from '../services/product-image.service';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, Form],
+  imports: [CommonModule, Form, ImageUploadField], // <--- agregado ImageUploadField
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
   host: {
@@ -47,7 +49,10 @@ export class ProductForm implements OnInit {
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+private productImageService = inject(ProductImageService);
 
+pendingImageFile: File | null = null;
+isUploadingImage = signal<boolean>(false);
   formComponent = viewChild(Form);
   onFormClosed = output<void>();
 
@@ -67,6 +72,15 @@ export class ProductForm implements OnInit {
 
   editingProductId: number | null = null;
   isEditMode = false;
+
+  // ===== Imagen =====
+  // Signal to store current image URL (created or loaded from backend)
+  imageUrl = signal<string | null>(null);
+
+  // Inputs passed to ImageUploadField
+  imageUploadInputs = computed(() => ({
+    imageUrl: this.imageUrl()
+  }));
 
   componentsInputs = computed(() => {
     const allComponents = this.availableComponents();
@@ -163,7 +177,20 @@ export class ProductForm implements OnInit {
             maxLength: 150,
             rows: 3,
             fullWidth: true
-          }
+          },
+          // ===== Campo custom para imagen =====
+          {
+  name: 'imageFile',
+  label: 'Imagen',
+  type: 'custom',
+  customComponent: ImageUploadField,
+  customInputs: { imageUrl: null },
+  customOutputs: {
+    fileSelected: (file: File | null) => this.onImageFileSelected(file),
+    imageCleared: () => this.onImageCleared()
+  },
+  fullWidth: true
+}
         ]
       },
       {
@@ -230,24 +257,34 @@ export class ProductForm implements OnInit {
   };
 
   constructor() {
-    effect(() => {
-      const componentsInputs = this.componentsInputs();
-      const groupsInputs = this.productGroupsInputs();
+  effect(() => {
+    const componentsInputs = this.componentsInputs();
+    const groupsInputs = this.productGroupsInputs();
+    const imageInputs = this.imageUploadInputs();
 
-      const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
-      if (compositionSection) {
-        const componentsField = compositionSection.fields.find(f => f.name === 'components');
-        const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
+    const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
+    if (compositionSection) {
+      const componentsField = compositionSection.fields.find(f => f.name === 'components');
+      const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
 
-        if (componentsField) componentsField.customInputs = componentsInputs;
-        if (groupsField) groupsField.customInputs = groupsInputs;
+      if (componentsField) componentsField.customInputs = componentsInputs;
+      if (groupsField) groupsField.customInputs = groupsInputs;
+    }
 
-        setTimeout(() => {
-          this.formComponent()?.renderDynamicComponents();
-        }, 0);
+    // Notice: field name is 'imageFile', not 'imageUrl'
+    const mainSection = this.formConfig.sections.find(s => s.title === 'Información principal');
+    if (mainSection) {
+      const imageField = mainSection.fields.find(f => f.name === 'imageFile');
+      if (imageField) {
+        imageField.customInputs = imageInputs;
       }
-    });
-  }
+    }
+
+    setTimeout(() => {
+      this.formComponent()?.renderDynamicComponents();
+    }, 0);
+  });
+}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -271,7 +308,6 @@ export class ProductForm implements OnInit {
         this.isLoadingCategories.set(false);
       },
       error: () => {
-        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingCategories.set(false);
         this.categories.set([]);
       }
@@ -297,7 +333,6 @@ export class ProductForm implements OnInit {
         this.isLoadingComponents.set(false);
       },
       error: () => {
-        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingComponents.set(false);
         this.availableComponents.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -314,7 +349,6 @@ export class ProductForm implements OnInit {
         this.isLoadingGroups.set(false);
       },
       error: () => {
-        // Local state fallback, error UI lo maneja el Global Handler
         this.isLoadingGroups.set(false);
         this.availableProductGroups.set([]);
         this.updateDynamicFieldsAndRerender();
@@ -335,6 +369,11 @@ export class ProductForm implements OnInit {
         this.formComponent()?.renderDynamicComponents();
       }, 0);
     }
+  }
+
+  // ===== handlers imagen =====
+  onImageUrlChange(url: string | null): void {
+    this.imageUrl.set(url);
   }
 
   onComponentAdded(item: Product | any): void {
@@ -379,15 +418,21 @@ export class ProductForm implements OnInit {
   }
 
   onFormSubmit(event: FormSubmitEvent<any>): void {
-    const formData: any = {
-      name: event.data.name || '',
-      categoryId: event.data.categoryId || 0,
-      description: event.data.description || undefined,
-      price: Number(event.data.price) || 0,
-      cost: Number(event.data.cost) || undefined,
-      active: event.data.active ?? true,
-      controlStock: event.data.controlStock ?? false,
-      stock: Number(event.data.stock) || 0
+  const baseData: any = {
+    name: event.data.name || '',
+    categoryId: event.data.categoryId || 0,
+    description: event.data.description || undefined,
+    price: Number(event.data.price) || 0,
+    cost: Number(event.data.cost) || undefined,
+    active: event.data.active ?? true,
+    controlStock: event.data.controlStock ?? false,
+    stock: Number(event.data.stock) || 0
+  };
+
+  const finalize = (finalImageUrl: string | null) => {
+    const formData = {
+      ...baseData,
+      imageUrl: finalImageUrl
     };
 
     if (event.isEditMode && event.editingId) {
@@ -395,7 +440,33 @@ export class ProductForm implements OnInit {
     } else {
       this.createProduct(formData);
     }
+  };
+
+  // If there is a pending file, upload it first
+  if (this.pendingImageFile) {
+    this.isUploadingImage.set(true);
+
+    this.productImageService.uploadProductImage(this.pendingImageFile).subscribe({
+      next: response => {
+        this.isUploadingImage.set(false);
+        this.imageUrl.set(response.url);
+        this.pendingImageFile = null;
+        finalize(response.url);
+      },
+      error: () => {
+        this.isUploadingImage.set(false);
+        // Global error handler will show error; no need to do more here
+      }
+    });
+
+    return;
   }
+
+  // No pending file:
+  // - create: this.imageUrl() will usually be null
+  // - edit: this.imageUrl() contains original url or null if cleared
+  finalize(this.imageUrl());
+}
 
   createProduct(formData: any): void {
     this.productService.createProduct(formData).subscribe({
@@ -409,21 +480,16 @@ export class ProductForm implements OnInit {
                 this.onClose();
               },
               error: () => {
-                // Fallback: notificar igual y cerrar, error visual global
                 this.productFormService.notifyProductCreated(product);
                 this.resetForm();
                 this.onClose();
               }
             });
           },
-          error: () => {
-            // Error visual lo maneja el Global Handler
-          }
+          error: () => {}
         });
       },
-      error: () => {
-        // Error visual lo maneja el Global Handler
-      }
+      error: () => {}
     });
   }
 
@@ -440,7 +506,6 @@ export class ProductForm implements OnInit {
                 this.productFormService.viewProductDetails(updatedProduct);
               },
               error: () => {
-                // Fallback: usar el producto de la primera respuesta
                 this.productFormService.notifyProductUpdated(product);
                 this.resetForm();
                 this.onClose();
@@ -448,14 +513,10 @@ export class ProductForm implements OnInit {
               }
             });
           },
-          error: () => {
-            // Error visual lo maneja el Global Handler
-          }
+          error: () => {}
         });
       },
-      error: () => {
-        // Error visual lo maneja el Global Handler
-      }
+      error: () => {}
     });
   }
 
@@ -606,6 +667,9 @@ export class ProductForm implements OnInit {
       stock: product.stock || 0
     };
 
+    // Load existing image in edit mode
+    this.imageUrl.set(product.imageUrl ?? null);
+
     this.selectedComponents.set([]);
     this.selectedProductGroups.set([]);
     this.originalComponents = [];
@@ -639,19 +703,21 @@ export class ProductForm implements OnInit {
     this.cdr.detectChanges();
   }
 
-  resetForm(): void {
-    this.isEditMode = false;
-    this.editingProductId = null;
-    this.selectedComponents.set([]);
-    this.selectedProductGroups.set([]);
-    this.originalComponents = [];
-    this.originalProductGroups = [];
+resetForm(): void {
+  this.isEditMode = false;
+  this.editingProductId = null;
+  this.selectedComponents.set([]);
+  this.selectedProductGroups.set([]);
+  this.originalComponents = [];
+  this.originalProductGroups = [];
+  this.imageUrl.set(null);
+  this.pendingImageFile = null;
 
-    const formComp = this.formComponent();
-    if (formComp) {
-      formComp.resetForm();
-    }
+  const formComp = this.formComponent();
+  if (formComp) {
+    formComp.resetForm();
   }
+}
 
   onFormCancel(): void {
     this.resetForm();
@@ -661,4 +727,18 @@ export class ProductForm implements OnInit {
   onClose(): void {
     this.onFormClosed.emit();
   }
+
+  // ===== image handlers =====
+onImageFileSelected(file: File | null): void {
+  this.pendingImageFile = file;
+  // If user selected a new file, clear old URL so it is not sent by mistake
+  if (file) {
+    this.imageUrl.set(null);
+  }
+}
+
+onImageCleared(): void {
+  this.pendingImageFile = null;
+  this.imageUrl.set(null);
+}
 }

@@ -6,4 +6,5 @@ export interface Category {
     color?: string;
     colorHue?: number;
     products: Product[];
+    icon?: string | null;
 }

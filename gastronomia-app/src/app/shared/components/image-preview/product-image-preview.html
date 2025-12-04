@@ -1,0 +1,12 @@
+<div class="dropzone readonly">
+  @if (previewUrl(); as img) {
+    <img [src]="img" alt="Imagen del producto" class="preview-image" />
+  } @else {
+    <div class="placeholder">
+      <p class="title">Sin imagen</p>
+      <p class="subtitle">
+        Este producto no tiene imagen asociada.
+      </p>
+    </div>
+  }
+</div>

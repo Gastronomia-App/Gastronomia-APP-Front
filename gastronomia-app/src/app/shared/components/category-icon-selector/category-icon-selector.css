@@ -1,0 +1,126 @@
+/* Botón principal */
+.select-btn {
+  width: 100%;
+  padding: 0.7rem;
+  font-size: var(--font-base);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Preview del ícono seleccionado */
+.preview-box {
+  position: relative;
+  background-color: var(--color-primary-lightest);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  border-radius: 8px;
+}
+
+/* Botón para limpiar el ícono */
+.clear-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--color-red);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.clear-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Botón de cerrar del modal */
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-base);
+  color: var(--color-text-secondary);
+}
+
+.close-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor del modal */
+.modal {
+  width: 560px;
+  max-width: 90vw;
+  background-color: var(--color-surface);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow: hidden; /* evita scroll horizontal del contenedor */
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-text-primary);
+  font-size: var(--font-base);
+}
+
+.search-input {
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-sm);
+}
+
+/* GRID: 5 columnas, solo scroll vertical */
+.icon-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* 5 columnas */
+  gap: 0.6rem;
+  max-height: 320px;
+  overflow-y: auto;      /* solo vertical */
+  overflow-x: hidden;    /* sin horizontal */
+  padding-right: 0.25rem; /* margen para la scrollbar */
+}
+
+.icon-item {
+  min-width: 0; /* permite que el contenido se adapte a la columna */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.icon-item:hover {
+  background-color: var(--color-primary-lightest);
+  border-color: var(--color-primary);
+}
