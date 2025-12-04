@@ -1,3 +1,4 @@
+// category-icon-selector.ts
 import {
   Component,
   input,
@@ -22,8 +23,9 @@ import {
   styleUrl: './category-icon-selector.css'
 })
 export class CategoryIconSelector {
+  // ✅ Volvemos a trabajar con Signal<string | null>
   value = input<Signal<string | null>>(signal<string | null>(null));
-  mode = input<'select' | 'view'>('select');
+  mode = input<'select' | 'view'>('select'); // lo podés dejar, pero solo lo usamos en 'select'
 
   valueChange = output<string | null>();
 
@@ -31,13 +33,13 @@ export class CategoryIconSelector {
   search = signal('');
 
   hasIcon = computed(() => {
-    const iconSignal = this.value();
+    const iconSignal = this.value(); // Signal<string | null>
     return !!iconSignal();
   });
 
   selectedIconComponent = computed(() => {
     const iconSignal = this.value();
-    const key = iconSignal();
+    const key = iconSignal(); // string | null
     return key ? CATEGORY_ICON_MAP[key] : undefined;
   });
 

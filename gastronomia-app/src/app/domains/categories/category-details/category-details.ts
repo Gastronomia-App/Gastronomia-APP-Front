@@ -12,12 +12,13 @@ import { CategoryService } from '../services/category.service';
 import { CategoryFormService } from '../services/category-form.service';
 import { Category, DetailConfig } from '../../../shared/models';
 import { getContrastColor } from '../../../shared/utils/color.helpers';
-import { CategoryIconSelector } from '../../../shared/components/category-icon-selector/category-icon-selector';
+import { CategoryIconSelector } from '../../../shared/components/category-component/category-icon-selector/category-icon-selector';
+import { CategoryIconView } from '../../../shared/components/category-component/category-icon-view/category-icon-view';
 
 @Component({
   selector: 'app-category-details',
   standalone: true,
-  imports: [CommonModule, Detail, CategoryIconSelector],
+  imports: [CommonModule, Detail],
   templateUrl: './category-details.html',
   styleUrl: './category-details.css',
   host: {
@@ -34,10 +35,7 @@ export class CategoryDetails implements OnInit {
   category = signal<Category | null>(null);
 
   // Icon derived from current category (no manual set)
-  iconSignal = computed<string | null>(() => {
-    const cat = this.category();
-    return cat?.icon ?? null;
-  });
+    icon = signal<string | null>(null);
 
   // Products count
   productsCount = computed(() => {
@@ -87,10 +85,9 @@ export class CategoryDetails implements OnInit {
             name: 'icon',
             label: 'Ícono',
             type: 'custom',
-            customComponent: CategoryIconSelector,
+            customComponent: CategoryIconView,
             customInputs: {
-              mode: 'view',
-              value: this.iconSignal
+              iconKey: this.icon   
             }
           },
           {
@@ -107,9 +104,8 @@ export class CategoryDetails implements OnInit {
   ngOnInit(): void {}
 
   loadCategory(category: Category): void {
-    // Single source of truth: category
     this.category.set(category);
-    // iconSignal is computed, no manual set here
+    this.icon.set(category.icon ?? null);
   }
 
   onEdit(): void {

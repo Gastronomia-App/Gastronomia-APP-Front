@@ -1,0 +1,16 @@
+@if (hasIcon()) {
+  <div class="preview-box">
+    @if (iconComponent()) {
+      <lucide-icon
+        [name]="iconComponent()!"
+        [size]="28"
+      ></lucide-icon>
+    }
+  </div>
+} @else {
+  <div class="preview-box preview-box--empty">
+    <span class="preview-empty-text">
+      Sin ícono asignado
+    </span>
+  </div>
+}

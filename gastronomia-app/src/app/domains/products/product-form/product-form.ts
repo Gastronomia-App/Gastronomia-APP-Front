@@ -29,13 +29,13 @@ import {
 } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
 import { ProductGroupService } from '../../product-groups/services/product-group.service';
-import { ImageUploadField } from '../../../shared/components/image-upload/image-upload-field'; // <--- NUEVO
+import { ImageUploadField } from '../../../shared/components/image-component/image-upload/image-upload-field'; // <--- NUEVO
 import { ProductImageService } from '../services/product-image.service';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, Form, ImageUploadField], // <--- agregado ImageUploadField
+  imports: [CommonModule, Form], // <--- agregado ImageUploadField
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
   host: {

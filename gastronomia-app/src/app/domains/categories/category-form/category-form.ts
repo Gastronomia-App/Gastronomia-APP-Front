@@ -23,12 +23,12 @@ import {
   DEFAULT_SATURATION
 } from '../../../shared/utils/color.helpers';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CategoryIconSelector } from '../../../shared/components/category-icon-selector/category-icon-selector';
+import { CategoryIconSelector } from '../../../shared/components/category-component/category-icon-selector/category-icon-selector';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [CommonModule, Form, FormsModule, CategoryIconSelector],
+  imports: [CommonModule, Form, FormsModule],
   templateUrl: './category-form.html',
   styleUrl: './category-form.css',
   host: {

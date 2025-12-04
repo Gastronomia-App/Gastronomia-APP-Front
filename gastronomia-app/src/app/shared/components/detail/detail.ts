@@ -34,14 +34,14 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   private sanitizer = inject(DomSanitizer);
-  
+
   // Track dynamic component references for cleanup
   private dynamicComponents: ComponentRef<any>[] = [];
-  
+
   // ViewContainerRef for dynamic component insertion
   @ViewChildren('dynamicComponentContainer', { read: ViewContainerRef })
   dynamicContainers!: QueryList<ViewContainerRef>;
-  
+
   @ViewChildren('listItemContainer', { read: ViewContainerRef })
   listItemContainers!: QueryList<ViewContainerRef>;
 
@@ -64,7 +64,7 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   visibleSections = computed(() => {
     const currentData = this.data();
     if (!currentData) return [];
-    
+
     return this.config().sections.filter(section => {
       if (!section.condition) return true;
       return section.condition(currentData);
@@ -81,7 +81,7 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
     effect(() => {
       const currentData = this.data();
       const sections = this.visibleSections();
-      
+
       // Track dependencies
       if (currentData && this.dynamicContainers && this.listItemContainers) {
         // Re-render when data changes
@@ -91,10 +91,22 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Initial render of dynamic components
-    this.renderDynamicComponents();
-    
-    // Cleanup on destroy
+    queueMicrotask(() => {
+      this.renderDynamicComponents();
+    });
+
+    this.dynamicContainers.changes
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.renderDynamicComponents();
+      });
+
+    this.listItemContainers.changes
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.renderDynamicComponents();
+      });
+
     this.destroyRef.onDestroy(() => {
       this.cleanupDynamicComponents();
     });
@@ -106,7 +118,7 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   getVisibleFields(section: DetailSectionConfig<T>): DetailFieldConfig<T>[] {
     const currentData = this.data();
     if (!currentData) return [];
-    
+
     return section.fields.filter(field => {
       if (!field.condition) return true;
       return field.condition(currentData);
@@ -119,9 +131,9 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   getFieldValue(field: DetailFieldConfig<T>): any {
     const currentData = this.data();
     if (!currentData) return null;
-    
+
     const rawValue = currentData[field.name as keyof T];
-    
+
     // Use custom formatter if provided
     if (field.formatter) {
       const formatted = field.formatter(rawValue, currentData);
@@ -131,24 +143,24 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
       }
       return formatted;
     }
-    
+
     // Default formatting based on type
     switch (field.type) {
       case 'currency':
         return rawValue != null ? `$${rawValue}` : '-';
-      
+
       case 'badge':
       case 'boolean':
         if (field.booleanLabels) {
           return rawValue ? field.booleanLabels.true : field.booleanLabels.false;
         }
         return rawValue ? 'Sí' : 'No';
-      
+
       case 'date':
       case 'datetime':
         // Date formatting will be handled by DatePipe in template
         return rawValue;
-      
+
       default:
         return rawValue != null ? rawValue : '-';
     }
@@ -160,7 +172,7 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   getListItems(field: DetailFieldConfig<T>): any[] {
     const currentData = this.data();
     if (!currentData || !field.listItems) return [];
-    
+
     return field.listItems(currentData);
   }
 
@@ -170,7 +182,7 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
   isFieldActive(field: DetailFieldConfig<T>): boolean {
     const currentData = this.data();
     if (!currentData) return false;
-    
+
     return !!currentData[field.name as keyof T];
   }
 
@@ -236,35 +248,35 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
    */
   renderDynamicComponents(): void {
     this.cleanupDynamicComponents();
-    
+
     let customContainerIndex = 0;
     let listContainerIndex = 0;
     const customContainers = this.dynamicContainers?.toArray() || [];
     const listContainers = this.listItemContainers?.toArray() || [];
-    
+
     this.visibleSections().forEach(section => {
       section.fields.forEach(field => {
         const currentData = this.data();
         if (!currentData) return;
-        
+
         // Skip if condition is false
         if (field.condition && !field.condition(currentData)) return;
-        
+
         // Handle custom fields
         if (field.type === 'custom' && field.customComponent) {
           const container = customContainers[customContainerIndex++];
           if (!container) return;
-          
+
           container.clear();
           const componentRef = container.createComponent(field.customComponent);
-          
+
           // Set inputs
           if (field.customInputs) {
             Object.entries(field.customInputs).forEach(([key, value]) => {
               componentRef.setInput(key, value);
             });
           }
-          
+
           // Subscribe to outputs
           if (field.customOutputs) {
             Object.entries(field.customOutputs).forEach(([key, handler]) => {
@@ -274,36 +286,36 @@ export class Detail<T extends Record<string, any>> implements AfterViewInit {
               }
             });
           }
-          
+
           this.dynamicComponents.push(componentRef);
         }
-        
+
         // Handle list items with custom component
         if (field.type === 'list' && field.listItemComponent) {
           const items = this.getListItems(field);
           items.forEach((item) => {
             const container = listContainers[listContainerIndex++];
             if (!container) return;
-            
+
             container.clear();
             const componentRef = container.createComponent(field.listItemComponent!);
-            
+
             // Set default item input
             componentRef.setInput('item', item);
-            
+
             // Set additional inputs
             if (field.listItemInputs) {
               Object.entries(field.listItemInputs).forEach(([key, value]) => {
                 componentRef.setInput(key, value);
               });
             }
-            
+
             this.dynamicComponents.push(componentRef);
           });
         }
       });
     });
-    
+
     this.cdr.detectChanges();
   }
 

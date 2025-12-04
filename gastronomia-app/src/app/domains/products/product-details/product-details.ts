@@ -6,11 +6,11 @@ import { Detail } from '../../../shared/components/detail/detail';
 import { ProductFormService } from '../services/product-form.service';
 import { Category, Product, DetailConfig } from '../../../shared/models';
 import { CategoryService } from '../../categories/services';
-import { ProductImagePreview } from '../../../shared/components/image-preview/product-image-preview';
+import { ProductImagePreview } from '../../../shared/components/image-component/image-preview/product-image-preview';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CommonModule, Detail, ProductImagePreview],
+  imports: [CommonModule, Detail],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
   host: {
