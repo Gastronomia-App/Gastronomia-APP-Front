@@ -1,13 +1,25 @@
 <div class="searchable-list-wrapper">
     <div class="search-container">
-        <input 
-            type="text" 
-            class="search-input" 
-            [placeholder]="placeholder"
-            [value]="searchQuery" 
-            (input)="onSearch($event)"
-            (focus)="searchFocus.emit()"
-            (keydown)="onKeyDown($event)" />
+        <div class="search-input-wrapper">
+            <input 
+                type="text" 
+                class="search-input" 
+                [placeholder]="placeholder"
+                [value]="searchQuery" 
+                (input)="onSearch($event)"
+                (focus)="searchFocus.emit()"
+                (keydown)="onKeyDown($event)" />
+            
+            @if (showAddButton) {
+                <button 
+                    type="button" 
+                    class="add-btn" 
+                    (click)="addButtonClicked.emit()"
+                    title="Abrir selector de productos">
+                    +
+                </button>
+            }
+        </div>
 
         @if(isLoading && searchQuery.trim() !== '') {
             <div class="loading-message">Cargando...</div>

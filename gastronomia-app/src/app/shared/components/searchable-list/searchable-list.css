@@ -17,6 +17,39 @@
     width: 100%;
 }
 
+/* Search input wrapper - contains input and add button */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* Add button */
+.add-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 25px;
+}
+
+.add-btn:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.add-btn:active {
+    transform: scale(0.95);
+}
+
 /* Loading message */
 .loading-message {
     position: absolute;

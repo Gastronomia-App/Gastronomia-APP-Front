@@ -5,7 +5,7 @@ import { SearchableList } from '../../../shared/components/searchable-list';
 import { SelectableItemCard } from '../../../shared/components/selectable-item-card';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 import { OrderSplitForm } from '../order-split-form/order-split-form';
-import { ProductOptionsModal } from '../product-options-modal/product-options-modal';
+import { ItemSelectionModal } from '../item-selection-modal/item-selection-modal';
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
 import { TicketService } from '../../../services/ticket.service';
@@ -22,7 +22,7 @@ import { take } from 'rxjs';
     SelectableItemCard,
     ConfirmationModalComponent,
     OrderSplitForm,
-    ProductOptionsModal
+    ItemSelectionModal
   ],
   templateUrl: './order-items-form.html',
   styleUrl: './order-items-form.css',
@@ -57,12 +57,11 @@ export class OrderItemsForm implements OnInit {
   // Map to store selected options for pending products
   pendingItemsSelectedOptions = signal<Map<number, SelectedOption[]>>(new Map());
 
-  // Modal state for product options
-  showOptionsModal = signal(false);
-  modalProduct = signal<Product | null>(null);
+  // Unified modal state for item selection (both root category mode and product options mode)
+  showSelectionModal = signal(false);
+  modalProduct = signal<Product | null>(null); // null = root mode, Product = product mode
   modalQuantity = signal(1);
   modalInitialSelections = signal<SelectedOption[][]>([]);
-  modalInitialContext = signal<any>(null);
   currentEditingItemId: number | null = null;
 
   // Collapsed items tracking
@@ -163,11 +162,12 @@ export class OrderItemsForm implements OnInit {
   onProductAdded(product: Product | any): void {
     const quantity = product.quantity || 1;
 
-    // If product has selectable groups, open the modal
+    // If product has selectable groups, open the modal in PRODUCT mode
     if (this.hasSelectableGroups(product)) {
       this.modalProduct.set(product);
       this.modalQuantity.set(quantity);
-      this.showOptionsModal.set(true);
+      this.modalInitialSelections.set([]);
+      this.showSelectionModal.set(true);
       return;
     }
     
@@ -257,12 +257,7 @@ export class OrderItemsForm implements OnInit {
     this.modalProduct.set(product);
     this.modalQuantity.set(1);
     this.modalInitialSelections.set([currentSelections]);
-    this.modalInitialContext.set({
-      type: 'option',
-      itemIndex: 0,
-      optionPath: [optionIndex]
-    });
-    this.showOptionsModal.set(true);
+    this.showSelectionModal.set(true);
   }
 
   /**
@@ -715,11 +710,65 @@ export class OrderItemsForm implements OnInit {
    * Close the options modal and reset state
    */
   private closeOptionsModal(): void {
-    this.showOptionsModal.set(false);
+    this.showSelectionModal.set(false);
     this.modalProduct.set(null);
     this.modalQuantity.set(1);
     this.modalInitialSelections.set([]);
-    this.modalInitialContext.set(null);
+    this.currentEditingItemId = null;
+  }
+
+  /**
+   * Open unified item selection modal from + button (root/category mode)
+   */
+  onOpenCategoryModal(): void {
+    this.modalProduct.set(null); // null = ROOT mode (show categories)
+    this.modalQuantity.set(1);
+    this.modalInitialSelections.set([]);
+    this.showSelectionModal.set(true);
+  }
+
+  /**
+   * Handle confirmed selection from unified ItemSelectionModal
+   * Receives ItemContext[] which contains product and selections
+   */
+  onSelectionConfirmed(items: Array<{product: Product, selections: SelectedOption[]}>): void {
+    // Process each item from the modal
+    items.forEach(itemContext => {
+      const { product, selections } = itemContext;
+      
+      // Create a new pending item for each product with its options
+      const productCopy = { ...product };
+      const uniqueId = Date.now() + Math.random();
+      (productCopy as any).uniqueId = uniqueId;
+      (productCopy as any).quantity = 1;
+      
+      this.pendingItems.update(items => [...items, productCopy]);
+      
+      // Store selections
+      if (selections && selections.length > 0) {
+        this.pendingItemsSelectedOptions.update(map => {
+          const newMap = new Map(map);
+          newMap.set(uniqueId, selections);
+          return newMap;
+        });
+      }
+    });
+
+    this.closeSelectionModal();
+  }
+
+  /**
+   * Handle modal cancellation
+   */
+  onSelectionCancelled(): void {
+    this.closeSelectionModal();
+  }
+
+  /**
+   * Close the selection modal and reset state
+   */
+  private closeSelectionModal(): void {
+    this.showSelectionModal.set(false);
     this.currentEditingItemId = null;
   }
 
@@ -809,7 +858,7 @@ export class OrderItemsForm implements OnInit {
     this.modalProduct.set(product);
     this.modalQuantity.set(quantity);
     this.modalInitialSelections.set(modalSelections);
-    this.showOptionsModal.set(true);
+    this.showSelectionModal.set(true);
   }
 
   /**
