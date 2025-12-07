@@ -1,0 +1,148 @@
+@if (isVisible()) {
+  <div class="modal-overlay" (click)="$event.stopPropagation(); close()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      
+      @if (showAlert()) {
+        <app-alert
+          [title]="'Error'"
+          [message]="alertMessage()"
+          (onClose)="showAlert.set(false)"
+          (onAccept)="showAlert.set(false)">
+        </app-alert>
+      }
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2>Generar Ticket Fiscal</h2>
+        <button class="close-btn" (click)="close()" [disabled]="isLoading()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form class="fiscal-form">
+          
+          <!-- Invoice Type -->
+          <div class="form-group">
+            <label class="form-label" for="invoiceType">
+              Tipo de Factura <span class="required">*</span>
+            </label>
+            <select 
+              id="invoiceType"
+              class="form-select"
+              [value]="invoiceType()"
+              (change)="invoiceType.set($any($event.target).value)"
+              [disabled]="isLoading()">
+              <option value="FACTURA_A">Factura A</option>
+              <option value="FACTURA_B">Factura B</option>
+            </select>
+          </div>
+
+          <!-- IVA Condition -->
+          <div class="form-group">
+            <label class="form-label" for="ivaCondition">
+              Condición IVA <span class="required">*</span>
+            </label>
+            <select 
+              id="ivaCondition"
+              class="form-select"
+              [value]="ivaCondition()"
+              (change)="ivaCondition.set($any($event.target).value)"
+              [disabled]="isLoading()">
+              <option value="RESPONSABLE_INSCRIPTO">Responsable Inscripto</option>
+              <option value="CONSUMIDOR_FINAL">Consumidor Final</option>
+            </select>
+          </div>
+
+          <!-- Document Number -->
+          <div class="form-group">
+            <label class="form-label" for="documentNumber">
+              @if (invoiceType() === 'FACTURA_A') {
+                CUIT <span class="required">*</span>
+              } @else {
+                DNI
+              }
+            </label>
+            <input 
+              type="number"
+              id="documentNumber"
+              class="form-input"
+              [value]="documentNumber() || ''"
+              (input)="documentNumber.set(parseNumber($any($event.target).value))"
+              placeholder="Ingrese el número de documento"
+              [disabled]="isLoading()" />
+            <small class="form-hint">
+              @if (invoiceType() === 'FACTURA_A') {
+                Requerido para Factura A
+              } @else {
+                Opcional. Si está vacío, se usará "Consumidor Final"
+              }
+            </small>
+          </div>
+
+          <!-- Customer Name -->
+          <div class="form-group">
+            <label class="form-label" for="customerName">
+              Nombre del Cliente <span class="required">*</span>
+            </label>
+            <input 
+              type="text"
+              id="customerName"
+              class="form-input"
+              [value]="customerName()"
+              (input)="customerName.set($any($event.target).value)"
+              placeholder="Ingrese el nombre del cliente"
+              [disabled]="isLoading()" />
+          </div>
+
+          <!-- Customer Address -->
+          <div class="form-group">
+            <label class="form-label" for="customerAddress">
+              Dirección del Cliente <span class="required">*</span>
+            </label>
+            <input 
+              type="text"
+              id="customerAddress"
+              class="form-input"
+              [value]="customerAddress()"
+              (input)="customerAddress.set($any($event.target).value)"
+              placeholder="Ingrese la dirección del cliente"
+              [disabled]="isLoading()" />
+          </div>
+
+          <!-- Validation Message -->
+          @if (validationMessage() && !isValid()) {
+            <div class="validation-message error">
+              {{ validationMessage() }}
+            </div>
+          }
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <div></div>
+        <div class="footer-actions">
+          <button 
+            class="btn btn-secondary" 
+            (click)="close()"
+            [disabled]="isLoading()">
+            Cancelar
+          </button>
+          <button 
+            class="btn btn-primary" 
+            (click)="generateTicket()"
+            [disabled]="!isValid() || isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span>
+            }
+            Generar Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

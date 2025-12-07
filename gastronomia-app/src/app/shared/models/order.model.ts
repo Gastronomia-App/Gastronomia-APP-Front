@@ -15,6 +15,7 @@ export interface Order {
   status?: OrderStatus;
   subtotal?: number;
   total?: number;
+  customerId?: number | null;
   
   // Request/Response fields
   orderType?: OrderType;
@@ -23,7 +24,6 @@ export interface Order {
   // Request-only fields (IDs for creation/update)
   seatingId?: number;
   employeeId?: number;
-  customerId?: number | null;
 }
 
 

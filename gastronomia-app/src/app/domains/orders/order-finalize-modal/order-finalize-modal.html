@@ -169,21 +169,41 @@
       <!-- Modal Footer -->
       <div class="modal-footer">
         <button 
-          class="btn btn-secondary" 
-          (click)="close()"
-          [disabled]="isLoading()">
-          Cancelar
+          class="btn btn-secondary fiscal-ticket-btn" 
+          (click)="openFiscalTicketModal()"
+          [disabled]="isLoading()"
+          title="Generar Ticket Fiscal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.5 0A1.5 1.5 0 0 0 1 1.5V3h14V1.5A1.5 1.5 0 0 0 13.5 0h-11zm13 4H1v8.5A1.5 1.5 0 0 0 2.5 14h11a1.5 1.5 0 0 0 1.5-1.5V4zM2 5.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+          </svg>
         </button>
-        <button 
-          class="btn btn-primary" 
-          (click)="finalizeOrder()"
-          [disabled]="!isValid() || isLoading()">
-          @if (isLoading()) {
-            <span class="spinner"></span>
-          }
-          Finalizar Orden
-        </button>
+        
+        <div class="footer-actions">
+          <button 
+            class="btn btn-secondary" 
+            (click)="close()"
+            [disabled]="isLoading()">
+            Cancelar
+          </button>
+          <button 
+            class="btn btn-primary" 
+            (click)="finalizeOrder()"
+            [disabled]="!isValid() || isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span>
+            }
+            Finalizar Orden
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- Fiscal Ticket Modal -->
+    <app-fiscal-ticket-modal
+      [isVisible]="showFiscalTicketModal()"
+      [order]="order()"
+      (onClose)="closeFiscalTicketModal()"
+      (onTicketGenerated)="onFiscalTicketGenerated()">
+    </app-fiscal-ticket-modal>
   </div>
 }

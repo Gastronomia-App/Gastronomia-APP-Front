@@ -4,6 +4,7 @@ export interface Customer {
   name: string;
   lastName: string;
   dni: string;
+  cuit?: string;
   phoneNumber: string;
   email: string;
   discount?: number;

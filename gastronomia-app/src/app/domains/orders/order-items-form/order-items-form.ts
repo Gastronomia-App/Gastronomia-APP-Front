@@ -509,28 +509,19 @@ export class OrderItemsForm implements OnInit {
       return;
     }
 
-    // First mark the order as billed
-    this.orderService.billOrder(orderId).subscribe({
-      next: () => {
-        this.orderUpdated.emit();
-
-        // Then request the PDF ticket and open it
-        this.ticketService
-          .getBillTicket(orderId)
-          .pipe(take(1))
-          .subscribe({
-            next: (blob) => {
-              this.ticketService.openPdf(blob);
-            },
-            error: (error) => {
-              console.error('Error downloading bill ticket', error);
-            }
-          });
-      },
-      error: (error) => {
-        console.error('Error marking order as billed:', error);
-      }
-    });
+    // Request the PDF ticket and open it
+    this.ticketService
+      .getBillTicket(orderId)
+      .pipe(take(1))
+      .subscribe({
+        next: (blob) => {
+          this.ticketService.openPdf(blob);
+          this.orderUpdated.emit();
+        },
+        error: (error) => {
+          console.error('Error downloading bill ticket', error);
+        }
+      });
   }
 
   /**
