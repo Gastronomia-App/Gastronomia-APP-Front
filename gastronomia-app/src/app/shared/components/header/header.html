@@ -1,3 +1,4 @@
+@if(!isMenuPage()) {
 @if (isLandingPage()) {
 <!-- Landing Page Header -->
 <header class="homepage-header" [class.scrolled]="isScrolled()">
@@ -205,5 +206,6 @@
         </div>
     </nav>
 </div>
+}
 }
 }

@@ -1,5 +1,5 @@
 import { Component, signal, inject, computed, DestroyRef } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, NavigationEnd } from "@angular/router";
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -36,22 +36,22 @@ export class Header {
   isMobileMenuOpen = signal(false);
   isLandingPage = signal(false);
   isScrolled = signal(false);
+  isMenuPage = signal(false);
 
   employeeName = this.authService.employeeName;
-  
   business = this.businessState.business;
-  
+
   currentDateTime = signal(new Date());
 
   displayName = computed(() => {
     const name = this.employeeName();
     return name || 'Usuario';
   });
-  
+
   displayBusinessName = computed(() => {
-  const b = this.business();
-  return b?.name;
-});
+    const b = this.business();
+    return b?.name;
+  });
 
   dayOfWeek = computed(() => {
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -77,41 +77,57 @@ export class Header {
   });
 
   constructor() {
-    // Detectar si es landing page (homepage o login)
+    // Route changes
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((event: NavigationEnd) => {
-        const path = event.urlAfterRedirects;
+        const path = event.urlAfterRedirects.split('?')[0];
+
         const isLanding = path === '/' || path === '/login';
+        const isMenu = path.startsWith('/menu'); // support /menu and /menu/:slug
+        const isPublicLayout = isLanding || isMenu;
+
         this.isLandingPage.set(isLanding);
-        this.toggleBodyClass(isLanding);
+        this.isMenuPage.set(isMenu);
+
+        this.toggleBodyClass(isPublicLayout);
       });
 
-    // Verificar ruta inicial
-    const currentPath = this.router.url;
+    // Initial route
+    const currentPath = this.router.url.split('?')[0];
     const isInitiallyLanding = currentPath === '/' || currentPath === '/login';
-    this.isLandingPage.set(isInitiallyLanding);
-    this.toggleBodyClass(isInitiallyLanding);
+    const isInitiallyMenu = currentPath.startsWith('/menu'); // support /menu/:slug
+    const isInitialPublicLayout = isInitiallyLanding || isInitiallyMenu;
 
-    // Reloj en tiempo real
+    this.isLandingPage.set(isInitiallyLanding);
+    this.isMenuPage.set(isInitiallyMenu);
+
+    this.toggleBodyClass(isInitialPublicLayout);
+
+    // Clock
     interval(1000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.currentDateTime.set(new Date());
       });
 
-    // Detectar scroll para landing page
+    // Scroll detection
     if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', this.handleScroll.bind(this));
+      const handler = this.handleScroll.bind(this);
+      window.addEventListener('scroll', handler);
+
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('scroll', handler);
+      });
     }
   }
 
-  private toggleBodyClass(isLanding: boolean): void {
+  private toggleBodyClass(isPublicLayout: boolean): void {
     if (typeof document !== 'undefined') {
-      if (isLanding) {
+      if (isPublicLayout) {
         document.body.classList.add('homepage-active');
       } else {
         document.body.classList.remove('homepage-active');
@@ -126,8 +142,9 @@ export class Header {
   }
 
   scrollToSection(sectionId: string): void {
-    // Si estamos en login, navegar al homepage primero
-    const currentPath = this.router.url;
+    const currentPath = this.router.url.split('?')[0];
+
+    // If user is on login, navigate to homepage first
     if (currentPath === '/login') {
       this.router.navigate(['/']).then(() => {
         setTimeout(() => {
@@ -139,13 +156,14 @@ export class Header {
           }
         }, 100);
       });
-    } else {
-      // Ya estamos en homepage, hacer scroll directo
-      if (typeof document !== 'undefined') {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
+      return;
+    }
+
+    // If already on current page (homepage or menu), scroll directly
+    if (typeof document !== 'undefined') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }

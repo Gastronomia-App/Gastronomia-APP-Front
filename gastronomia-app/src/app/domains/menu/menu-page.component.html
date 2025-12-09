@@ -1,0 +1,341 @@
+﻿<app-scroll-progress-bar
+  [scrollElement]="scrollHost"
+  appScrollReveal="fade"
+  [revealDelay]="200">
+</app-scroll-progress-bar>
+
+<!-- HERO -->
+<section
+  class="menu-hero"
+  [class.menu-hero--fading]="isHeroFading()"
+  [style.backgroundImage]="'url(' + heroImages[currentHeroIndex()] + ')'">
+  <div class="menu-hero__overlay"></div>
+  <div class="menu-hero__fade-layer"></div>
+
+  <!-- Decorative corner accents -->
+  <div
+    class="menu-hero__corner menu-hero__corner--top-left"
+    [style.opacity]="heroCornersOpacity()">
+  </div>
+  <div
+    class="menu-hero__corner menu-hero__corner--top-right"
+    [style.opacity]="heroCornersOpacity()">
+  </div>
+  <div
+    class="menu-hero__corner menu-hero__corner--bottom-left"
+    [style.opacity]="heroCornersOpacity()">
+  </div>
+  <div
+    class="menu-hero__corner menu-hero__corner--bottom-right"
+    [style.opacity]="heroCornersOpacity()">
+  </div>
+
+  <div
+    class="menu-hero__content"
+    [style.transform]="'translate3d(0,' + heroContentTranslateY() + 'px,0)'"
+    [style.opacity]="heroContentOpacity()">
+    <p class="menu-hero__subtitle">
+      BIENVENIDOS A
+    </p>
+
+    <h1 class="menu-hero__title">
+      {{ heroTitle() }}
+    </h1>
+
+    <div class="menu-hero__divider">
+      <span class="menu-hero__divider-line"></span>
+      <span class="menu-hero__divider-dot"></span>
+      <span class="menu-hero__divider-line"></span>
+    </div>
+  </div>
+
+  <!-- CTA EXPLORE -->
+  <button
+    type="button"
+    class="menu-hero__cta"
+    (click)="scrollToCategories()"
+    [style.transform]="'translate3d(-50%,' + heroContentTranslateY() + 'px,0)'"
+    [style.opacity]="heroContentOpacity()">
+    <span class="menu-hero__cta-label">EXPLORAR</span>
+    <span class="menu-hero__cta-arrow"></span>
+  </button>
+
+  <!-- HERO INDICATORS -->
+  <div
+    class="menu-hero__indicators"
+    [style.transform]="'translate3d(0,' + heroContentTranslateY() + 'px,0)'"
+    [style.opacity]="heroContentOpacity()">
+    @for (image of heroImages; track $index) {
+      <button
+        type="button"
+        class="menu-hero__indicator"
+        [class.menu-hero__indicator--active]="currentHeroIndex() === $index"
+        (click)="onSelectHero($index)">
+        <span
+          class="menu-hero__indicator-progress"
+          [style.width.%]="currentHeroIndex() === $index ? heroProgress() : 0">
+        </span>
+      </button>
+    }
+  </div>
+</section>
+
+<!-- CATEGORIES NAV -->
+<section
+  #categoriesSection
+  id="menu-categories"
+  class="menu-categories"
+  [class.menu-categories--compact]="isNavCompact()"
+  appScrollReveal="up"
+  [revealDelay]="120">
+  <div class="menu-categories__inner">
+    <div class="menu-categories__nav">
+      @if (canScrollCategoriesLeft()) {
+        <button
+          type="button"
+          class="menu-categories__arrow menu-categories__arrow--left"
+          (click)="scrollCategoriesLeft()">
+          <span class="menu-categories__arrow-icon">‹</span>
+        </button>
+      }
+
+      <div class="menu-categories__pills-viewport">
+        <div class="menu-categories__pills">
+          @for (cat of visibleCategories(); track cat.id) {
+            <button
+              type="button"
+              class="menu-categories__pill"
+              appScrollReveal="up"
+              [revealDelay]="($index % 6) * 40"
+              [class.menu-categories__pill--active]="activeCategoryId() === cat.id"
+              (click)="onSelectCategory(cat.id)">
+              @if (cat.icon && categoryIconComponentMap[cat.icon]) {
+                <lucide-icon
+                  [name]="categoryIconComponentMap[cat.icon]"
+                  class="menu-categories__pill-icon-svg">
+                </lucide-icon>
+              }
+              <span class="menu-categories__pill-label">
+                {{ cat.name }}
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (canScrollCategoriesRight()) {
+        <button
+          type="button"
+          class="menu-categories__arrow menu-categories__arrow--right"
+          (click)="scrollCategoriesRight()">
+          <span class="menu-categories__arrow-icon">›</span>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ITEMS GRID -->
+<section
+  class="menu-items"
+  appScrollReveal="up"
+  [revealDelay]="80">
+  <div class="menu-items__inner">
+    @if (isLoading()) {
+      <div class="menu-items__loading">
+        @for (n of loadingSkeletons; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else {
+      <header
+        class="menu-items__header"
+        appScrollReveal="down">
+        @if (activeCategoryIconComponent()) {
+          <div class="menu-items__category-icon-wrapper">
+            <span class="menu-items__category-icon-circle">
+              <lucide-icon
+                [name]="activeCategoryIconComponent()!"
+                class="menu-items__category-icon">
+              </lucide-icon>
+            </span>
+          </div>
+        }
+
+        <h2 class="menu-items__title">
+          {{ activeCategoryLabel() }}
+        </h2>
+
+        <div class="menu-items__subtitle-row">
+          <span class="menu-items__subtitle-line"></span>
+          <span class="menu-items__subtitle-dot"></span>
+          <p class="menu-items__subtitle-text">
+            ELIGE TU PRÓXIMO PLATO
+          </p>
+          <span class="menu-items__subtitle-dot"></span>
+          <span class="menu-items__subtitle-line"></span>
+        </div>
+      </header>
+
+      @if (filteredProducts().length === 0) {
+        <div
+          class="menu-items__empty"
+          appScrollReveal="up">
+          Próximamente agregaremos más opciones.
+        </div>
+      } @else {
+        <div
+          class="menu-items__grid"
+          appScrollReveal="up"
+          [revealDelay]="80">
+          @for (item of filteredProducts(); track trackByProductId($index, item)) {
+            <article
+              class="menu-card"
+              appScrollReveal="up"
+              [revealDelay]="($index % 3) * 80">
+              @if (item.imageUrl) {
+                <div class="menu-card__image-wrapper">
+                  <img
+                    class="menu-card__image"
+                    [src]="imageBaseUrl + item.imageUrl!"
+                    [alt]="item.name" />
+                  <div class="menu-card__category-tag">
+                    {{ item.category?.name || activeCategoryLabel() }}
+                  </div>
+                </div>
+              }
+
+              <div class="menu-card__body">
+                <div class="menu-card__header">
+                  <h3>{{ item.name }}</h3>
+                  <span class="menu-card__price">
+                    {{ item.price | currency: 'ARS':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+
+                @if (item.description) {
+                  <p class="menu-card__description">
+                    {{ item.description }}
+                  </p>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="menu-footer">
+  <div
+    class="menu-footer__inner"
+    appScrollReveal="up"
+    [revealDelay]="150">
+    <h3>VISÍTANOS</h3>
+
+    <p class="menu-footer__subtitle">
+      Te esperamos para brindarte una experiencia gastronómica inolvidable.
+    </p>
+
+    @if (business()) {
+      <p class="menu-footer__business-name">
+        {{ business()?.name }}
+      </p>
+    }
+
+    <div class="menu-footer__columns">
+      <!-- Dirección -->
+      <div
+        class="menu-footer__column"
+        appScrollReveal="up"
+        [revealDelay]="0">
+        <div class="menu-footer__icon-circle">
+          <lucide-icon
+            [img]="MapPinIcon"
+            class="menu-footer__icon">
+          </lucide-icon>
+        </div>
+
+        @if (addressLine1() || addressLine2() || addressLine3()) {
+          <span>
+            @if (addressLine1()) {
+              {{ addressLine1() }}<br />
+            }
+            @if (addressLine2()) {
+              {{ addressLine2() }}<br />
+            }
+            @if (addressLine3()) {
+              {{ addressLine3() }}
+            }
+          </span>
+        } @else {
+          <span>Dirección no disponible</span>
+        }
+      </div>
+
+      <!-- Teléfono -->
+      <div
+        class="menu-footer__column"
+        appScrollReveal="up"
+        [revealDelay]="80">
+        <div class="menu-footer__icon-circle">
+          <lucide-icon
+            [img]="PhoneIcon"
+            class="menu-footer__icon">
+          </lucide-icon>
+        </div>
+
+        @if (businessPhoneLine()) {
+          <span>{{ businessPhoneLine() }}</span>
+        } @else {
+          <span>Teléfono no disponible</span>
+        }
+      </div>
+
+      <!-- Horario -->
+      <div
+        class="menu-footer__column"
+        appScrollReveal="up"
+        [revealDelay]="160">
+        <div class="menu-footer__icon-circle">
+          <lucide-icon
+            [img]="Clock3Icon"
+            class="menu-footer__icon">
+          </lucide-icon>
+        </div>
+
+        <span>
+          Lun - Dom<br />
+          12:00 - 23:00
+        </span>
+      </div>
+    </div>
+
+    <!-- Social icons -->
+    <div
+      class="menu-footer__social"
+      appScrollReveal="up"
+      [revealDelay]="220">
+      <button type="button" class="menu-footer__social-icon">
+        <lucide-icon
+          [img]="InstagramIcon"
+          class="menu-footer__social-icon-svg">
+        </lucide-icon>
+      </button>
+
+      <button type="button" class="menu-footer__social-icon">
+        <lucide-icon
+          [img]="FacebookIcon"
+          class="menu-footer__social-icon-svg">
+        </lucide-icon>
+      </button>
+    </div>
+
+    <p class="menu-footer__copy">
+      © {{ currentYear }} {{ business()?.name || 'Gastronomía App' }}.
+      Todos los derechos reservados.
+    </p>
+  </div>
+</footer>

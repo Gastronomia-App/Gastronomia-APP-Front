@@ -1,0 +1,24 @@
+:host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+.scroll-progress {
+  width: 100%;
+  height: 100%;
+}
+
+.scroll-progress__bar {
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.12s ease-out;
+  background: linear-gradient(90deg, #d4a64c, #f3e1b3);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.35);
+}

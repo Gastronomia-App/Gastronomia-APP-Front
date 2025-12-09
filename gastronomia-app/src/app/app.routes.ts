@@ -9,7 +9,12 @@ export const routes: Routes = [
   {
     path: '',
     component: HomePage,
-  },
+  },{
+  path: 'menu/:slug',
+  loadComponent: () =>
+    import('./domains/menu/menu-page.component')
+      .then(m => m.MenuPageComponent)
+},
   {
     path: 'login',
     component: LoginComponent,
