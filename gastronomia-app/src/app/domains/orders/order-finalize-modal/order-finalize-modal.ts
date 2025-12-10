@@ -15,6 +15,7 @@ import { Order, OrderPaymentMethod, PaymentMethod, Item } from '../../../shared/
 import { OrderService } from '../services/order.service';
 import { PaymentMethodService } from '../../../services/payment-method.service';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
+import { FiscalTicketModal } from '../fiscal-ticket-modal/fiscal-ticket-modal';
 
 interface PaymentMethodEntry {
   paymentMethod: PaymentMethod | null;
@@ -24,7 +25,7 @@ interface PaymentMethodEntry {
 @Component({
   selector: 'app-order-finalize-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlertComponent],
+  imports: [CommonModule, FormsModule, AlertComponent, FiscalTicketModal],
   templateUrl: './order-finalize-modal.html',
   styleUrl: './order-finalize-modal.css'
 })
@@ -47,6 +48,7 @@ export class OrderFinalizeModal {
   isLoading = signal(false);
   showAlert = signal(false);
   alertMessage = signal('');
+  showFiscalTicketModal = signal(false);
 
   // Computed
   orderTotal = computed(() => this.order()?.total || 0);
@@ -252,5 +254,17 @@ export class OrderFinalizeModal {
           this.showAlert.set(true);
         }
       });
+  }
+
+  openFiscalTicketModal(): void {
+    this.showFiscalTicketModal.set(true);
+  }
+
+  closeFiscalTicketModal(): void {
+    this.showFiscalTicketModal.set(false);
+  }
+
+  onFiscalTicketGenerated(): void {
+    this.showFiscalTicketModal.set(false);
   }
 }

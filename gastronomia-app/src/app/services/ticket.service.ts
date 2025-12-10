@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../enviroments/environment';
+import { FiscalTicketRequest } from '../domains/orders/services/order.service';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -10,16 +11,12 @@ export class TicketService {
   // environment.apiBaseUrl = 'http://localhost:8080/api' in dev
 
   getBillTicket(orderId: number): Observable<Blob> {
-    const url = `${this.baseUrl}/${orderId}/tickets/bill`;
+    const url = `${this.baseUrl}/${orderId}/tickets/pre-ticket`;
     return this.http.get(url, { responseType: 'blob' });
   }
 
-  /**
-   * Kitchen ticket for the whole order (all active items).
-   */
-  getKitchenTicket(orderId: number): Observable<Blob> {
-    const url = `${this.baseUrl}/${orderId}/tickets/kitchen`;
-    return this.http.get(url, { responseType: 'blob' });
+  generateFiscalTicket(orderId: number, request: FiscalTicketRequest): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/${orderId}/tickets/fiscal-ticket`, request, { responseType: 'blob' });
   }
 
   /**

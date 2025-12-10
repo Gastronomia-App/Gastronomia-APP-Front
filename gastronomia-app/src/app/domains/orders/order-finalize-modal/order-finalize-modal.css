@@ -441,10 +441,25 @@
 .modal-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem 2rem;
   border-top: 1px solid var(--color-border);
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fiscal-ticket-btn {
+  padding: 0.75rem;
+  min-width: auto;
+}
+
+.fiscal-ticket-btn svg {
+  margin: 0;
 }
 
 .btn {

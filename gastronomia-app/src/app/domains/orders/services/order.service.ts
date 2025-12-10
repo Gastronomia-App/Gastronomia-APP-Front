@@ -4,6 +4,15 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../enviroments/environment';
 import { Order, PageResponse, Item, ItemRequest } from '../../../shared/models';
 
+export interface FiscalTicketRequest {
+  invoiceType: string;
+  ivaCondition: string;
+  documentType: string;
+  documentNumber: number | null;
+  customerName: string;
+  customerAddress: string;
+}
+
 interface OrderFilters {
     status?: string | null;
     orderType?: string | null;
@@ -105,15 +114,11 @@ export class OrderService {
     return this.http.patch<Order>(`${this.apiUrl}/${orderId}/finalize`, paymentMethods);
   }
 
-  billOrder(orderId: number): Observable<Order> {
-    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/bill`, {});
-  }
-
   splitOrder(orderId: number, request: any): Observable<Order[]> {
     return this.http.patch<Order[]>(`${this.apiUrl}/${orderId}/split`, request);
   }
 
   updateOrder(orderId: number, payload: any) {
-  return this.http.put<Order>(`${this.apiUrl}/${orderId}`, payload);
-}
+    return this.http.put<Order>(`${this.apiUrl}/${orderId}`, payload);
+  }
 }

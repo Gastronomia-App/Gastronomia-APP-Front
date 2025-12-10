@@ -74,10 +74,12 @@ export class SearchableList<TAvailable extends BaseSearchableItem = BaseSearchab
   @Input() isLoading: boolean = false;
   @Input() allowQuantitySelection: boolean = false; // Enable quantity selection with arrows
   @Input() allowDuplicates: boolean = false; // Allow selecting the same item multiple times
+  @Input() showAddButton: boolean = false; // Show "+" button to open modal
 
   // Output events - parent handles all mutations
   @Output() itemAdded = new EventEmitter<TAvailable & { quantity?: number }>();
   @Output() itemRemoved = new EventEmitter<number>();
+  @Output() addButtonClicked = new EventEmitter<void>();
   @Output() itemUpdated = new EventEmitter<TSelected>();
   @Output() searchFocus = new EventEmitter<void>(); // Evento cuando el input recibe focus
   @Output() confirm = new EventEmitter<void>(); // Evento para confirmar selección pendiente

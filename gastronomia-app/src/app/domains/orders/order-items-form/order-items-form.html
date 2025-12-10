@@ -55,9 +55,17 @@
     <section class="add-section">
       <h3 class="section-title">ADICIONAR</h3>
 
-      <app-searchable-list placeholder="Buscar producto..." [availableItems]="availableProducts()"
-        [selectedItems]="pendingItems()" [isLoading]="isLoadingProducts()" [allowQuantitySelection]="true"
-        [allowDuplicates]="true" (searchFocus)="onSearchFocus()" (itemAdded)="onProductAdded($event)" (confirm)="confirmPendingItems()">
+      <app-searchable-list 
+        placeholder="Buscar producto..." 
+        [availableItems]="availableProducts()"
+        [selectedItems]="pendingItems()" 
+        [isLoading]="isLoadingProducts()" 
+        [allowQuantitySelection]="true"
+        [allowDuplicates]="true" 
+        [showAddButton]="true"
+        (searchFocus)="onSearchFocus()" 
+        (itemAdded)="onProductAdded($event)"
+        (addButtonClicked)="onOpenCategoryModal()">
       </app-searchable-list>
 
       <!-- Items pendientes a confirmar -->
@@ -241,14 +249,14 @@
   (splitCanceled)="onSplitFormClosed()">
 </app-order-split-form>
 }
-<!-- Product Options Modal -->
-@if (showOptionsModal() && modalProduct()) {
-<app-product-options-modal 
-  [product]="modalProduct()!" 
+
+<!-- Unified Item Selection Modal (supports both root and product modes) -->
+@if (showSelectionModal()) {
+<app-item-selection-modal
+  [product]="modalProduct()"
   [quantity]="modalQuantity()"
   [initialSelections]="modalInitialSelections()"
-  [initialContext]="modalInitialContext()"
-  (confirmed)="onOptionsConfirmed($event)"
-  (cancelled)="onOptionsCancelled()">
-</app-product-options-modal>
+  (confirmed)="onSelectionConfirmed($event)"
+  (cancelled)="onSelectionCancelled()">
+</app-item-selection-modal>
 }
