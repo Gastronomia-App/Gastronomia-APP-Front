@@ -528,11 +528,11 @@ export class OrderItemsForm implements OnInit {
    * Request to finalize order - emits event for parent to handle with modal
    */
   onFinalizeOrder(): void {
-    const currentOrder = this.order();
-    if (!currentOrder?.id) return;
+    const updatedOrder = this.currentOrder();
+    if (!updatedOrder?.id) return;
     
-    // Emit event to parent component to open finalize modal
-    this.finalizeRequested.emit(currentOrder);
+    // Emit the UPDATED order (not the original input) to parent component to open finalize modal
+    this.finalizeRequested.emit(updatedOrder);
   }
 
   /**

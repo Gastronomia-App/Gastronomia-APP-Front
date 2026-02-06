@@ -6,7 +6,9 @@ import {
   signal, 
   AfterViewChecked,
   DestroyRef,
-  afterNextRender
+  afterNextRender,
+  Injector,
+  runInInjectionContext
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExpenseForm } from '../expense-form/expense-form';
@@ -33,6 +35,7 @@ export class ExpensesPage implements OnInit, AfterViewChecked {
   
   private expenseFormService = inject(ExpenseFormService);
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
   
   // ==================== Pending Operations (for AfterViewChecked) ====================
   
@@ -107,10 +110,12 @@ export class ExpensesPage implements OnInit, AfterViewChecked {
     this.currentExpenseId = null;
     this.expenseFormService.setActiveExpenseId(null);
     
-    afterNextRender(() => {
-      if (this.expenseFormComponent) {
-        this.expenseFormComponent.resetForm();
-      }
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => {
+        if (this.expenseFormComponent) {
+          this.expenseFormComponent.resetForm();
+        }
+      });
     });
   }
 

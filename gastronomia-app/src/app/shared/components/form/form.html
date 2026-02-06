@@ -62,14 +62,26 @@
 
                 @switch (field.type) {
                   @case ('text') {
-                    <input
-                      [id]="fieldNameToString(field.name)"
-                      [formControlName]="fieldNameToString(field.name)"
-                      type="text"
-                      [placeholder]="field.placeholder || ''"
-                      [attr.maxlength]="field.maxLength ?? null"
-                      [attr.readonly]="field.readonly ? '' : null"
-                    />
+                    @if (fieldNameToString(field.name) === 'cuit') {
+                      <input
+                        [id]="fieldNameToString(field.name)"
+                        [formControlName]="fieldNameToString(field.name)"
+                        type="text"
+                        [placeholder]="field.placeholder || ''"
+                        [attr.maxlength]="field.maxLength ?? null"
+                        [attr.readonly]="field.readonly ? '' : null"
+                        appCuitFormat
+                      />
+                    } @else {
+                      <input
+                        [id]="fieldNameToString(field.name)"
+                        [formControlName]="fieldNameToString(field.name)"
+                        type="text"
+                        [placeholder]="field.placeholder || ''"
+                        [attr.maxlength]="field.maxLength ?? null"
+                        [attr.readonly]="field.readonly ? '' : null"
+                      />
+                    }
                   }
 
                   @case ('number') {

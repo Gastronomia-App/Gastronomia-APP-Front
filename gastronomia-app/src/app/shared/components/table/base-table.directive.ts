@@ -1,4 +1,4 @@
-import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, DestroyRef, inject, computed, afterNextRender } from '@angular/core';
+import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, DestroyRef, inject, computed, afterNextRender, Injector, runInInjectionContext } from '@angular/core';
 import { TableColumn, LoadMoreEvent } from '../../models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TableDataService } from './services/table-data.service';
@@ -240,7 +240,10 @@ export abstract class BaseTable<
     this.currentItemId = null;
     this.highlightedRowId = null;
 
-    afterNextRender(() => this.formComponent?.resetForm?.());
+    const injector = inject(Injector);
+    runInInjectionContext(injector, () => {
+      afterNextRender(() => this.formComponent?.resetForm?.());
+    });
   }
 
   /**

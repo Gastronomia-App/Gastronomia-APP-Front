@@ -65,11 +65,11 @@ export class OrderDetails {
     return statusMap[currentOrder.status] || currentOrder.status;
   });
 
-  formattedDate = computed(() => {
+  formattedStartDate = computed(() => {
     const currentOrder = this.order();
-    if (!currentOrder?.dateTime) return '-';
+    if (!currentOrder?.startDateTime) return '-';
     
-    const date = new Date(currentOrder.dateTime);
+    const date = new Date(currentOrder.startDateTime);
     return date.toLocaleString('es-AR', {
       day: '2-digit',
       month: '2-digit',
@@ -77,6 +77,38 @@ export class OrderDetails {
       hour: '2-digit',
       minute: '2-digit'
     });
+  });
+
+  formattedEndDate = computed(() => {
+    const currentOrder = this.order();
+    if (!currentOrder?.endDateTime) return 'En curso';
+    
+    const date = new Date(currentOrder.endDateTime);
+    return date.toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  });
+
+  orderDuration = computed(() => {
+    const currentOrder = this.order();
+    if (!currentOrder?.startDateTime) return '-';
+    if (!currentOrder?.endDateTime) return 'En curso';
+    
+    const start = new Date(currentOrder.startDateTime).getTime();
+    const end = new Date(currentOrder.endDateTime).getTime();
+    const durationMs = end - start;
+    
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   });
 
   formattedSubtotal = computed(() => {
@@ -148,10 +180,22 @@ export class OrderDetails {
         title: 'Información general',
         fields: [
           {
-            name: 'dateTime',
-            label: 'Fecha y hora',
+            name: 'startDateTime',
+            label: 'Fecha de apertura',
             type: 'text',
-            formatter: () => this.formattedDate()
+            formatter: () => this.formattedStartDate()
+          },
+          {
+            name: 'endDateTime',
+            label: 'Fecha de cierre',
+            type: 'text',
+            formatter: () => this.formattedEndDate()
+          },
+          {
+            name: 'duration',
+            label: 'Duración',
+            type: 'text',
+            formatter: () => this.orderDuration()
           },
           {
             name: 'customer',

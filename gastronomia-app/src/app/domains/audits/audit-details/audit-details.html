@@ -39,7 +39,7 @@
           </p>
           
           <div class="expected-cash-info">
-            <strong>Efectivo esperado:</strong> {{ formattedTotal() }}
+            <strong>Efectivo esperado:</strong> {{ formattedExpectedCash() }}
           </div>
           
           <div class="form-group">
@@ -59,9 +59,9 @@
             <small class="help-text">Debe ser mayor o igual a 0</small>
           </div>
           
-          @if (audit()?.total !== undefined && audit()?.total !== null && realCash()) {
+          @if (expectedCash() !== undefined && expectedCash() !== null && realCash()) {
             <div class="difference-preview">
-              @let difference = realCash() - (audit()?.total || 0);
+              @let difference = realCash() - expectedCash();
               @let absDifference = difference < 0 ? -difference : difference;
               @if (difference === 0) {
                 <p class="difference-zero">Sin diferencias</p>

@@ -30,11 +30,12 @@ import {
   FormSubmitEvent,
   FormState
 } from '../../models';
+import { CuitFormatDirective } from '../../directives';
 
 @Component({
   selector: 'app-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CuitFormatDirective],
   templateUrl: './form.html',
   styleUrl: './form.css'
 })
