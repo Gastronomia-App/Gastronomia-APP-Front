@@ -118,6 +118,21 @@ export class AuditDetails {
     return formatted;
   });
 
+  // Expected cash = total - totalExpensed
+  expectedCash = computed(() => {
+    const currentAudit = this.audit();
+    if (currentAudit?.total == null || currentAudit?.totalExpensed == null) return 0;
+    return currentAudit.total - currentAudit.totalExpensed;
+  });
+
+  formattedExpectedCash = computed(() => {
+    const expected = this.expectedCash();
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(expected);
+  });
+
   balanceGapClass = computed(() => {
     const currentAudit = this.audit();
     if (currentAudit?.balanceGap == null) return '';
@@ -245,8 +260,8 @@ export class AuditDetails {
     const currentAudit = this.audit();
     const status = currentAudit?.auditStatus;
     if (currentAudit && status === 'IN_PROGRESS') {
-      // Initialize realCash with expected total
-      this.realCash.set(currentAudit.total || 0);
+      // Initialize realCash with expected cash (total - totalExpensed)
+      this.realCash.set(this.expectedCash());
       this.showFinalizeModal.set(true);
     }
   }
