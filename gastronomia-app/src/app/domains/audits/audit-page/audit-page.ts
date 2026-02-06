@@ -6,7 +6,9 @@ import {
   signal, 
   AfterViewChecked,
   DestroyRef,
-  afterNextRender
+  afterNextRender,
+  Injector,
+  runInInjectionContext
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuditForm } from '../audit-form/audit-form';
@@ -33,6 +35,7 @@ export class AuditsPage implements OnInit, AfterViewChecked {
   
   private auditFormService = inject(AuditFormService);
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
   
   // ==================== Pending Operations (for AfterViewChecked) ====================
   
@@ -107,10 +110,12 @@ export class AuditsPage implements OnInit, AfterViewChecked {
     this.currentAuditId = null;
     this.auditFormService.setActiveAuditId(null);
     
-    afterNextRender(() => {
-      if (this.auditFormComponent) {
-        this.auditFormComponent.resetForm();
-      }
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => {
+        if (this.auditFormComponent) {
+          this.auditFormComponent.resetForm();
+        }
+      });
     });
   }
 
