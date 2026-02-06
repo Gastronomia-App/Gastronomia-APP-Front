@@ -70,6 +70,13 @@ export class CategoryForm {
           fullWidth: true
         },
         {
+          name: 'visibleInMenu',
+          label: 'Visible en la carta',
+          type: 'checkbox',
+          defaultValue: true,
+          helpText: 'Si está activado, esta categoría aparecerá en la carta de presentación'
+        },
+        {
           name: 'colorHue',
           label: 'Color',
           type: 'custom',
@@ -141,7 +148,8 @@ export class CategoryForm {
     name: event.data.name || '',
     color: this.currentColor(),
     colorHue: this.colorHue(),
-    icon: this.currentIcon()
+    icon: this.currentIcon(),
+    visibleInMenu: event.data.visibleInMenu ?? true
   };
 
     if (event.isEditMode && event.editingId) {
@@ -189,7 +197,8 @@ export class CategoryForm {
 
   const categoryData: Partial<Category> = {
     name: category.name,
-    icon: category.icon ?? null
+    icon: category.icon ?? null,
+    visibleInMenu: category.visibleInMenu ?? true
   };
 
   const formComp = this.formComponent();

@@ -7,4 +7,5 @@ export interface Category {
     colorHue?: number;
     products: Product[];
     icon?: string | null;
+    visibleInMenu?: boolean;
 }
