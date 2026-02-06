@@ -67,6 +67,10 @@ export class EmployeesUpdateProfile implements OnInit {
     password: ['', [Validators.minLength(8), Validators.maxLength(72)]]
   });
 
+  ngOnDestroy(): void {
+    this.auth.isRedirecting = false;
+  }
+
   ngOnInit(): void {
     this.employeeService.getCurrentEmployee().subscribe(emp => {
       this.currentUser = {
@@ -192,10 +196,8 @@ export class EmployeesUpdateProfile implements OnInit {
     const usernameChanged = rawLocal.length > 0;
     const passwordChanged = password.length > 0;
 
-    // Mark controls as touched to show errors
     this.form.markAllAsTouched();
 
-    // Manual username length validation (backend already tiene uno válido)
     if (
       usernameChanged &&
       (rawLocal.length < this.MIN_USERNAME ||
@@ -207,7 +209,6 @@ export class EmployeesUpdateProfile implements OnInit {
       return;
     }
 
-    // Password and other fields validations rely on reactive validators
     if (this.form.invalid) {
       return;
     }
@@ -232,17 +233,19 @@ export class EmployeesUpdateProfile implements OnInit {
 
     this.employeeService.updateCurrentEmployee(dto).subscribe({
       next: () => {
-        this.updated.emit();
-
-        // If username and password were not changed, just close
+        
         if (!usernameChanged && !passwordChanged) {
+          this.updated.emit(); 
           this.close();
           return;
         }
 
-        // Show security redirect with countdown
-        this.securityRedirect.set(true);
+        
+        this.auth.isRedirecting = true;
 
+        localStorage.removeItem('access_token');
+
+        this.securityRedirect.set(true);
         let counter = 5;
         this.redirectCountdown.set(counter);
 
@@ -252,12 +255,15 @@ export class EmployeesUpdateProfile implements OnInit {
 
           if (counter === 0) {
             clearInterval(interval);
+            this.auth.isRedirecting = false;
             this.auth.logout();
             this.router.navigate(['/login']);
           }
         }, 1000);
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
       }
-      // Errors de backend los maneja el interceptor/global handler
     });
   }
 

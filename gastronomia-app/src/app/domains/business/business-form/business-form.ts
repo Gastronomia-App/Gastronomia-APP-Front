@@ -110,12 +110,14 @@ export class BusinessForm implements OnInit, OnChanges {
 
     const dto = {
       name: (value.name ?? '').trim(),
-      cuit: (value.cuit ?? '').trim(),
+      // 1. Convertimos a String explícitamente para evitar el error .trim is not a function
+      cuit: String(value.cuit ?? '').trim(),
       address: {
         street: (value.street ?? '').trim(),
         city: (value.city ?? '').trim(),
         province: (value.province ?? '').trim(),
-        zipCode: (value.zipCode ?? '').trim()
+        // 2. Hacemos lo mismo con zipCode por seguridad
+        zipCode: String(value.zipCode ?? '').trim()
       }
     };
 

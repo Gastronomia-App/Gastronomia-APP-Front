@@ -24,6 +24,11 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
         if (err.status === 401 && !req.url.includes('/employees/login')) {
+          if (this.auth.isRedirecting) {
+             // Si el semáforo está en verde, ignoramos el error y no redirigimos
+             return throwError(() => err);
+          }
+          this.auth.isRedirecting = true;
           this.auth.logout();
           this.router.navigate(['/login']);
         }

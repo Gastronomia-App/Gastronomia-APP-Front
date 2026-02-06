@@ -24,6 +24,8 @@ export class AuthService {
   private base = `${environment.apiBaseUrl}/employees`;
   private businessBase = `${environment.apiBaseUrl}/businesses`;
 
+  public isRedirecting = false;
+
   // Signal reactivo para la sesión
   private sessionSignal = signal<AuthSession | null>(this.restoreSession());
   
