@@ -50,9 +50,14 @@
    ========================================================= */
 .grid-scroll {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
+  pointer-events: none; /* Disable pointer events on the scroll container */
   scrollbar-width: thin;
   scrollbar-color: #b0b0b0 #e9e9e9; /* Custom scrollbar colors */
+}
+
+.grid-scroll * {
+  pointer-events: auto; /* ✅ Restaura eventos en los hijos (seats clickeables) */
 }
 
 /* Container holding the grid and all seats */
