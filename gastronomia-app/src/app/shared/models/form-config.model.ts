@@ -93,6 +93,9 @@ export interface FormFieldConfig<T = any> {
   /** Rows (for textarea) */
   rows?: number;
   
+  /** Custom directive to apply to the field (e.g., 'appCuitFormat') */
+  customDirective?: string;
+  
   /** Custom component to render dynamically (for 'custom' type) */
   customComponent?: Type<any>;
   

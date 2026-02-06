@@ -74,13 +74,13 @@ export class SupplierForm implements OnInit {
             name: 'cuit',
             label: 'CUIT',
             type: 'text',
-            placeholder: '12345678901',
+            placeholder: '20-11222333-5',
             required: false,
             validators: [
               Validators.pattern(/^\d{2}-\d{8}-\d$/)
             ],
             fullWidth: false,
-            helpText: 'Formato: 11 dígitos sin guiones'
+            helpText: 'El formato es XX-XXXXXXXX-X'
           }
         ]
       },
@@ -91,7 +91,7 @@ export class SupplierForm implements OnInit {
             name: 'phoneNumber',
             label: 'Teléfono',
             type: 'text',
-            placeholder: '+54 9 11 1234-5678',
+            placeholder: '223 123 4567',
             required: false,
             validators: [Validators.minLength(7), Validators.maxLength(20)],
             fullWidth: false,
