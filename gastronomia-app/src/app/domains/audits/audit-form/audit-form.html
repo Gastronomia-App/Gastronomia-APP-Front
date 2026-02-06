@@ -18,15 +18,4 @@
   </app-form>
 </aside>
 
-<!-- Error Modal -->
-<app-confirmation-modal
-  [isVisible]="showErrorModal()"
-  title="No se puede abrir la caja"
-  [message]="errorMessage()"
-  confirmText="Entendido"
-  cancelText="Cerrar"
-  [isDanger]="false"
-  (confirm)="closeErrorModal()"
-  (cancel)="closeErrorModal()"
->
-</app-confirmation-modal>
+
