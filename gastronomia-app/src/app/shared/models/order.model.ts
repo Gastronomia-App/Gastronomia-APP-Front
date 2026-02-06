@@ -9,7 +9,8 @@ export interface Order {
   employeeName?: string;
   customerName?: string;
   seatingNumber?: number;
-  dateTime?: string;
+  startDateTime?: string;
+  endDateTime?: string | null;
   items?: Item[];
   discount?: number;
   status?: OrderStatus;

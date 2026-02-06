@@ -68,7 +68,7 @@ export class OrderService {
 
     params = params.set('page', (filters.page ?? 0).toString());
     params = params.set('size', (filters.size ?? 10).toString());
-    params = params.set('sort', filters.sort ?? 'dateTime,desc');
+    params = params.set('sort', filters.sort ?? 'startDateTime,desc');
 
     return this.http.get<PageResponse<Order>>(this.apiUrl, { params });
   }

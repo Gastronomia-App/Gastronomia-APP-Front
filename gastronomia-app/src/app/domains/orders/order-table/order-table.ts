@@ -156,8 +156,8 @@ export class OrderTable extends BaseTable<Order> {
   protected getColumns(): TableColumn<Order>[] {
     return [
       {
-        header: 'Fecha y Hora',
-        field: 'dateTime',
+        header: 'Fecha de Apertura',
+        field: 'startDateTime',
         sortable: true,
         align: 'left',
         formatter: (value: string) => {
@@ -217,7 +217,7 @@ export class OrderTable extends BaseTable<Order> {
     const filters: any = {
       page,
       size,
-      sort: 'dateTime,desc'
+      sort: 'startDateTime,desc'
     };
 
     // Add filters if they exist
