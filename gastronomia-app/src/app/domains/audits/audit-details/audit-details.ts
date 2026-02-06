@@ -210,7 +210,8 @@ export class AuditDetails {
             label: 'Diferencia',
             type: 'text',
             formatter: () => this.formattedBalanceGap(),
-            cssClass: this.balanceGapClass()
+            cssClass: this.balanceGapClass(),
+            condition: (audit: Audit) => audit.auditStatus === 'FINALIZED'
           }
         ]
       }

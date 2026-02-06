@@ -53,6 +53,8 @@ export class AuditTable extends BaseTable<Audit> {
       ],
       filterFn: (audit, value) => {
         if (!value) return true;
+        // Only filter for finalized audits
+        if (audit.auditStatus !== 'FINALIZED') return false;
         if (audit.balanceGap == null) return false;
         
         if (value === 'positive') {
@@ -180,7 +182,9 @@ export class AuditTable extends BaseTable<Audit> {
         field: 'balanceGap',
         sortable: true,
         align: 'right',
-        formatter: (value: number | null) => {
+        formatter: (value: number | null, audit: Audit) => {
+          // Only show balance gap for finalized audits
+          if (audit.auditStatus !== 'FINALIZED') return '-';
           if (value == null) return '-';
           
           // Format the balance gap with sign
