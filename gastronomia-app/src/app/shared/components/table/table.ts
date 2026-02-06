@@ -60,6 +60,16 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
   enableActionButton = input<boolean>(false);
   actionButtonLabel = input<string>('Nuevo');
   actionButtonIcon = input<string | null>(null);
+
+  /**
+ * Control visibility of default edit action
+ */
+enableEdit = input<boolean>(true);
+
+/**
+ * Control visibility of default delete action  
+ */
+enableDelete = input<boolean>(true);
   
   // Pagination inputs
   pagination = input<PaginationConfig | null>(null);
@@ -103,23 +113,32 @@ export class Table<T extends Record<string, any>> implements AfterViewInit, OnDe
 
   // Default actions (edit and delete)
   defaultActions = computed<TableAction<T>[]>(() => {
-    if (!this.hasDefaultActions()) return [];
-    
-    return [
-      {
-        icon: this.sanitizer.bypassSecurityTrustHtml(this.EDIT_ICON) as any,
-        label: 'Editar',
-        class: 'edit-btn',
-        handler: (row: T) => this.edit.emit(row)
-      },
-      {
-        icon: this.sanitizer.bypassSecurityTrustHtml(this.DELETE_ICON) as any,
-        label: 'Eliminar',
-        class: 'delete-btn',
-        handler: (row: T) => this.delete.emit(row)
-      }
-    ];
-  });
+  if (!this.hasDefaultActions()) return [];
+  
+  const actions: TableAction<T>[] = [];
+  
+  // Add edit action only if enabled
+  if (this.enableEdit()) {
+    actions.push({
+      icon: this.sanitizer.bypassSecurityTrustHtml(this.EDIT_ICON) as any,
+      label: 'Editar',
+      class: 'edit-btn',
+      handler: (row: T) => this.edit.emit(row)
+    });
+  }
+  
+  // Add delete action only if enabled
+  if (this.enableDelete()) {
+    actions.push({
+      icon: this.sanitizer.bypassSecurityTrustHtml(this.DELETE_ICON) as any,
+      label: 'Eliminar',
+      class: 'delete-btn',
+      handler: (row: T) => this.delete.emit(row)
+    });
+  }
+  
+  return actions;
+});
 
   // All actions (custom + default)
   allActions = computed(() => {
