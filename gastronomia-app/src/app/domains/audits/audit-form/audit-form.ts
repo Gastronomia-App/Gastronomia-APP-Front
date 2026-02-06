@@ -74,6 +74,7 @@ export class AuditForm implements OnInit {
             label: 'Efectivo Inicial',
             type: 'number',
             placeholder: '0.00',
+            defaultValue: 0,
             required: true,
             validators: [Validators.required, Validators.min(0)],
             min: 0,
