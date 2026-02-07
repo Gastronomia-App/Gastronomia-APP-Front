@@ -49,10 +49,10 @@ export class ProductForm implements OnInit {
   private productFormService = inject(ProductFormService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-private productImageService = inject(ProductImageService);
+  private productImageService = inject(ProductImageService);
 
-pendingImageFile: File | null = null;
-isUploadingImage = signal<boolean>(false);
+  pendingImageFile: File | null = null;
+  isUploadingImage = signal<boolean>(false);
   formComponent = viewChild(Form);
   onFormClosed = output<void>();
 
@@ -177,20 +177,7 @@ isUploadingImage = signal<boolean>(false);
             maxLength: 150,
             rows: 3,
             fullWidth: true
-          },
-          // ===== Campo custom para imagen =====
-          {
-  name: 'imageFile',
-  label: 'Imagen',
-  type: 'custom',
-  customComponent: ImageUploadField,
-  customInputs: { imageUrl: null },
-  customOutputs: {
-    fileSelected: (file: File | null) => this.onImageFileSelected(file),
-    imageCleared: () => this.onImageCleared()
-  },
-  fullWidth: true
-}
+          }
         ]
       },
       {
@@ -219,6 +206,18 @@ isUploadingImage = signal<boolean>(false);
             placeholder: '0',
             validators: [Validators.min(0)],
             condition: formValue => formValue.controlStock === true,
+            fullWidth: true
+          },
+          {
+            name: 'imageFile',
+            label: 'Imagen',
+            type: 'custom',
+            customComponent: ImageUploadField,
+            customInputs: { imageUrl: null },
+            customOutputs: {
+              fileSelected: (file: File | null) => this.onImageFileSelected(file),
+              imageCleared: () => this.onImageCleared()
+            },
             fullWidth: true
           }
         ]
@@ -257,34 +256,34 @@ isUploadingImage = signal<boolean>(false);
   };
 
   constructor() {
-  effect(() => {
-    const componentsInputs = this.componentsInputs();
-    const groupsInputs = this.productGroupsInputs();
-    const imageInputs = this.imageUploadInputs();
+    effect(() => {
+      const componentsInputs = this.componentsInputs();
+      const groupsInputs = this.productGroupsInputs();
+      const imageInputs = this.imageUploadInputs();
 
-    const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
-    if (compositionSection) {
-      const componentsField = compositionSection.fields.find(f => f.name === 'components');
-      const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
+      const compositionSection = this.formConfig.sections.find(s => s.title === 'Composición');
+      if (compositionSection) {
+        const componentsField = compositionSection.fields.find(f => f.name === 'components');
+        const groupsField = compositionSection.fields.find(f => f.name === 'productGroups');
 
-      if (componentsField) componentsField.customInputs = componentsInputs;
-      if (groupsField) groupsField.customInputs = groupsInputs;
-    }
-
-    // Notice: field name is 'imageFile', not 'imageUrl'
-    const mainSection = this.formConfig.sections.find(s => s.title === 'Información principal');
-    if (mainSection) {
-      const imageField = mainSection.fields.find(f => f.name === 'imageFile');
-      if (imageField) {
-        imageField.customInputs = imageInputs;
+        if (componentsField) componentsField.customInputs = componentsInputs;
+        if (groupsField) groupsField.customInputs = groupsInputs;
       }
-    }
 
-    setTimeout(() => {
-      this.formComponent()?.renderDynamicComponents();
-    }, 0);
-  });
-}
+      // Notice: field name is 'imageFile', not 'imageUrl'
+      const mainSection = this.formConfig.sections.find(s => s.title === 'Información principal');
+      if (mainSection) {
+        const imageField = mainSection.fields.find(f => f.name === 'imageFile');
+        if (imageField) {
+          imageField.customInputs = imageInputs;
+        }
+      }
+
+      setTimeout(() => {
+        this.formComponent()?.renderDynamicComponents();
+      }, 0);
+    });
+  }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -418,55 +417,55 @@ isUploadingImage = signal<boolean>(false);
   }
 
   onFormSubmit(event: FormSubmitEvent<any>): void {
-  const baseData: any = {
-    name: event.data.name || '',
-    categoryId: event.data.categoryId || 0,
-    description: event.data.description || undefined,
-    price: Number(event.data.price) || 0,
-    cost: Number(event.data.cost) || undefined,
-    active: event.data.active ?? true,
-    controlStock: event.data.controlStock ?? false,
-    stock: Number(event.data.stock) || 0
-  };
-
-  const finalize = (finalImageUrl: string | null) => {
-    const formData = {
-      ...baseData,
-      imageUrl: finalImageUrl
+    const baseData: any = {
+      name: event.data.name || '',
+      categoryId: event.data.categoryId || 0,
+      description: event.data.description || undefined,
+      price: Number(event.data.price) || 0,
+      cost: Number(event.data.cost) || undefined,
+      active: event.data.active ?? true,
+      controlStock: event.data.controlStock ?? false,
+      stock: Number(event.data.stock) || 0
     };
 
-    if (event.isEditMode && event.editingId) {
-      this.updateProduct(Number(event.editingId), formData);
-    } else {
-      this.createProduct(formData);
-    }
-  };
+    const finalize = (finalImageUrl: string | null) => {
+      const formData = {
+        ...baseData,
+        imageUrl: finalImageUrl
+      };
 
-  // If there is a pending file, upload it first
-  if (this.pendingImageFile) {
-    this.isUploadingImage.set(true);
-
-    this.productImageService.uploadProductImage(this.pendingImageFile).subscribe({
-      next: response => {
-        this.isUploadingImage.set(false);
-        this.imageUrl.set(response.url);
-        this.pendingImageFile = null;
-        finalize(response.url);
-      },
-      error: () => {
-        this.isUploadingImage.set(false);
-        // Global error handler will show error; no need to do more here
+      if (event.isEditMode && event.editingId) {
+        this.updateProduct(Number(event.editingId), formData);
+      } else {
+        this.createProduct(formData);
       }
-    });
+    };
 
-    return;
+    // If there is a pending file, upload it first
+    if (this.pendingImageFile) {
+      this.isUploadingImage.set(true);
+
+      this.productImageService.uploadProductImage(this.pendingImageFile).subscribe({
+        next: response => {
+          this.isUploadingImage.set(false);
+          this.imageUrl.set(response.url);
+          this.pendingImageFile = null;
+          finalize(response.url);
+        },
+        error: () => {
+          this.isUploadingImage.set(false);
+          // Global error handler will show error; no need to do more here
+        }
+      });
+
+      return;
+    }
+
+    // No pending file:
+    // - create: this.imageUrl() will usually be null
+    // - edit: this.imageUrl() contains original url or null if cleared
+    finalize(this.imageUrl());
   }
-
-  // No pending file:
-  // - create: this.imageUrl() will usually be null
-  // - edit: this.imageUrl() contains original url or null if cleared
-  finalize(this.imageUrl());
-}
 
   createProduct(formData: any): void {
     this.productService.createProduct(formData).subscribe({
@@ -486,10 +485,10 @@ isUploadingImage = signal<boolean>(false);
               }
             });
           },
-          error: () => {}
+          error: () => { }
         });
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -513,10 +512,10 @@ isUploadingImage = signal<boolean>(false);
               }
             });
           },
-          error: () => {}
+          error: () => { }
         });
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -542,24 +541,24 @@ isUploadingImage = signal<boolean>(false);
 
     return operations.length > 0
       ? new Observable(observer => {
-          let completed = 0;
-          operations.forEach(op => {
-            op.subscribe({
-              next: () => {
-                completed++;
-                if (completed === operations.length) {
-                  observer.next(true);
-                  observer.complete();
-                }
-              },
-              error: err => observer.error(err)
-            });
+        let completed = 0;
+        operations.forEach(op => {
+          op.subscribe({
+            next: () => {
+              completed++;
+              if (completed === operations.length) {
+                observer.next(true);
+                observer.complete();
+              }
+            },
+            error: err => observer.error(err)
           });
-        })
-      : new Observable(observer => {
-          observer.next(true);
-          observer.complete();
         });
+      })
+      : new Observable(observer => {
+        observer.next(true);
+        observer.complete();
+      });
   }
 
   syncComponentsAndGroups(productId: number): Observable<any> {
@@ -627,29 +626,29 @@ isUploadingImage = signal<boolean>(false);
 
     return operations.length > 0
       ? new Observable(observer => {
-          let completed = 0;
-          let hasError = false;
+        let completed = 0;
+        let hasError = false;
 
-          operations.forEach(op => {
-            op.subscribe({
-              next: () => {
-                completed++;
-                if (completed === operations.length && !hasError) {
-                  observer.next(true);
-                  observer.complete();
-                }
-              },
-              error: err => {
-                hasError = true;
-                observer.error(err);
+        operations.forEach(op => {
+          op.subscribe({
+            next: () => {
+              completed++;
+              if (completed === operations.length && !hasError) {
+                observer.next(true);
+                observer.complete();
               }
-            });
+            },
+            error: err => {
+              hasError = true;
+              observer.error(err);
+            }
           });
-        })
-      : new Observable(observer => {
-          observer.next(true);
-          observer.complete();
         });
+      })
+      : new Observable(observer => {
+        observer.next(true);
+        observer.complete();
+      });
   }
 
   loadProduct(product: Product): void {
@@ -703,21 +702,21 @@ isUploadingImage = signal<boolean>(false);
     this.cdr.detectChanges();
   }
 
-resetForm(): void {
-  this.isEditMode = false;
-  this.editingProductId = null;
-  this.selectedComponents.set([]);
-  this.selectedProductGroups.set([]);
-  this.originalComponents = [];
-  this.originalProductGroups = [];
-  this.imageUrl.set(null);
-  this.pendingImageFile = null;
+  resetForm(): void {
+    this.isEditMode = false;
+    this.editingProductId = null;
+    this.selectedComponents.set([]);
+    this.selectedProductGroups.set([]);
+    this.originalComponents = [];
+    this.originalProductGroups = [];
+    this.imageUrl.set(null);
+    this.pendingImageFile = null;
 
-  const formComp = this.formComponent();
-  if (formComp) {
-    formComp.resetForm();
+    const formComp = this.formComponent();
+    if (formComp) {
+      formComp.resetForm();
+    }
   }
-}
 
   onFormCancel(): void {
     this.resetForm();
@@ -729,16 +728,16 @@ resetForm(): void {
   }
 
   // ===== image handlers =====
-onImageFileSelected(file: File | null): void {
-  this.pendingImageFile = file;
-  // If user selected a new file, clear old URL so it is not sent by mistake
-  if (file) {
+  onImageFileSelected(file: File | null): void {
+    this.pendingImageFile = file;
+    // If user selected a new file, clear old URL so it is not sent by mistake
+    if (file) {
+      this.imageUrl.set(null);
+    }
+  }
+
+  onImageCleared(): void {
+    this.pendingImageFile = null;
     this.imageUrl.set(null);
   }
-}
-
-onImageCleared(): void {
-  this.pendingImageFile = null;
-  this.imageUrl.set(null);
-}
 }

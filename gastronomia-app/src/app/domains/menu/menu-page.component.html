@@ -200,7 +200,7 @@
                     [src]="imageBaseUrl + item.imageUrl!"
                     [alt]="item.name" />
                   <div class="menu-card__category-tag">
-                    {{ item.category?.name || activeCategoryLabel() }}
+                    {{ item.category.name || activeCategoryLabel() }}
                   </div>
                 </div>
               }

@@ -12,7 +12,7 @@ export class ProductService {
 
   // Get all products
   getProducts(): Observable<Product[]> {
-    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products`).pipe(
+    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/products?size=1000`).pipe(
       map(response => response.content)
     );
   }

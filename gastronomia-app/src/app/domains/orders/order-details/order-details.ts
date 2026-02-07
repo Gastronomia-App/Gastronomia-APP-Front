@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Detail } from '../../../shared/components/detail/detail';
 import { OrderFormService } from '../services/order-form.service';
 import { Order, DetailConfig, Item } from '../../../shared/models';
+import { OrderItemsList } from '../order-items-list/order-items-list';
 
 @Component({
   selector: 'app-order-details',
@@ -171,7 +172,10 @@ export class OrderDetails {
   }
 
   // Detail configuration with computed actions
-  detailConfig = computed<DetailConfig<Order>>(() => ({
+  detailConfig = computed<DetailConfig<Order>>(() => {
+    const currentOrder = this.order();
+    
+    return {
     title: 'Detalles de la orden',
     showHeader: true,
     showFooter: true,
@@ -241,18 +245,15 @@ export class OrderDetails {
           {
             name: 'items',
             label: 'Items',
-            type: 'text',
+            type: 'custom',
             fullWidth: true,
-            formatter: () => {
-              const items = this.itemsList();
-              if (items.length === 0) {
-                return 'No hay items en esta orden';
-              }
-              
-              return items.map((item: any) => 
-                `${item.name} (x${item.quantity}) - ${item.unitPrice} c/u = ${item.total}${item.comment ? ' - ' + item.comment : ''}`
-              ).join(' | ');
-            }
+            customComponent: OrderItemsList,
+            customInputs: {
+              items: currentOrder?.items?.filter(item => !item.deleted) || [],
+              editable: false,
+              deletable: false
+            },
+            customOutputs: {}
           }
         ]
       },
@@ -281,7 +282,8 @@ export class OrderDetails {
       }
     ],
     actions: this.detailActions()
-  }));
+  };
+  });
 
   // Output for finalize action
   onFinalizeOrder = output<Order>();

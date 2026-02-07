@@ -55,7 +55,7 @@ export class OrderFinalizeModal {
   
   orderItems = computed(() => {
     const currentOrder = this.order();
-    return currentOrder?.items || [];
+    return currentOrder?.items?.filter(item => !item.deleted) || [];
   });
 
   totalPaid = computed(() => {
@@ -131,7 +131,6 @@ export class OrderFinalizeModal {
     effect(() => {
       if (this.isVisible()) {
         this.loadPaymentMethods();
-        this.resetPaymentEntries();
       }
     });
   }
@@ -142,6 +141,7 @@ export class OrderFinalizeModal {
       .subscribe({
         next: (response) => {
           this.paymentMethods.set(response.content);
+          this.resetPaymentEntries();
         },
         error: (error) => {
           this.alertMessage.set('Error al cargar los métodos de pago');
@@ -153,7 +153,7 @@ export class OrderFinalizeModal {
   addPaymentEntry(): void {
     this.paymentEntries.update(entries => [
       ...entries,
-      { paymentMethod: null, amount: 0 }
+      { paymentMethod: null, amount: - this.difference() > 0 ? - this.difference() : 0 }
     ]);
   }
 
@@ -187,7 +187,12 @@ export class OrderFinalizeModal {
   }
 
   private resetPaymentEntries(): void {
-    this.paymentEntries.set([{ paymentMethod: null, amount: 0 }]);
+    const amount =  this.orderTotal();
+    
+    this.paymentEntries.set([{
+      amount: amount,
+      paymentMethod: null
+    }]);
   }
 
   formatCurrency(value: number): string {

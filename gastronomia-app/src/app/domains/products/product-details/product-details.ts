@@ -21,48 +21,48 @@ export class ProductDetails implements OnInit {
   private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
   private destroyRef = inject(DestroyRef);
-  
+
   onDetailsClosed = output<void>();
-  
+
   // Reference to the generic Detail component
   detailComponent = viewChild(Detail);
 
   imagePreviewInputs = computed(() => {
-  const currentProduct = this.product();
-  return {
-    imageUrl: currentProduct?.imageUrl ?? null
-  };
-});
+    const currentProduct = this.product();
+    return {
+      imageUrl: currentProduct?.imageUrl ?? null
+    };
+  });
   // Signals
   product = signal<Product | null>(null);
   categories = signal<Category[]>([]);
-  
+
   // Computed
   categoryName = computed(() => {
     const currentProduct = this.product();
-    
+
     return currentProduct?.category?.name || '-';
   });
 
   constructor() {
-  effect(() => {
-    const currentProduct = this.product();
-    const imageInputs = this.imagePreviewInputs();
+    effect(() => {
+      const currentProduct = this.product();
+      const imageInputs = this.imagePreviewInputs();
 
-    // Actualizar inputs del campo custom de imagen
-    const mainSection = this.detailConfig.sections.find(s => s.title === 'Información principal');
-    if (mainSection) {
-      const imageField = mainSection.fields.find(f => f.name === 'image');
-      if (imageField) {
-        imageField.customInputs = imageInputs;
+      // Actualizar inputs del campo custom de imagen
+      const mainSection = this.detailConfig.sections.find(s => s.title === 'Configuración');
+      if (mainSection) {
+        const imageField = mainSection.fields.find(f => f.name === 'image');
+        if (imageField) {
+          imageField.customInputs = imageInputs;
+        }
       }
-    }
 
-    if (currentProduct) {
-      this.detailComponent()?.renderDynamicComponents();
-    }
-  });
-}
+      if (currentProduct) {
+        this.detailComponent()?.renderDynamicComponents();
+      }
+    });
+  }
 
   // Detail configuration
   detailConfig: DetailConfig<Product> = {
@@ -88,14 +88,7 @@ export class ProductDetails implements OnInit {
             name: 'price',
             label: 'Precio',
             type: 'currency'
-          },{
-          name: 'image',
-          label: 'Imagen',
-          type: 'custom',
-          fullWidth: true,
-          customComponent: ProductImagePreview,
-          customInputs: this.imagePreviewInputs()
-        },
+          },
           {
             name: 'cost',
             label: 'Costo',
@@ -137,6 +130,14 @@ export class ProductDetails implements OnInit {
             label: 'Stock',
             type: 'number',
             condition: (data) => !!data.controlStock
+          }, 
+          {
+            name: 'image',
+            label: 'Imagen',
+            type: 'custom',
+            fullWidth: true,
+            customComponent: ProductImagePreview,
+            customInputs: this.imagePreviewInputs()
           }
         ]
       },

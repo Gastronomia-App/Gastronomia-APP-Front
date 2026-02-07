@@ -312,23 +312,38 @@ export class OrderItemsForm implements OnInit {
       const comment = (p as any).comment || '';
       const selectedOptions = this.pendingItemsSelectedOptions().get(uniqueId) || [];
       const quantity = (p as any).quantity || 1;
+      const hasOptions = selectedOptions.length > 0;
 
-      // Create a key based on product id, options, and comment
-      const key = this.createGroupingKey(p.id, selectedOptions, comment);
-
-      if (groupedItems.has(key)) {
-        groupedItems.get(key)!.count += quantity;
+      // Items with options CANNOT be grouped - must always be quantity 1
+      if (hasOptions) {
+        // Create individual items for each unit
+        for (let i = 0; i < quantity; i++) {
+          const itemRequest: ItemRequest = {
+            productId: p.id,
+            quantity: 1, // ALWAYS 1 for items with options
+            selectedOptions: this.convertToSelectedOptionRequests(selectedOptions),
+            comment: comment
+          };
+          itemsToAdd.push(itemRequest);
+        }
       } else {
-        groupedItems.set(key, {
-          productId: p.id,
-          comment: comment,
-          selectedOptions: selectedOptions,
-          count: quantity
-        });
+        // Items without options can be grouped
+        const key = this.createGroupingKey(p.id, selectedOptions, comment);
+
+        if (groupedItems.has(key)) {
+          groupedItems.get(key)!.count += quantity;
+        } else {
+          groupedItems.set(key, {
+            productId: p.id,
+            comment: comment,
+            selectedOptions: selectedOptions,
+            count: quantity
+          });
+        }
       }
     });
 
-    // Convert grouped items to ItemRequest[]
+    // Convert grouped items (without options) to ItemRequest[]
     groupedItems.forEach(group => {
       const itemRequest: ItemRequest = {
         productId: group.productId,
@@ -465,10 +480,24 @@ export class OrderItemsForm implements OnInit {
 
     this.orderService.removeItem(this.order().id!, itemId).subscribe({
       next: () => {
-        this.confirmedItems.update(items =>
-          items.map(i => i.id === itemId ? { ...i, deleted: true } : i)
-        );
-        this.cancelDeleteItem();
+        // Reload the order from backend to get updated items
+        this.orderService.getOrderById(this.order().id!).subscribe({
+          next: (updatedOrder) => {
+            this.currentOrder.set(updatedOrder);
+            this.confirmedItems.set(updatedOrder.items || []);
+            this.discount.set(updatedOrder.discount || 0);
+            this.cancelDeleteItem();
+            this.orderUpdated.emit();
+            
+          },
+          error: () => {
+            // Fallback to local update if reload fails
+            this.confirmedItems.update(items =>
+              items.map(i => i.id === itemId ? { ...i, deleted: true } : i)
+            );
+            this.cancelDeleteItem();
+          }
+        });
       },
       error: (error) => {
         console.error('Error removing item:', error);
@@ -533,40 +562,6 @@ export class OrderItemsForm implements OnInit {
     
     // Emit the UPDATED order (not the original input) to parent component to open finalize modal
     this.finalizeRequested.emit(updatedOrder);
-  }
-
-  /**
-   * Legacy method - kept for reference but not used
-   * @deprecated Use onFinalizeOrder which emits event
-   */
-  private legacyFinalizeOrder(): void {
-    const orderId = this.order().id!;
-
-    // Call with empty payment methods array
-    this.orderService.finalizeOrder(orderId, []).subscribe({
-      next: () => {
-        this.orderUpdated.emit();
-
-        this.ticketService
-          .getPaymentTicket(orderId)
-          .pipe(take(1))
-          .subscribe({
-            next: (blob) => {
-              this.ticketService.openPdf(blob);
-              // Close panel after triggering PDF open
-              this.onClose();
-            },
-            error: (error) => {
-              console.error('Error downloading payment ticket', error);
-              // Even if ticket fails, close panel because order is already finalized
-              this.onClose();
-            }
-          });
-      },
-      error: (error) => {
-        console.error('Error finalizing order:', error);
-      }
-    });
   }
 
   onSplitOrder(): void {
@@ -646,17 +641,37 @@ export class OrderItemsForm implements OnInit {
         
         grouped.forEach((value, optionsKey) => {
           const productCopy = { ...product };
-          const uniqueId = Date.now() + Math.random();
-          (productCopy as any).uniqueId = uniqueId;
-          (productCopy as any).quantity = value.count;
+          const hasOptions = value.options.length > 0;
           
-          this.pendingItems.update(items => [...items, productCopy]);
-          
-          this.pendingItemsSelectedOptions.update(map => {
-            const newMap = new Map(map);
-            newMap.set(uniqueId, value.options);
-            return newMap;
-          });
+          // If item has options, create multiple individual items instead of one with quantity > 1
+          if (hasOptions) {
+            for (let i = 0; i < value.count; i++) {
+              const uniqueId = Date.now() + Math.random();
+              (productCopy as any).uniqueId = uniqueId;
+              (productCopy as any).quantity = 1; // ALWAYS 1 for items with options
+              
+              this.pendingItems.update(items => [...items, { ...productCopy }]);
+              
+              this.pendingItemsSelectedOptions.update(map => {
+                const newMap = new Map(map);
+                newMap.set(uniqueId, JSON.parse(JSON.stringify(value.options)));
+                return newMap;
+              });
+            }
+          } else {
+            // Items without options can be grouped
+            const uniqueId = Date.now() + Math.random();
+            (productCopy as any).uniqueId = uniqueId;
+            (productCopy as any).quantity = value.count;
+            
+            this.pendingItems.update(items => [...items, productCopy]);
+            
+            this.pendingItemsSelectedOptions.update(map => {
+              const newMap = new Map(map);
+              newMap.set(uniqueId, value.options);
+              return newMap;
+            });
+          }
         });
       } else {
         // Single item edit
@@ -673,17 +688,37 @@ export class OrderItemsForm implements OnInit {
       
       grouped.forEach((value, optionsKey) => {
         const productCopy = { ...product };
-        const uniqueId = Date.now() + Math.random();
-        (productCopy as any).uniqueId = uniqueId;
-        (productCopy as any).quantity = value.count;
+        const hasOptions = value.options.length > 0;
         
-        this.pendingItems.update(items => [...items, productCopy]);
-        
-        this.pendingItemsSelectedOptions.update(map => {
-          const newMap = new Map(map);
-          newMap.set(uniqueId, value.options);
-          return newMap;
-        });
+        // If item has options, create multiple individual items instead of one with quantity > 1
+        if (hasOptions) {
+          for (let i = 0; i < value.count; i++) {
+            const uniqueId = Date.now() + Math.random();
+            (productCopy as any).uniqueId = uniqueId;
+            (productCopy as any).quantity = 1; // ALWAYS 1 for items with options
+            
+            this.pendingItems.update(items => [...items, { ...productCopy }]);
+            
+            this.pendingItemsSelectedOptions.update(map => {
+              const newMap = new Map(map);
+              newMap.set(uniqueId, JSON.parse(JSON.stringify(value.options)));
+              return newMap;
+            });
+          }
+        } else {
+          // Items without options can be grouped
+          const uniqueId = Date.now() + Math.random();
+          (productCopy as any).uniqueId = uniqueId;
+          (productCopy as any).quantity = value.count;
+          
+          this.pendingItems.update(items => [...items, productCopy]);
+          
+          this.pendingItemsSelectedOptions.update(map => {
+            const newMap = new Map(map);
+            newMap.set(uniqueId, value.options);
+            return newMap;
+          });
+        }
       });
     }
 
@@ -723,27 +758,42 @@ export class OrderItemsForm implements OnInit {
    * Receives ItemContext[] which contains product and selections
    */
   onSelectionConfirmed(items: Array<{product: Product, selections: SelectedOption[]}>): void {
-    // Process each item from the modal
-    items.forEach(itemContext => {
-      const { product, selections } = itemContext;
-      
-      // Create a new pending item for each product with its options
-      const productCopy = { ...product };
-      const uniqueId = Date.now() + Math.random();
-      (productCopy as any).uniqueId = uniqueId;
-      (productCopy as any).quantity = 1;
-      
-      this.pendingItems.update(items => [...items, productCopy]);
-      
-      // Store selections
-      if (selections && selections.length > 0) {
+    // Check if we're editing an existing item
+    if (this.currentEditingItemId !== null) {
+      // Editing mode - update the existing item
+      if (items.length > 0) {
+        const { selections } = items[0]; // Only use the first item when editing
+        
+        // Update the selections for the existing item
         this.pendingItemsSelectedOptions.update(map => {
           const newMap = new Map(map);
-          newMap.set(uniqueId, selections);
+          newMap.set(this.currentEditingItemId!, selections || []);
           return newMap;
         });
       }
-    });
+    } else {
+      // Adding new items - process each item from the modal
+      items.forEach(itemContext => {
+        const { product, selections } = itemContext;
+        
+        // Create a new pending item for each product with its options
+        const productCopy = { ...product };
+        const uniqueId = Date.now() + Math.random();
+        (productCopy as any).uniqueId = uniqueId;
+        (productCopy as any).quantity = 1;
+        
+        this.pendingItems.update(items => [...items, productCopy]);
+        
+        // Store selections
+        if (selections && selections.length > 0) {
+          this.pendingItemsSelectedOptions.update(map => {
+            const newMap = new Map(map);
+            newMap.set(uniqueId, selections);
+            return newMap;
+          });
+        }
+      });
+    }
 
     this.closeSelectionModal();
   }

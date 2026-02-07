@@ -49,6 +49,7 @@ export class ItemSelectionModal implements OnInit {
   currentContext = signal<NavigationContext>({ type: 'category' });
   expandedItems = signal<Set<string>>(new Set());
   isLoadingCategories = signal(false);
+  isEditMode = signal(false); // Track if we're editing existing selections
   
   // Cache for loaded product groups with their options
   loadedGroups = signal<Map<number, ProductGroup>>(new Map());
@@ -198,6 +199,10 @@ export class ItemSelectionModal implements OnInit {
           });
         }
         this.items.set(newItems);
+        
+        // Detect edit mode: if any initial selections exist
+        const hasInitialSelections = initialSels.length > 0 && initialSels.some(sel => sel && sel.length > 0);
+        this.isEditMode.set(hasInitialSelections);
 
         // Start at first item in option mode
         this.currentContext.set({
@@ -264,6 +269,9 @@ export class ItemSelectionModal implements OnInit {
   }
 
   selectProduct(product: Product): void {
+    // Don't allow selecting new products in edit mode
+    if (this.isEditMode()) return;
+    
     // Save current category tab index before navigating to options
     if (this.currentContext().type === 'category') {
       this.lastCategoryTabIndex.set(this.activeTabIndex());
@@ -461,6 +469,9 @@ export class ItemSelectionModal implements OnInit {
   }
 
   onRemoveItem(itemIndex: number): void {
+    // Don't allow removing items in edit mode (should stay in current product context)
+    if (this.isEditMode()) return;
+    
     this.items.update(items => items.filter((_, i) => i !== itemIndex));
     
     if (this.items().length === 0) {
@@ -501,6 +512,9 @@ export class ItemSelectionModal implements OnInit {
   }
 
   backToCategories(): void {
+    // Don't allow navigation back to categories in edit mode
+    if (this.isEditMode()) return;
+    
     this.currentContext.set({ type: 'category' });
     // Restore the last category tab index
     this.activeTabIndex.set(this.lastCategoryTabIndex());
@@ -563,7 +577,10 @@ export class ItemSelectionModal implements OnInit {
       return;
     }
 
-    this.backToCategories();
+    // In edit mode, don't navigate back to categories
+    if (!this.isEditMode()) {
+      this.backToCategories();
+    }
   }
 
   private addOrIncrementOption(selections: SelectedOption[], option: ProductOption): SelectedOption[] {
