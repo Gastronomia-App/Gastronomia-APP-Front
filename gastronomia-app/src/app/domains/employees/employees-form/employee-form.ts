@@ -61,6 +61,7 @@ export class EmployeeForm implements OnInit {
             label: 'Nombre',
             type: 'text',
             required: true,
+            placeholder: 'Ej: Juan',
             validators: [Validators.minLength(1), Validators.maxLength(50)]
           },
           {
@@ -68,6 +69,7 @@ export class EmployeeForm implements OnInit {
             label: 'Apellido',
             type: 'text',
             required: true,
+            placeholder: 'Ej: Pérez',
             validators: [Validators.minLength(1), Validators.maxLength(50)]
           },
           {
@@ -75,6 +77,7 @@ export class EmployeeForm implements OnInit {
             label: 'DNI',
             type: 'text',
             required: true,
+            placeholder: 'Ej: 12345678',
             validators: [Validators.pattern(/^\d{7,8}$/)]
           },
           {
@@ -82,6 +85,7 @@ export class EmployeeForm implements OnInit {
             label: 'Email',
             type: 'email',
             required: true,
+            placeholder: 'Ej: juan@example.com',
             validators: [Validators.email]
           },
           {
@@ -90,6 +94,7 @@ export class EmployeeForm implements OnInit {
             type: 'text',
             required: true,
             fullWidth: true,
+            placeholder: 'Ej: 541112345678',
             validators: [Validators.pattern(/^\d{10,13}$/)]
           }
         ]

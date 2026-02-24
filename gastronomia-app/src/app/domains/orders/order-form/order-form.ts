@@ -11,6 +11,7 @@ import { Customer, Employee, FormConfig, Order } from '../../../shared/models';
 import { Form } from '../../../shared/components/form';
 import { SearchableEntity } from '../../../shared/components/searchable-entity/searchable-entity';
 import { FormControl } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-order-form',
@@ -24,6 +25,9 @@ export class OrderForm implements OnInit, AfterViewInit {
   private readonly customerService = inject(CustomersService);
   private readonly employeeService = inject(EmployeeService);
   private readonly orderService = inject(OrderService);
+
+  private readonly authService = inject(AuthService);
+
 
   editingOrder = input<Order | null>(null);
 
@@ -98,38 +102,38 @@ export class OrderForm implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-  queueMicrotask(() => {
-    this.formRef()?.renderDynamicComponents();
-    const form = this.formRef()?.form;
-    if (!form) return;
+    queueMicrotask(() => {
+      this.formRef()?.renderDynamicComponents();
+      const form = this.formRef()?.form;
+      if (!form) return;
 
-    if (!form.get('customerId')) {
-      form.addControl('customerId', new FormControl<number | null>(null));
-    }
-
-    if (this.editingOrder()) {
-      const order = this.editingOrder()!;
-
-      form.patchValue({
-        peopleCount: order.peopleCount,
-        customerId: order.customerId ?? null,
-        employeeId: order.employeeId ?? null,
-        orderType: order.orderType
-      });
-
-      if (order.customerId) {
-        const found = this.customers().find(c => c.id === order.customerId);
-        if (found) this.selectedCustomer.set(found);
+      if (!form.get('customerId')) {
+        form.addControl('customerId', new FormControl<number | null>(null));
       }
 
-      this.formConfig.update(cfg => ({
-        ...cfg,
-        title: 'Editar Orden',
-        submitLabel: 'Guardar Cambios'
-      }));
-    }
-  });
-}
+      if (this.editingOrder()) {
+        const order = this.editingOrder()!;
+
+        form.patchValue({
+          peopleCount: order.peopleCount,
+          customerId: order.customerId ?? null,
+          employeeId: order.employeeId ?? null,
+          orderType: order.orderType
+        });
+
+        if (order.customerId) {
+          const found = this.customers().find(c => c.id === order.customerId);
+          if (found) this.selectedCustomer.set(found);
+        }
+
+        this.formConfig.update(cfg => ({
+          ...cfg,
+          title: 'Editar Orden',
+          submitLabel: 'Guardar Cambios'
+        }));
+      }
+    });
+  }
 
   private loadEmployees(): void {
     this.isLoadingEmployees.set(true);
@@ -145,6 +149,15 @@ export class OrderForm implements OnInit, AfterViewInit {
             value: e.id
           }));
           this.formConfig.set({ ...cfg });
+        }
+
+        if (!this.editingOrder()) {
+          const currentEmployeeId = this.authService.employeeId();
+          if (currentEmployeeId) {
+            queueMicrotask(() => {
+              this.formRef()?.form?.patchValue({ employeeId: currentEmployeeId });
+            });
+          }
         }
       },
       complete: () => this.isLoadingEmployees.set(false)
@@ -217,11 +230,11 @@ export class OrderForm implements OnInit, AfterViewInit {
         Number(this.editingOrder()!.id),
         payload
       )
-      .pipe(take(1))
-      .subscribe({
-        next: () => this.orderCreated.emit(),
-        error: (err) => console.error('Error updating order', err)
-      });
+        .pipe(take(1))
+        .subscribe({
+          next: () => this.orderCreated.emit(),
+          error: (err) => console.error('Error updating order', err)
+        });
       return;
     }
 

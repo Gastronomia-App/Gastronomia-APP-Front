@@ -642,6 +642,44 @@
   font-size: 0.7rem;
 }
 
+/* ESTILOS PARA EL PLACEHOLDER DE IMAGEN (SIN IMAGEN) */
+.menu-card__image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 50%, #1c1c1c 0%, #050505 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.menu-card__placeholder-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  color: rgba(201, 169, 98, 0.25); 
+  margin-bottom: 0.5rem;
+  transition:
+    transform 0.5s ease,
+    color 0.5s ease;
+}
+
+.menu-card__placeholder-text {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+  transition: color 0.5s ease;
+}
+
+/* Animaciones al hacer hover en la tarjeta para darle vida al ícono */
+.menu-card:hover .menu-card__placeholder-icon {
+  transform: scale(1.1) translateY(-2px);
+  color: rgba(201, 169, 98, 0.7);
+}
+
+.menu-card:hover .menu-card__placeholder-text {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .menu-card__body {
   padding: 1.25rem 1.3rem 1.4rem;
 }

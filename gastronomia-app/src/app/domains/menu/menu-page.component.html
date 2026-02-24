@@ -4,7 +4,6 @@
   [revealDelay]="200">
 </app-scroll-progress-bar>
 
-<!-- HERO -->
 <section
   class="menu-hero"
   [class.menu-hero--fading]="isHeroFading()"
@@ -12,7 +11,6 @@
   <div class="menu-hero__overlay"></div>
   <div class="menu-hero__fade-layer"></div>
 
-  <!-- Decorative corner accents -->
   <div
     class="menu-hero__corner menu-hero__corner--top-left"
     [style.opacity]="heroCornersOpacity()">
@@ -49,7 +47,6 @@
     </div>
   </div>
 
-  <!-- CTA EXPLORE -->
   <button
     type="button"
     class="menu-hero__cta"
@@ -60,7 +57,6 @@
     <span class="menu-hero__cta-arrow"></span>
   </button>
 
-  <!-- HERO INDICATORS -->
   <div
     class="menu-hero__indicators"
     [style.transform]="'translate3d(0,' + heroContentTranslateY() + 'px,0)'"
@@ -80,7 +76,6 @@
   </div>
 </section>
 
-<!-- CATEGORIES NAV -->
 <section
   #categoriesSection
   id="menu-categories"
@@ -135,7 +130,6 @@
   </div>
 </section>
 
-<!-- ITEMS GRID -->
 <section
   class="menu-items"
   appScrollReveal="up"
@@ -193,12 +187,32 @@
               class="menu-card"
               appScrollReveal="up"
               [revealDelay]="($index % 3) * 80">
+              
               @if (item.imageUrl) {
                 <div class="menu-card__image-wrapper">
                   <img
                     class="menu-card__image"
                     [src]="imageBaseUrl + item.imageUrl!"
                     [alt]="item.name" />
+                  <div class="menu-card__category-tag">
+                    {{ item.category.name || activeCategoryLabel() }}
+                  </div>
+                </div>
+              } @else {
+                <div class="menu-card__image-wrapper menu-card__image-placeholder">
+                  <svg 
+                    class="menu-card__placeholder-icon" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="1.2" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round">
+                    <path d="M2 21h20"></path>
+                    <path d="M12 3a2 2 0 0 0-2 2v1h4V5a2 2 0 0 0-2-2Z"></path>
+                    <path d="M22 17a10 10 0 0 0-20 0"></path>
+                  </svg>
+                  <span class="menu-card__placeholder-text">Próximamente</span>
                   <div class="menu-card__category-tag">
                     {{ item.category.name || activeCategoryLabel() }}
                   </div>
@@ -227,7 +241,6 @@
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="menu-footer">
   <div
     class="menu-footer__inner"
@@ -246,7 +259,6 @@
     }
 
     <div class="menu-footer__columns">
-      <!-- Dirección -->
       <div
         class="menu-footer__column"
         appScrollReveal="up"
@@ -275,7 +287,6 @@
         }
       </div>
 
-      <!-- Teléfono -->
       <div
         class="menu-footer__column"
         appScrollReveal="up"
@@ -294,7 +305,6 @@
         }
       </div>
 
-      <!-- Horario -->
       <div
         class="menu-footer__column"
         appScrollReveal="up"
@@ -313,7 +323,6 @@
       </div>
     </div>
 
-    <!-- Social icons -->
     <div
       class="menu-footer__social"
       appScrollReveal="up"
