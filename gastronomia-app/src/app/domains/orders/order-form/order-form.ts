@@ -83,13 +83,6 @@ export class OrderForm implements OnInit, AfterViewInit {
             type: 'select',
             required: true,
             options: []
-          },
-          {
-            name: 'orderType',
-            label: 'Tipo de orden',
-            type: 'text',
-            readonly: true,
-            defaultValue: 'TABLE'
           }
         ]
       }
@@ -117,8 +110,7 @@ export class OrderForm implements OnInit, AfterViewInit {
         form.patchValue({
           peopleCount: order.peopleCount,
           customerId: order.customerId ?? null,
-          employeeId: order.employeeId ?? null,
-          orderType: order.orderType
+          employeeId: order.employeeId ?? null
         });
 
         if (order.customerId) {
