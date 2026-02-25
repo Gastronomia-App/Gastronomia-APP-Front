@@ -118,11 +118,11 @@ export class AuditDetails {
     return formatted;
   });
 
-  // Expected cash = total - totalExpensed
+  // Expected cash = negative of balance gap
   expectedCash = computed(() => {
     const currentAudit = this.audit();
-    if (currentAudit?.total == null || currentAudit?.totalExpensed == null) return 0;
-    return currentAudit.total - currentAudit.totalExpensed;
+    if (currentAudit?.balanceGap == null) return 0;
+    return -currentAudit.balanceGap;
   });
 
   formattedExpectedCash = computed(() => {
@@ -209,7 +209,7 @@ export class AuditDetails {
           },
           {
             name: 'total',
-            label: 'Total en caja',
+            label: 'Ingresos totales',
             type: 'text',
             formatter: () => this.formattedTotal()
           },

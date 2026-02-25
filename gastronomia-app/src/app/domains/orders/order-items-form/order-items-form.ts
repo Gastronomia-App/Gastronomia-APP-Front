@@ -760,16 +760,48 @@ export class OrderItemsForm implements OnInit {
   onSelectionConfirmed(items: Array<{product: Product, selections: SelectedOption[]}>): void {
     // Check if we're editing an existing item
     if (this.currentEditingItemId !== null) {
-      // Editing mode - update the existing item
+      // Editing mode - check if item is grouped
+      const currentProduct = this.pendingItems().find(p => this.getUniqueId(p) === this.currentEditingItemId);
+      const currentQuantity = (currentProduct as any)?.quantity || 1;
+      
       if (items.length > 0) {
-        const { selections } = items[0]; // Only use the first item when editing
+        const { product, selections } = items[0]; // Only use the first item when editing
         
-        // Update the selections for the existing item
-        this.pendingItemsSelectedOptions.update(map => {
-          const newMap = new Map(map);
-          newMap.set(this.currentEditingItemId!, selections || []);
-          return newMap;
-        });
+        if (currentQuantity > 1) {
+          // Item is grouped - separate one instance with the new selections
+          
+          // Reduce quantity of existing grouped item by 1
+          this.pendingItems.update(items => 
+            items.map(p => {
+              if (this.getUniqueId(p) === this.currentEditingItemId) {
+                return { ...p, quantity: currentQuantity - 1 } as any;
+              }
+              return p;
+            })
+          );
+          
+          // Create a new separate item with the selections
+          const productCopy = { ...product };
+          const uniqueId = Date.now() + Math.random();
+          (productCopy as any).uniqueId = uniqueId;
+          (productCopy as any).quantity = 1;
+          
+          this.pendingItems.update(items => [...items, productCopy]);
+          
+          // Store selections for the new item
+          this.pendingItemsSelectedOptions.update(map => {
+            const newMap = new Map(map);
+            newMap.set(uniqueId, selections || []);
+            return newMap;
+          });
+        } else {
+          // Single item - just update the selections
+          this.pendingItemsSelectedOptions.update(map => {
+            const newMap = new Map(map);
+            newMap.set(this.currentEditingItemId!, selections || []);
+            return newMap;
+          });
+        }
       }
     } else {
       // Adding new items - process each item from the modal

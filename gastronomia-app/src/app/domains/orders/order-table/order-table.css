@@ -1,1 +1,13 @@
 /* Inherits from entity-table host class */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  --table-columns: 6; /* 6 data columns + 1 actions column */
+}
+
+.results-info {
+  flex-shrink: 0;
+}

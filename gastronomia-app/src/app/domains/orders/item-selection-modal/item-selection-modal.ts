@@ -577,6 +577,38 @@ export class ItemSelectionModal implements OnInit {
       return;
     }
 
+    // Check if there are more items with required options to configure
+    if (context.type === 'option' && context.itemIndex !== undefined) {
+      const currentItemIndex = context.itemIndex;
+      const items = this.items();
+      
+      // Look for the next item with required options
+      for (let i = currentItemIndex + 1; i < items.length; i++) {
+        const nextItem = items[i];
+        const hasRequiredGroups = nextItem.product.productGroups?.some(g => g.minQuantity > 0) || false;
+        
+        if (hasRequiredGroups) {
+          // Navigate to the next item with required options
+          this.currentContext.set({
+            type: 'option',
+            itemIndex: i,
+            optionPath: undefined
+          });
+          this.activeTabIndex.set(0);
+          this.loadProductGroups(nextItem.product);
+          
+          // Auto-expand the item
+          const itemKey = 'item-' + i;
+          this.expandedItems.update(expanded => {
+            const newSet = new Set(expanded);
+            newSet.add(itemKey);
+            return newSet;
+          });
+          return;
+        }
+      }
+    }
+
     // In edit mode, don't navigate back to categories
     if (!this.isEditMode()) {
       this.backToCategories();

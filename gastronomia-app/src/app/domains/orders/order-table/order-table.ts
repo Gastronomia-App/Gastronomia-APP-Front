@@ -173,9 +173,26 @@ export class OrderTable extends BaseTable<Order> {
         }
       },
       {
+        header: 'Fecha de Cierre',
+        field: 'endDateTime',
+        sortable: true,
+        align: 'left',
+        formatter: (value: string) => {
+          if (!value) return '-';
+          const date = new Date(value);
+          return date.toLocaleString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+      },
+      {
         header: 'Cliente',
         field: 'customerName',
-        sortable: false,
+        sortable: true,
         align: 'left',
         formatter: (value: string) => {
           return value || 'Sin cliente';
