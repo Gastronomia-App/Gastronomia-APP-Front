@@ -59,7 +59,7 @@ export class LoginComponent {
 
       this.form.get('businessName')?.valueChanges.subscribe((value: string) => {
         const sanitized = this.sanitizeBusinessName(value);
-        this.businessNameSuffix.set(sanitized ? `@${sanitized}` : '');
+        this.businessNameSuffix.set(sanitized ?? '');
       });
     }
   }
@@ -98,7 +98,7 @@ export class LoginComponent {
         dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
         email: ['', [Validators.required, Validators.email]],
         phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9,12}$/)]],
-        username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
+        username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50), Validators.pattern(/^[^@]+$/)]],
         password: ['', [
           Validators.required,
           Validators.minLength(8),
@@ -157,7 +157,8 @@ export class LoginComponent {
   private submitRegister(): void {
     const values = this.form.value;
 
-    const fullUsername = values.username + this.businessNameSuffix();
+    const slug = this.businessNameSuffix();
+    const fullUsername = slug ? `${values.username}@${slug}` : values.username;
 
     const business: Business = {
       name: values.businessName,
@@ -204,6 +205,12 @@ export class LoginComponent {
     });
   }
 
+  blockAt(event: KeyboardEvent): void {
+    if (event.key === '@') {
+      event.preventDefault();
+    }
+  }
+
   hasError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return !!(field && field.invalid && field.touched);
@@ -226,6 +233,7 @@ export class LoginComponent {
       if (fieldName === 'dni') return 'DNI debe tener 7 u 8 dígitos';
       if (fieldName === 'phoneNumber') return 'Teléfono debe tener entre 9 y 12 dígitos';
       if (fieldName === 'cuit') return 'CUIT debe tener 11 dígitos';
+      if (fieldName === 'username') return 'El usuario no puede contener @';
     }
 
     return 'Campo inválido';

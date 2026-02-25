@@ -233,23 +233,22 @@
           
           <fieldset>
             <label for="username">Usuario</label>
-            <div class="username-input-container">
+            <div class="username-group" [class.username-group--error]="hasError('username')">
               <input
                 id="username"
                 type="text"
                 formControlName="username"
-                placeholder="usuario123"
-                class="input username-input"
+                placeholder="tu_usuario"
+                class="username-field"
+                (keydown)="blockAt($event)"
               />
-              @if (businessNameSuffix()) {
-                <span class="username-suffix">{{ businessNameSuffix() }}</span>
-              }
+              <span class="username-separator">@</span>
+              <span class="username-domain" [class.username-domain--placeholder]="!businessNameSuffix()">
+                {{ businessNameSuffix() || 'mi_negocio' }}
+              </span>
             </div>
             @if (hasError('username')) {
               <span class="field-error">{{ getErrorMessage('username') }}</span>
-            }
-            @if (businessNameSuffix()) {
-              <span class="help-text">Tu nombre de usuario será: {{ form.get('username')?.value || 'usuario' }}{{ businessNameSuffix() }}</span>
             }
           </fieldset>
 
