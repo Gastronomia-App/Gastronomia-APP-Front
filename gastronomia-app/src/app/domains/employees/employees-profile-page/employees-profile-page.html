@@ -59,27 +59,48 @@
                     </div>
 
                     <div class="tip">
-    <div class="tip-icon">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-                fill="currentColor"
-                d="M12 2.5L5 5v6.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V5l-7-2.5z"
-            />
-        </svg>
-    </div>
-    <div class="tip-text">
-        <div class="tip-title">Seguridad</div>
-        <div class="tip-sub">Tu información está protegida</div>
-    </div>
-</div>
+                        <div class="tip-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor"
+                                    d="M12 2.5L5 5v6.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V5l-7-2.5z" />
+                            </svg>
+                        </div>
+                        <div class="tip-text">
+                            <div class="tip-title">Seguridad</div>
+                            <div class="tip-sub">Tu información está protegida</div>
+                        </div>
+                    </div>
                 </section>
+
+                @if (businessSlug()) {
+                  <button type="button" class="btn-menu-link" (click)="goToMenu()">
+                    <span class="btn-menu-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M3 12h18M3 18h18"/>
+                        <circle cx="19" cy="6" r="1" fill="currentColor"/>
+                        <circle cx="19" cy="12" r="1" fill="currentColor"/>
+                        <circle cx="19" cy="18" r="1" fill="currentColor"/>
+                      </svg>
+                    </span>
+                    <span class="btn-menu-text">
+                      <strong>Ver mi carta digital</strong>
+                      <small>Compartí el menú público de tu negocio</small>
+                    </span>
+                    <span class="btn-menu-arrow">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </span>
+                  </button>
+                }
+                
             </aside>
         </div>
     </div>
-     @if (showEditor()) {
-    <app-employees-update-profile 
-      (closed)="closeEditor()"
-      (updated)="refreshInfo()">
-</app-employees-update-profile>
- }
+    @if (showEditor()) {
+    <app-employees-update-profile (closed)="closeEditor()" (updated)="refreshInfo()">
+    </app-employees-update-profile>
+    }
 </div>

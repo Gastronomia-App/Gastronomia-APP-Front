@@ -14,4 +14,5 @@ export interface Business {
    employeesCount?: number;
   activeEmployeesCount?: number;
   inactiveEmployeesCount?: number;
+  slug?: string;
 }
