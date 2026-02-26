@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo \"export const environment = { production: true, apiBaseUrl: '$API_BASE_URL', tokenStorageKey: 'access_token' };\" > src/enviroments/environment.ts && npm run build",
+  "buildCommand": "echo \"export const environment = { production: true, apiBaseUrl: '$API_BASE_URL', wsUrl: '$WS_URL', tokenStorageKey: 'access_token' };\" > src/enviroments/environment.ts && npm run build",
   "outputDirectory": "dist/gastronomia-app/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
