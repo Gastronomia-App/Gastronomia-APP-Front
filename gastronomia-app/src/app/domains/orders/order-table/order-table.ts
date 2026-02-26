@@ -6,6 +6,7 @@ import { Table } from '../../../shared/components/table/table';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
 import { Order, TableColumn, TableFilter } from '../../../shared/models';
 import { OrderService, OrderFormService } from '../services';
+import { DataEntityType } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-order-table',
@@ -19,12 +20,14 @@ import { OrderService, OrderFormService } from '../services';
 })
 export class OrderTable extends BaseTable<Order> {
   // ==================== Services ====================
-  
+
   private orderService = inject(OrderService);
   private orderFormService = inject(OrderFormService);
 
+  protected override readonly syncEntityType: DataEntityType = 'ORDER';
+
   // ==================== Output Events ====================
-  
+
   onOrderSelected = output<Order>();
   onNewOrderClick = output<void>();
 

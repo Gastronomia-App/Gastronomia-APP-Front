@@ -2,6 +2,7 @@ import { Directive, OnInit, OnDestroy, signal, ViewChild, AfterViewChecked, Dest
 import { TableColumn, LoadMoreEvent } from '../../models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TableDataService } from './services/table-data.service';
+import { DataSyncService, DataEntityType } from '../../services/data-sync.service';
 
 /**
  * Base class for components that display data in a table
@@ -59,6 +60,11 @@ export abstract class BaseTable<
   // Table service for data management
   protected tableService = new TableDataService<T>();
 
+  // Set this in subclasses to auto-refresh when this entity type changes via WebSocket
+  protected readonly syncEntityType?: DataEntityType;
+
+  private readonly dataSyncService = inject(DataSyncService);
+
   // Abstract methods that must be implemented
   protected abstract getColumns(): TableColumn<T>[];
   protected abstract fetchData(page: number, size: number): any;
@@ -80,6 +86,15 @@ export abstract class BaseTable<
     this.initializeTable();
     this.loadInitialData();
     this.setupCustomSubscriptions();
+    this.setupSyncSubscription();
+  }
+
+  private setupSyncSubscription(): void {
+    if (!this.syncEntityType) return;
+    this.dataSyncService
+      .on(this.syncEntityType)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshData());
   }
 
   ngAfterViewChecked(): void {

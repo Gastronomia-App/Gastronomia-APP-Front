@@ -8,6 +8,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { signal } from '@angular/core';
 import { getContrastColor } from '../../../shared/utils/color.helpers';
+import { DataEntityType } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-category-table',
@@ -21,6 +22,8 @@ import { getContrastColor } from '../../../shared/utils/color.helpers';
 export class CategoryTable extends BaseTable<Category> {
   private categoryService = inject(CategoryService);
   private categoryFormService = inject(CategoryFormService);
+
+  protected override readonly syncEntityType: DataEntityType = 'CATEGORY';
 
   // Output events para comunicación con el padre
   onCategorySelected = output<Category>();

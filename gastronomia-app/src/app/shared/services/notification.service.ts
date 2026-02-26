@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, Subject, combineLatest, map } from 'rxjs';
 import { Client, IMessage } from '@stomp/stompjs';
 import { type Notification, NotificationType } from '../models/notification.model';
 import { AuthService } from '../../core/services/auth.service';
+import { DataSyncService, DataEntityType } from './data-sync.service';
 
 // @ts-ignore
 import SockJS from 'sockjs-client/dist/sockjs.min.js';
@@ -16,6 +17,7 @@ import SockJS from 'sockjs-client/dist/sockjs.min.js';
 })
 export class NotificationService {
   private readonly authService = inject(AuthService);
+  private readonly dataSyncService = inject(DataSyncService);
   
   private stompClient: Client | null = null;
   private notificationsSubject = new Subject<Notification>();
@@ -109,6 +111,7 @@ export class NotificationService {
         console.log('WebSocket connected successfully');
         this.connectionStatusSubject.next(true);
         this.subscribeToNotifications(businessId);
+        this.subscribeToDataChanges(businessId);
       },
       
       onStompError: (frame) => {
@@ -189,6 +192,26 @@ export class NotificationService {
     ].includes(type);
   }
   
+  /**
+   * Subscribe to data-change events and forward them to DataSyncService
+   */
+  private subscribeToDataChanges(businessId: number): void {
+    if (!this.stompClient) return;
+
+    const topic = `/topic/data-changes/${businessId}`;
+
+    this.stompClient.subscribe(topic, (message: IMessage) => {
+      try {
+        const event: { entityType: DataEntityType } = JSON.parse(message.body);
+        if (event?.entityType) {
+          this.dataSyncService.emit(event.entityType);
+        }
+      } catch (error) {
+        console.error('Error parsing data-change event:', error);
+      }
+    });
+  }
+
   /**
    * Disconnect from WebSocket server
    */

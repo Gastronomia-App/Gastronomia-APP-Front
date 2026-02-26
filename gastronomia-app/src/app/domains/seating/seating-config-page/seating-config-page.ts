@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeatingGridEditor } from '../seating-grid-editor/seating-grid-editor';
 import { SeatingForm } from '../seating-form/seating-form';
@@ -6,6 +6,8 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { SeatingsService } from '../services/seating-service';
 import { ZoomStateService } from '../services/zoom-state-service';
 import { Seating } from '../../../shared/models/seating';
+import { DataSyncService } from '../../../shared/services/data-sync.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-seating-config-page',
@@ -21,6 +23,8 @@ import { Seating } from '../../../shared/models/seating';
 })
 export class SeatingConfigPage {
   private readonly seatingService = inject(SeatingsService);
+  private readonly dataSyncService = inject(DataSyncService);
+  private readonly destroyRef = inject(DestroyRef);
   @ViewChild('gridEditor') gridEditor!: SeatingGridEditor;
 
   private zoomState = inject(ZoomStateService);
@@ -40,6 +44,10 @@ export class SeatingConfigPage {
 
   constructor() {
     this.loadSeatings();
+    this.dataSyncService
+      .on('SEATING')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshGridWithoutFlicker());
   }
 
   private loadSeatings(): void {

@@ -7,6 +7,7 @@ import { Table, BaseTable } from '../../../shared/components/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationModalComponent } from "../../../shared/components/confirmation-modal";
 import { CategoryService } from '../../categories/services';
+import { DataEntityType } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-product-table',
@@ -21,6 +22,8 @@ export class ProductTable extends BaseTable<Product> implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private productFormService = inject(ProductFormService);
+
+  protected override readonly syncEntityType: DataEntityType = 'PRODUCT';
 
   // Output events para comunicación con el padre
   onProductSelected = output<Product>();
