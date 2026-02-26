@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal, computed, input, output, effect } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, input, output, effect, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SearchableList } from '../../../shared/components/searchable-list';
 import { SelectableItemCard } from '../../../shared/components/selectable-item-card';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal';
@@ -11,6 +12,7 @@ import { ProductService } from '../../products/services/product.service';
 import { TicketService } from '../../../services/ticket.service';
 import { Order, Product, Item, SelectedOption, ItemRequest, ProductGroup } from '../../../shared/models';
 import { take } from 'rxjs';
+import { DataSyncService } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-order-items-form',
@@ -31,6 +33,8 @@ export class OrderItemsForm implements OnInit {
   private orderService = inject(OrderService);
   private productService = inject(ProductService);
   private ticketService = inject(TicketService);
+  private dataSyncService = inject(DataSyncService);
+  private destroyRef = inject(DestroyRef);
 
   editRequested = output<void>();
 
@@ -132,7 +136,29 @@ export class OrderItemsForm implements OnInit {
   });
 
   ngOnInit(): void {
-    // Initialization is handled in the constructor effect
+    this.setupSyncSubscription();
+  }
+
+  /** Subscribe to real-time ORDER changes from other devices */
+  private setupSyncSubscription(): void {
+    this.dataSyncService
+      .on('ORDER')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshOrderFromServer());
+  }
+
+  /** Re-fetch current order items without disturbing pending (unsaved) items */
+  private refreshOrderFromServer(): void {
+    const orderId = this.currentOrder()?.id;
+    if (!orderId) return;
+
+    this.orderService.getOrderById(orderId).subscribe({
+      next: (order) => {
+        this.currentOrder.set(order);
+        this.discount.set(order.discount || 0);
+        this.confirmedItems.set(order.items?.length ? [...order.items] : []);
+      }
+    });
   }
 
   onSearchFocus(): void {

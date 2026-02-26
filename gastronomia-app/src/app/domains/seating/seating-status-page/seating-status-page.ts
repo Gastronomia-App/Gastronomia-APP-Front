@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Seating } from '../../../shared/models/seating';
 import { SeatingsService } from '../services/seating-service';
 import { SeatingStatusView } from '../seating-status-view/seating-status-view';
@@ -6,6 +7,7 @@ import { OrderItemsForm } from '../../orders/order-items-form/order-items-form';
 import { OrderForm } from '../../orders/order-form/order-form';
 import { OrderFinalizeModal } from '../../orders/order-finalize-modal/order-finalize-modal';
 import { Order } from '../../../shared/models';
+import { DataSyncService } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-seating-status-page',
@@ -15,6 +17,8 @@ import { Order } from '../../../shared/models';
 })
 export class SeatingStatusPage {
   private readonly seatingService = inject(SeatingsService);
+  private readonly dataSyncService = inject(DataSyncService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly seatings = signal<Seating[]>([]);
   readonly loading = signal<boolean>(true);
@@ -26,6 +30,39 @@ export class SeatingStatusPage {
 
   constructor() {
     this.loadSeatings();
+    this.setupSyncSubscription();
+  }
+
+  /** Subscribe to real-time data changes from other devices */
+  private setupSyncSubscription(): void {
+    this.dataSyncService
+      .on('ORDER', 'SEATING')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshSeatings());
+  }
+
+  /** Silent refresh without loading flicker */
+  private refreshSeatings(): void {
+    this.seatingService.getAll().subscribe({
+      next: (data) => {
+        this.seatings.set(data);
+
+        // If currently viewing an order, re-fetch the selected seating
+        const currentSeating = this.selectedSeating();
+        if (currentSeating && this.currentMode() !== 'none') {
+          const updated = data.find(s => s.id === currentSeating.id);
+          if (updated && (updated.status === 'OCCUPIED' || updated.status === 'BILLING')) {
+            this.seatingService.getById(updated.id).subscribe({
+              next: (fullSeating) => this.selectedSeating.set(fullSeating)
+            });
+          } else if (updated?.status === 'FREE') {
+            // Seating was freed (order finalized/cancelled), close panel
+            this.selectedSeating.set(null);
+            this.currentMode.set('none');
+          }
+        }
+      }
+    });
   }
 
   private loadSeatings(): void {

@@ -11,8 +11,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderTable } from '../order-table/order-table';
 import { OrderDetails } from '../order-details';
 import { OrderFinalizeModal } from '../order-finalize-modal';
-import { OrderFormService } from '../services';
+import { OrderFormService, OrderService } from '../services';
 import { Order } from '../../../shared/models';
+import { DataSyncService } from '../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -30,6 +31,8 @@ export class OrdersPage implements OnInit, AfterViewChecked {
   // ==================== Services ====================
   
   private orderFormService = inject(OrderFormService);
+  private orderService = inject(OrderService);
+  private dataSyncService = inject(DataSyncService);
   private destroyRef = inject(DestroyRef);
   
   // ==================== Pending Operations (for AfterViewChecked) ====================
@@ -68,6 +71,21 @@ export class OrdersPage implements OnInit, AfterViewChecked {
         this.currentOrderId = null;
         this.orderFormService.setActiveOrderId(null);
       });
+
+    // Subscribe to real-time ORDER changes to refresh details panel
+    this.dataSyncService
+      .on('ORDER')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.onOrderSyncEvent());
+  }
+
+  /** Refresh order details if currently viewing an order */
+  private onOrderSyncEvent(): void {
+    if (this.showOrderDetails() && this.currentOrderId) {
+      this.orderService.getOrderById(this.currentOrderId).subscribe({
+        next: (order) => this.orderDetailsComponent?.loadOrder(order)
+      });
+    }
   }
 
   // ==================== Lifecycle - AfterViewChecked ====================
