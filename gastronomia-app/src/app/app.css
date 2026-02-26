@@ -31,5 +31,8 @@ main .content-area > * {
     flex: 1;
     height: 100%;
     min-height: 0;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 

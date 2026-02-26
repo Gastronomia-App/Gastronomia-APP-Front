@@ -5,6 +5,7 @@
   color: #ffffff;
   overflow-x: clip;
   overflow-y: auto;
+  overscroll-behavior-x: none;
   scrollbar-width: none;
 }
 
@@ -308,6 +309,9 @@
   position: sticky;
   top: 0;
   z-index: 20;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   backdrop-filter: blur(8px);
   background: linear-gradient(
     to bottom,
@@ -323,6 +327,8 @@
 
 .menu-categories__inner {
   max-width: 72rem;
+  width: 100%;
+  box-sizing: border-box;
   margin-inline: auto;
   padding: 1rem 0.75rem 1.1rem;
 }
@@ -351,7 +357,9 @@
   align-items: center;
   gap: 0.75rem;
   margin-top: 0.35rem;
-  touch-action: pan-x;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .menu-categories__pills-viewport {
