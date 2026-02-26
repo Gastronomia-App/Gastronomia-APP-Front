@@ -5,6 +5,7 @@ import {
   OnInit,
   signal,
   computed,
+  effect,
   DestroyRef,
   viewChild
 } from '@angular/core';
@@ -60,8 +61,18 @@ export class MenuPageComponent implements OnInit {
     private readonly destroyRef: DestroyRef,
     private readonly route: ActivatedRoute
   ) {
-    // Here host is already available, so this is safe
     this.scrollHost = this.host.nativeElement;
+
+    // Set up native scroll tracking on the pills viewport
+    effect(() => {
+      const ref = this.pillsViewportRef();
+      if (!ref) return;
+      const el = ref.nativeElement;
+      this.refreshScrollPos(el);
+      fromEvent(el, 'scroll')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.refreshScrollPos(el));
+    });
   }
 
   // Public business info for footer and hero
@@ -79,6 +90,15 @@ export class MenuPageComponent implements OnInit {
 
   protected readonly categoriesSectionRef =
     viewChild<ElementRef<HTMLElement>>('categoriesSection');
+
+  private readonly pillsViewportRef =
+    viewChild<ElementRef<HTMLElement>>('pillsViewport');
+
+  private readonly scrollPos = signal<{
+    left: number;
+    scrollWidth: number;
+    clientWidth: number;
+  }>({ left: 0, scrollWidth: 0, clientWidth: 1 });
 
   readonly heroImages: string[] = [
     'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80',
@@ -135,51 +155,14 @@ export class MenuPageComponent implements OnInit {
   private readonly HERO_DURATION_MS = 7000;
   private readonly HERO_TICK_MS = 100;
 
-  // Visible window sizes for categories
-  private readonly DESKTOP_VISIBLE_CATEGORIES = 6;
-  private readonly MOBILE_VISIBLE_CATEGORIES = 2;
-  readonly categoryStartIndex = signal<number>(0);
+  // All categories shown; arrows scroll the viewport natively
+  readonly visibleCategories = computed(() => this.categories());
 
-  // Visible categories list (carousel)
-  readonly visibleCategories = computed(() => {
-    const all = this.categories();
-    const total = all.length;
-
-    if (total === 0) {
-      return [];
-    }
-
-    const windowSize = this.isMobile()
-      ? this.MOBILE_VISIBLE_CATEGORIES
-      : this.DESKTOP_VISIBLE_CATEGORIES;
-
-    const start = this.categoryStartIndex();
-    const maxStart = Math.max(0, total - windowSize);
-    const safeStart = Math.min(start, maxStart);
-    const end = Math.min(safeStart + windowSize, total);
-
-    return all.slice(safeStart, end);
-  });
-
-  readonly canScrollCategoriesLeft = computed(() => {
-    return this.categoryStartIndex() > 0;
-  });
+  readonly canScrollCategoriesLeft = computed(() => this.scrollPos().left > 2);
 
   readonly canScrollCategoriesRight = computed(() => {
-    const total = this.categories().length;
-    if (total === 0) {
-      return false;
-    }
-
-    const windowSize = this.isMobile()
-      ? this.MOBILE_VISIBLE_CATEGORIES
-      : this.DESKTOP_VISIBLE_CATEGORIES;
-
-    if (total <= windowSize) {
-      return false;
-    }
-
-    return this.categoryStartIndex() + windowSize < total;
+    const { left, scrollWidth, clientWidth } = this.scrollPos();
+    return scrollWidth > clientWidth && left + clientWidth < scrollWidth - 2;
   });
 
   readonly categoryIconComponentMap: Record<string, any> = CATEGORY_ICON_MAP;
@@ -321,7 +304,14 @@ export class MenuPageComponent implements OnInit {
             }))
           );
 
-          this.categoryStartIndex.set(0);
+          // Reset scroll position when categories reload
+          setTimeout(() => {
+            const vp = this.pillsViewportRef()?.nativeElement;
+            if (vp) {
+              vp.scrollLeft = 0;
+              this.refreshScrollPos(vp);
+            }
+          }, 0);
 
           const firstCategory = this.categories()[0];
           if (firstCategory) {
@@ -401,6 +391,8 @@ export class MenuPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.isMobile.set(window.innerWidth <= 640);
+        const vp = this.pillsViewportRef()?.nativeElement;
+        if (vp) this.refreshScrollPos(vp);
       });
   }
 
@@ -414,24 +406,19 @@ export class MenuPageComponent implements OnInit {
   }
 
   scrollCategoriesLeft(): void {
-    if (!this.canScrollCategoriesLeft()) {
-      return;
-    }
-    this.categoryStartIndex.update(current => Math.max(0, current - 1));
+    this.pillsViewportRef()?.nativeElement.scrollBy({ left: -220, behavior: 'smooth' });
   }
 
   scrollCategoriesRight(): void {
-    const total = this.categories().length;
-    const windowSize = this.isMobile()
-      ? this.MOBILE_VISIBLE_CATEGORIES
-      : this.DESKTOP_VISIBLE_CATEGORIES;
+    this.pillsViewportRef()?.nativeElement.scrollBy({ left: 220, behavior: 'smooth' });
+  }
 
-    if (!this.canScrollCategoriesRight()) {
-      return;
-    }
-    this.categoryStartIndex.update(current =>
-      Math.min(current + 1, Math.max(0, total - windowSize))
-    );
+  private refreshScrollPos(el: HTMLElement): void {
+    this.scrollPos.set({
+      left: el.scrollLeft,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth
+    });
   }
 
   scrollToCategories(): void {
