@@ -19,6 +19,8 @@ export class ProductImagePreview {
   // Full URL for <img src="...">
   previewUrl = computed(() => {
     const url = this.imageUrl();
-    return url ? `${environment.apiBaseUrl.replace(/\/api$/, '')}${url}` : null;
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${environment.apiBaseUrl.replace(/\/api$/, '')}${url}`;
   });
 }

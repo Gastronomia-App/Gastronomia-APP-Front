@@ -42,7 +42,11 @@ imageCleared = output<void>();
     effect(() => {
       const url = this.imageUrl();
       if (url && !this.previewUrl()) {
-        this.previewUrl.set(`${environment.apiBaseUrl.replace(/\/api$/, '')}${url}`);
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          this.previewUrl.set(url);
+        } else {
+          this.previewUrl.set(`${environment.apiBaseUrl.replace(/\/api$/, '')}${url}`);
+        }
       }
     });
   }
