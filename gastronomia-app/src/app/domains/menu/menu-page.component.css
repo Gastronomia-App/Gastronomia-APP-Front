@@ -3,6 +3,7 @@
   min-height: 100vh;
   background-color: #050505;
   color: #ffffff;
+  overflow-x: clip;
   overflow-y: auto;
   scrollbar-width: none;
 }
