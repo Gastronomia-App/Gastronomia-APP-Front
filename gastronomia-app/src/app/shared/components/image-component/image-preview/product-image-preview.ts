@@ -1,5 +1,6 @@
 import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../../../enviroments/environment';
 
 @Component({
   selector: 'app-product-image-preview',
@@ -18,6 +19,6 @@ export class ProductImagePreview {
   // Full URL for <img src="...">
   previewUrl = computed(() => {
     const url = this.imageUrl();
-    return url ? `http://localhost:8080${url}` : null;
+    return url ? `${environment.apiBaseUrl.replace(/\/api$/, '')}${url}` : null;
   });
 }

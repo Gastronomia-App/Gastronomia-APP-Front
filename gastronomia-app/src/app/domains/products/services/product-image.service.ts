@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../enviroments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductImageService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/files';
+  private apiUrl = `${environment.apiBaseUrl}/files`;
 
   /**
    * Uploads a product image and returns the URL provided by the backend.

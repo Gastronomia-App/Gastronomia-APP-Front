@@ -10,6 +10,7 @@ import {
   effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../../../enviroments/environment';
 
 @Component({
   selector: 'app-image-upload-field',
@@ -41,7 +42,7 @@ imageCleared = output<void>();
     effect(() => {
       const url = this.imageUrl();
       if (url && !this.previewUrl()) {
-        this.previewUrl.set(`http://localhost:8080${url}`);
+        this.previewUrl.set(`${environment.apiBaseUrl.replace(/\/api$/, '')}${url}`);
       }
     });
   }
