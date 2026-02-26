@@ -56,6 +56,17 @@ export class SeatingGridView implements OnInit, AfterViewInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
+  constructor() {
+    // React to parent input changes so the grid stays in sync
+    effect(() => {
+      const input = this.seatingsInput();
+      if (input.length) {
+        this.seatings.set(input);
+        this.loading.set(false);
+      }
+    });
+  }
+
   // =========================================================
   // 🧩 LIFECYCLE HOOKS
   // =========================================================
@@ -84,12 +95,8 @@ export class SeatingGridView implements OnInit, AfterViewInit {
 
   // Initialization hook
   ngOnInit(): void {
-    // If input data exists, use it directly
-    if (this.seatingsInput().length) {
-      this.seatings.set(this.seatingsInput());
-      this.loading.set(false);
-    } else {
-      // Otherwise, fetch data from the service
+    // If no input data is provided, fetch from API
+    if (!this.seatingsInput().length) {
       this.seatingService.getAll().subscribe({
         next: (data) => {
           this.seatings.set(data);

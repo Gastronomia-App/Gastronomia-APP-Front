@@ -68,9 +68,7 @@ export class SeatingConfigPage {
   private refreshGridWithoutFlicker(): void {
     this.seatingService.getAll().subscribe({
       next: (data) => {
-        const current = this.seatings();
-        current.splice(0, current.length, ...data);
-        this.seatings.set(current);
+        this.seatings.set(data);
       },
       error: () => {
         // Global error handler will display the error

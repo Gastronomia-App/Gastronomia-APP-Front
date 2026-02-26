@@ -109,13 +109,7 @@ export class SeatingViewPage implements AfterViewInit {
 
     this.seatingService.getAll().subscribe({
       next: (data) => {
-        const current = this.seatings();
-        if (current.length === 0) {
-          this.seatings.set(data);
-        } else {
-          current.splice(0, current.length, ...data);
-          this.seatings.set(current);
-        }
+        this.seatings.set(data);
         this.loading.set(false);
       },
       error: () => {
@@ -236,9 +230,7 @@ export class SeatingViewPage implements AfterViewInit {
 
     this.seatingService.getAll().subscribe({
       next: (data) => {
-        const current = this.seatings();
-        current.splice(0, current.length, ...data);
-        this.seatings.set(current);
+        this.seatings.set(data);
 
         const updatedSeating = data.find(s => s.id === currentSeatingId);
         if (updatedSeating) {
