@@ -445,6 +445,13 @@ export class MenuPageComponent implements OnInit {
     });
   }
 
+  getProductImageSrc(imageUrl: string): string {
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    return this.imageBaseUrl + imageUrl;
+  }
+
   trackByProductId(_index: number, item: Product): number {
     return item.id;
   }

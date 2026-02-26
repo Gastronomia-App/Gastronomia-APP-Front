@@ -192,7 +192,7 @@
                 <div class="menu-card__image-wrapper">
                   <img
                     class="menu-card__image"
-                    [src]="imageBaseUrl + item.imageUrl!"
+                    [src]="getProductImageSrc(item.imageUrl!)"
                     [alt]="item.name" />
                   <div class="menu-card__category-tag">
                     {{ item.category.name || activeCategoryLabel() }}
