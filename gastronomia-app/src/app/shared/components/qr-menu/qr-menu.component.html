@@ -1,0 +1,23 @@
+@if (qrDataUrl()) {
+<div class="qr-card">
+  <div class="qr-header">
+    <svg class="qr-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 3h7v7H3V3Zm1 1v5h5V4H4Zm1 1h3v3H5V5Zm8-2h7v7h-7V3Zm1 1v5h5V4h-5Zm1 1h3v3h-3V5ZM3 13h7v7H3v-7Zm1 1v5h5v-5H4Zm1 1h3v3H5v-3Zm8 0h2v2h-2v-2Zm3 0h2v2h-2v-2Zm-3 3h2v2h-2v-2Zm3 0h2v2h-2v-2Z"/>
+    </svg>
+    <span class="qr-title">QR de la carta</span>
+  </div>
+
+  <div class="qr-image-wrapper">
+    <img [src]="qrDataUrl()" alt="QR carta digital" class="qr-image" />
+  </div>
+
+  <p class="qr-url">{{ menuUrl() }}</p>
+
+  <button class="qr-download-btn" (click)="download()">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16l-5-5h3V4h4v7h3l-5 5Zm-7 2h14v2H5v-2Z"/>
+    </svg>
+    Descargar QR
+  </button>
+</div>
+}

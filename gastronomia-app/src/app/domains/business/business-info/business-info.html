@@ -118,5 +118,12 @@
   </div>
 </section>
 
+  <!-- QR de la carta digital -->
+  @if (business.slug) {
+  <div class="card qr-section">
+    <app-qr-menu [slug]="business.slug" />
+  </div>
+  }
+
 </section>
 }

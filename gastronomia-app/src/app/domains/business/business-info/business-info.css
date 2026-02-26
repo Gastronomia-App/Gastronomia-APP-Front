@@ -257,3 +257,10 @@
     height: 44px;
   }
 }
+
+/* QR de la carta */
+.qr-section {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}

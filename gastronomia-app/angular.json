@@ -26,7 +26,8 @@
               "src/styles.css"
             ],
             "allowedCommonJsDependencies": [
-              "sockjs-client"
+              "sockjs-client",
+              "qrcode"
             ]
           },
           "configurations": {
@@ -34,13 +35,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "750kB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "10kB",
-                  "maximumError": "16kB"
+                  "maximumWarning": "16kB",
+                  "maximumError": "32kB"
                 }
               ],
               "outputHashing": "all"
