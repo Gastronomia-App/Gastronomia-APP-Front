@@ -1,6 +1,6 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:8080/api',
-  wsUrl: 'http://localhost:8080/ws',
+  production: true,
+  apiBaseUrl: 'https://TU-BACKEND.com/api',
+  wsUrl: 'https://TU-BACKEND.com/ws',
   tokenStorageKey: 'access_token'
 };
