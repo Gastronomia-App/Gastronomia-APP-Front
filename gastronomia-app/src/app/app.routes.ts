@@ -152,7 +152,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'view',
+        redirectTo: 'status',
         pathMatch: 'full',
       },
       {

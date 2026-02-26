@@ -14,15 +14,16 @@ export class SeatingRootPage {
   UserRole = UserRole;
   
   readonly subHeaderTabs = computed<Tab[]>(() => [
-    { id: 'view', label: 'Salón', route: '/seatings/view' },
-    { id: 'status', label: 'Estado', route: '/seatings/status' },
-    { 
-      id: 'config', 
-      label: 'Configuración', 
-      route: '/seatings/config',
-      allowedRoles: [UserRole.OWNER, UserRole.ADMIN]
-    }
-  ]);
+  { id: 'status', label: 'Estado', route: '/seatings/status' },
+  { id: 'view',   label: 'Salón',  route: '/seatings/view',   hideOnMobile: true },
+  { 
+    id: 'config', 
+    label: 'Configuración', 
+    route: '/seatings/config',
+    allowedRoles: [UserRole.OWNER, UserRole.ADMIN],
+    hideOnMobile: true
+  }
+]);
 
   onTabClick(tabId: string): void {
   }
